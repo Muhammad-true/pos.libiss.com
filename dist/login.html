@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Вход для действующих клиентов Libiss POS." />
+    <meta property="og:title" content="Libiss POS — Вход" />
+    <meta
+      property="og:description"
+      content="Войдите по номеру телефона и паролю, чтобы продолжить работу."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://pos.libiss.com/login" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="canonical" href="https://pos.libiss.com/login" />
+    <title>Libiss POS — Вход</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script type="module" crossorigin src="/assets/login-wHLC4Sdb.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/translations-C-1aSlsl.js">
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <div class="container nav">
+          <a class="logo" href="/" aria-label="Libiss POS">
+            <img class="logo-image" src="/logo.png" alt="Libiss" />
+            <span>Libiss POS</span>
+          </a>
+          <div class="lang-toggle" role="group" aria-label="Language">
+            <button class="lang-btn is-active" type="button" data-lang="ru">
+              RU
+            </button>
+            <button class="lang-btn" type="button" data-lang="en">EN</button>
+          </div>
+        </div>
+      </header>
+
+      <main class="form-page">
+        <section class="form-hero">
+          <div class="container">
+            <div class="form-hero-inner">
+              <span class="eyebrow" data-i18n="login.eyebrow">Вход</span>
+              <h1 data-i18n="login.title">Добро пожаловать обратно</h1>
+              <p data-i18n="login.subtitle">
+                Войдите по номеру телефона и паролю.
+              </p>
+              <div class="form-card">
+                <form class="form" data-form>
+                  <div class="field">
+                    <label for="phone" data-i18n="login.phone">Телефон</label>
+                    <input
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      autocomplete="tel"
+                      required
+                      data-i18n-attr="placeholder"
+                      data-i18n-key="login.phonePlaceholder"
+                      placeholder="+998901234567"
+                    />
+                  </div>
+                  <div class="field">
+                    <label for="password" data-i18n="login.password"
+                      >Пароль</label
+                    >
+                    <input
+                      id="password"
+                      name="password"
+                      type="password"
+                      autocomplete="current-password"
+                      required
+                      data-i18n-attr="placeholder"
+                      data-i18n-key="login.passwordPlaceholder"
+                      placeholder="••••••••"
+                    />
+                  </div>
+                  <div class="form-actions">
+                    <button class="btn btn-primary" type="submit" data-i18n="login.submit">
+                      Войти
+                    </button>
+                    <a class="btn btn-secondary" href="/" data-i18n="login.back">
+                      Назад
+                    </a>
+                  </div>
+                  <div class="status" data-status aria-live="polite"></div>
+                </form>
+              </div>
+              <a class="form-link" href="/create-store.html" data-i18n="login.create">
+                Создать новый магазин
+              </a>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+  </body>
+</html>
+

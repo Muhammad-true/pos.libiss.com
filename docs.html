@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Пошаговая настройка Libiss POS."
+    />
+    <meta property="og:title" content="Libiss POS — Документация" />
+    <meta
+      property="og:description"
+      content="Шаги по установке и запуску Libiss POS."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://pos.libiss.com/docs" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="canonical" href="https://pos.libiss.com/docs" />
+    <title>Libiss POS — Документация</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <div class="container nav">
+          <a class="logo" href="/" aria-label="Libiss POS">
+            <img class="logo-image" src="/logo.png" alt="Libiss" />
+            <span>Libiss POS</span>
+          </a>
+          <div class="lang-toggle" role="group" aria-label="Language">
+            <button class="lang-btn is-active" type="button" data-lang="ru">
+              RU
+            </button>
+            <button class="lang-btn" type="button" data-lang="en">EN</button>
+          </div>
+        </div>
+      </header>
+
+      <main class="docs-page">
+        <section class="docs-hero">
+          <div class="container">
+            <div class="docs-hero-inner">
+              <span class="eyebrow" data-i18n="docs.eyebrow">Документация</span>
+              <h1 data-i18n="docs.title">Установка Libiss POS</h1>
+              <p data-i18n="docs.subtitle">
+                Пошагово настроим рабочее место и подключим магазин.
+              </p>
+              <div class="docs-welcome" data-docs-welcome></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="docs-steps">
+          <div class="container">
+            <h2 class="section-title" data-i18n="docs.installTitle">Варианты установки</h2>
+            <p class="section-subtitle" data-i18n="docs.installSubtitle">
+              Выберите подходящий вариант для вашей кассы.
+            </p>
+            <div class="grid two">
+              <div class="card">
+                <h4 data-i18n="docs.install1Title">Windows — Касса 1 (полный пакет)</h4>
+                <p data-i18n="docs.install1Text">
+                  Сервер для кассы 1 + MySQL + программа. Всё в одном установщике.
+                </p>
+                <div class="actions">
+                  <a class="btn btn-primary" href="https://drive.google.com/file/d/1qtjAUGUOwYvNFNlIWr8Wd6sf25I1vrc0/view?usp=drive_link" target="_blank" rel="noopener noreferrer" data-i18n="docs.downloadFull"
+                    >Скачать полный пакет</a
+                  >
+                </div>
+              </div>
+              <div class="card">
+                <h4 data-i18n="docs.install2Title">Windows — MySQL уже установлен</h4>
+                <p data-i18n="docs.install2Text">
+                  Если у вас уже есть MySQL, скачайте только сервер и программу. Без сервера касса 1 не будет работать.
+                </p>
+                <div class="actions">
+                  <a class="btn btn-secondary" href="https://drive.google.com/file/d/18cJ6uig05FM4YOPxhdmyWychmu-N9AJk/view?usp=drive_link" target="_blank" rel="noopener noreferrer" data-i18n="docs.downloadServer"
+                    >Скачать сервер + программа</a
+                  >
+                </div>
+              </div>
+              <div class="card">
+                <h4 data-i18n="docs.install3Title">Windows — Другие кассы</h4>
+                <p data-i18n="docs.install3Text">
+                  Для касс 2, 3 и далее — только программа POS.
+                </p>
+                <div class="actions">
+                  <a class="btn btn-secondary" href="https://drive.google.com/file/d/1z_2OVIBJAnSPDEAwo54ejfo7qdWjwKoQ/view?usp=drive_link" target="_blank" rel="noopener noreferrer" data-i18n="docs.downloadApp"
+                    >Скачать программу</a
+                  >
+                </div>
+              </div>
+              <div class="card">
+                <h4 data-i18n="docs.install4Title">Android</h4>
+                <p data-i18n="docs.install4Text">
+                  Мобильное приложение для Android-касс.
+                </p>
+                <div class="actions">
+                  <a class="btn btn-secondary" href="#" data-i18n="docs.downloadAndroid"
+                    >Скачать для Android</a
+                  >
+                </div>
+              </div>
+            </div>
+            <div class="docs-next">
+              <h3 class="section-title" data-i18n="docs.nextTitle">Следующие шаги</h3>
+              <div class="grid two">
+                <div class="card">
+                  <h4 data-i18n="docs.step2Title">2. Запустите Libiss POS</h4>
+                  <p data-i18n="docs.step2Text">
+                    Укажите ID магазина и ключ подписки. Эти данные можно найти в вашем кабинете.
+                  </p>
+                  <div class="actions">
+                    <a class="btn btn-secondary" href="/office.html" data-i18n="docs.openOffice"
+                      >Открыть кабинет</a
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="docs-tutorial">
+              <h3 class="section-title" data-i18n="docs.tutorialTitle">Обучение работе с POS</h3>
+              <p class="section-subtitle" data-i18n="docs.tutorialSubtitle">
+                Пройдите пошаговое обучение, чтобы освоить основные функции.
+              </p>
+              <div class="tutorial-container">
+                <div class="tutorial-step" data-tutorial-step="0">
+                  <div class="tutorial-content">
+                    <span class="tutorial-number">1</span>
+                    <div class="tutorial-text">
+                      <h4 data-i18n="docs.tutorial1Title">Первый запуск и подключение</h4>
+                      <p data-i18n="docs.tutorial1Text">
+                        При первом запуске укажите IP-адрес сервера. Для Кассы 1 используйте <code>http://localhost:8080/api</code>. Для других касс узнайте IP-адрес сервера в настройках Кассы 1. Все устройства должны быть в одной Wi-Fi сети.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div class="tutorial-step" data-tutorial-step="1" hidden>
+                  <div class="tutorial-content">
+                    <span class="tutorial-number">2</span>
+                    <div class="tutorial-text">
+                      <h4 data-i18n="docs.tutorial2Title">Вход в систему и настройка магазина</h4>
+                      <p data-i18n="docs.tutorial2Text">
+                        Войдите используя логин и пароль администратора. В админ-панели откройте "Настройки" и укажите название вашего магазина. Сохраните изменения.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div class="tutorial-step" data-tutorial-step="2" hidden>
+                  <div class="tutorial-content">
+                    <span class="tutorial-number">3</span>
+                    <div class="tutorial-text">
+                      <h4 data-i18n="docs.tutorial3Title">Добавление товаров</h4>
+                      <p data-i18n="docs.tutorial3Text">
+                        В админ-панели откройте раздел "Товары" и нажмите "Добавить товар". Заполните название, категорию, производителя и организацию. Обязательно добавьте хотя бы одну вариацию товара (размер и цвет).
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div class="tutorial-step" data-tutorial-step="3" hidden>
+                  <div class="tutorial-content">
+                    <span class="tutorial-number">4</span>
+                    <div class="tutorial-text">
+                      <h4 data-i18n="docs.tutorial4Title">Вариации товаров</h4>
+                      <p data-i18n="docs.tutorial4Text">
+                        Вариация — это комбинация размера и цвета. Для каждой вариации укажите количество на складе, цену продажи и себестоимость. Можно добавить несколько размеров и цветов сразу — система создаст все комбинации автоматически.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div class="tutorial-step" data-tutorial-step="4" hidden>
+                  <div class="tutorial-content">
+                    <span class="tutorial-number">5</span>
+                    <div class="tutorial-text">
+                      <h4 data-i18n="docs.tutorial5Title">Проведение продажи</h4>
+                      <p data-i18n="docs.tutorial5Text">
+                        На главном экране нажмите "Новая продажа" или выберите товар. Система покажет все вариации товара. Выберите нужный размер и цвет, добавьте в корзину и завершите продажу. Остатки на складе обновятся автоматически.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div class="tutorial-actions">
+                  <button class="btn btn-secondary" type="button" data-tutorial-prev data-i18n="docs.tutorialPrev" hidden>
+                    Назад
+                  </button>
+                  <button class="btn btn-primary" type="button" data-tutorial-next data-i18n="docs.tutorialNext">
+                    Далее
+                  </button>
+                  <button class="btn btn-secondary" type="button" data-tutorial-restart data-i18n="docs.tutorialRestart" hidden>
+                    Начать заново
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="docs-actions">
+              <a class="btn btn-primary" href="https://admin.libiss.com" data-i18n="docs.admin"
+                >Открыть админ‑панель</a
+              >
+              <a class="btn btn-secondary" href="/" data-i18n="docs.back"
+                >Назад на сайт</a
+              >
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="/src/docs.js"></script>
+  </body>
+</html>
+

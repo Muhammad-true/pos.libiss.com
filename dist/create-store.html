@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Создайте магазин в Libiss POS за несколько минут."
+    />
+    <meta property="og:title" content="Libiss POS — Создать магазин" />
+    <meta
+      property="og:description"
+      content="Быстрая регистрация магазина для запуска POS."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://pos.libiss.com/create-store" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="canonical" href="https://pos.libiss.com/create-store" />
+    <title>Libiss POS — Создать магазин</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script type="module" crossorigin src="/assets/create-store-C-JQHori.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/translations-C-1aSlsl.js">
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <div class="container nav">
+          <a class="logo" href="/" aria-label="Libiss POS">
+            <img class="logo-image" src="/logo.png" alt="Libiss" />
+            <span>Libiss POS</span>
+          </a>
+          <div class="lang-toggle" role="group" aria-label="Language">
+            <button class="lang-btn is-active" type="button" data-lang="ru">
+              RU
+            </button>
+            <button class="lang-btn" type="button" data-lang="en">EN</button>
+          </div>
+        </div>
+      </header>
+
+      <main class="form-page">
+        <section class="form-hero">
+          <div class="container">
+            <div class="form-hero-inner">
+              <span class="eyebrow" data-i18n="create.eyebrow">Регистрация</span>
+              <h1 data-i18n="create.title">Создайте магазин</h1>
+              <p data-i18n="create.subtitle">
+                Несколько шагов — и ваш POS готов к работе.
+              </p>
+              <a class="btn btn-secondary" href="/gallery.html" data-i18n="cta.gallery"
+                >View app gallery</a
+              >
+              <div class="form-card">
+                <form class="form" data-form>
+                  <div class="form-step" data-step="0">
+                    <div class="field">
+                      <label for="shopName" data-i18n="form.shopName"
+                        >Название магазина</label
+                      >
+                      <input
+                        id="shopName"
+                        name="shopName"
+                        type="text"
+                        required
+                        data-i18n-attr="placeholder"
+                        data-i18n-key="form.shopNamePlaceholder"
+                        placeholder="Мой магазин"
+                      />
+                      <span class="field-error" data-error-for="shopName"></span>
+                    </div>
+                    <div class="field">
+                      <label for="inn" data-i18n="form.inn">ИНН</label>
+                      <input
+                        id="inn"
+                        name="inn"
+                        type="text"
+                        required
+                        data-i18n-attr="placeholder"
+                        data-i18n-key="form.innPlaceholder"
+                        placeholder="123456789"
+                      />
+                      <span class="field-error" data-error-for="inn"></span>
+                    </div>
+                    <div class="field">
+                      <label for="description" data-i18n="form.description"
+                        >Описание</label
+                      >
+                      <textarea
+                        id="description"
+                        name="description"
+                        rows="2"
+                        required
+                        data-i18n-attr="placeholder"
+                        data-i18n-key="form.descriptionPlaceholder"
+                        placeholder="Коротко о магазине"
+                      ></textarea>
+                      <span class="field-error" data-error-for="description"></span>
+                    </div>
+                    <div class="field">
+                      <label for="cityId" data-i18n="form.city">Город</label>
+                      <select id="cityId" name="cityId">
+                        <option value="" data-i18n="form.cityPlaceholder">
+                          Выберите город
+                        </option>
+                      </select>
+                      <span class="hint" data-i18n="form.cityHint"
+                        >Опционально</span
+                      >
+                      <span class="field-error" data-error-for="cityId"></span>
+                    </div>
+                    <div class="field">
+                      <label for="address" data-i18n="form.address">Адрес</label>
+                      <input
+                        id="address"
+                        name="address"
+                        type="text"
+                        required
+                        data-i18n-attr="placeholder"
+                        data-i18n-key="form.addressPlaceholder"
+                        placeholder="Улица, дом"
+                      />
+                      <span class="field-error" data-error-for="address"></span>
+                    </div>
+                  </div>
+
+                  <div class="form-step" data-step="1" hidden>
+                    <div class="field">
+                      <label for="name" data-i18n="form.name">Ваше имя</label>
+                      <input
+                        id="name"
+                        name="name"
+                        type="text"
+                        autocomplete="name"
+                        required
+                        data-i18n-attr="placeholder"
+                        data-i18n-key="form.namePlaceholder"
+                        placeholder="Иван Иванов"
+                      />
+                      <span class="field-error" data-error-for="name"></span>
+                    </div>
+                    <div class="field">
+                      <label for="email" data-i18n="form.email">Email</label>
+                      <input
+                        id="email"
+                        name="email"
+                        type="email"
+                        autocomplete="email"
+                        required
+                        data-i18n-attr="placeholder"
+                        data-i18n-key="form.emailPlaceholder"
+                        placeholder="ivan@example.com"
+                      />
+                      <span class="field-error" data-error-for="email"></span>
+                    </div>
+                    <div class="field">
+                      <label for="phone" data-i18n="form.phone">Телефон</label>
+                      <input
+                        id="phone"
+                        name="phone"
+                        type="tel"
+                        autocomplete="tel"
+                        required
+                        data-i18n-attr="placeholder"
+                        data-i18n-key="form.phonePlaceholder"
+                        placeholder="+998901234567"
+                      />
+                      <span class="field-error" data-error-for="phone"></span>
+                    </div>
+                  </div>
+
+                  <div class="form-step" data-step="2" hidden>
+                    <div class="field">
+                      <label for="password" data-i18n="form.password"
+                        >Пароль</label
+                      >
+                      <input
+                        id="password"
+                        name="password"
+                        type="password"
+                        autocomplete="new-password"
+                        required
+                        minlength="6"
+                        data-i18n-attr="placeholder"
+                        data-i18n-key="form.passwordPlaceholder"
+                        placeholder="••••••••"
+                      />
+                      <span class="field-error" data-error-for="password"></span>
+                    </div>
+                    <div class="field">
+                      <label for="passwordConfirm" data-i18n="form.passwordConfirm"
+                        >Повторите пароль</label
+                      >
+                      <input
+                        id="passwordConfirm"
+                        name="passwordConfirm"
+                        type="password"
+                        autocomplete="new-password"
+                        required
+                        data-i18n-attr="placeholder"
+                        data-i18n-key="form.passwordConfirmPlaceholder"
+                        placeholder="••••••••"
+                      />
+                      <span class="field-error" data-error-for="passwordConfirm"></span>
+                    </div>
+                  </div>
+                  <div class="form-actions">
+                    <button class="btn btn-secondary" type="button" data-prev data-i18n="form.prev">
+                      Назад
+                    </button>
+                    <button class="btn btn-secondary" type="button" data-next data-i18n="form.next">
+                      Далее
+                    </button>
+                    <button class="btn btn-primary" type="submit" data-i18n="form.submit">
+                      Создать магазин
+                    </button>
+                  </div>
+                  <div class="status" data-status aria-live="polite"></div>
+                </form>
+              </div>
+              <a class="form-link" href="/login.html" data-auth-toggle data-i18n="form.login">
+                Уже есть магазин? Войти
+              </a>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+  </body>
+</html>
+

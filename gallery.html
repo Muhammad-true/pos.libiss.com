@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Галерея интерфейсов Libiss POS."
+    />
+    <meta property="og:title" content="Libiss POS — Галерея" />
+    <meta
+      property="og:description"
+      content="Посмотрите, как выглядит интерфейс Libiss POS."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://pos.libiss.com/gallery" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="canonical" href="https://pos.libiss.com/gallery" />
+    <title>Libiss POS — Галерея</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <div class="container nav">
+          <a class="logo" href="/" aria-label="Libiss POS">
+            <img class="logo-image" src="/logo.png" alt="Libiss" />
+            <span>Libiss POS</span>
+          </a>
+          <div class="lang-toggle" role="group" aria-label="Language">
+            <button class="lang-btn is-active" type="button" data-lang="ru">
+              RU
+            </button>
+            <button class="lang-btn" type="button" data-lang="en">EN</button>
+          </div>
+        </div>
+      </header>
+
+      <main class="gallery-page">
+        <section class="gallery-hero">
+          <div class="container">
+            <div class="gallery-hero-inner">
+              <span class="eyebrow" data-i18n="gallery.eyebrow">Галерея</span>
+              <h1 data-i18n="gallery.title">Как выглядит Libiss POS</h1>
+              <p data-i18n="gallery.subtitle">
+                Минимальные экраны для продаж, склада и отчетности.
+              </p>
+              <div class="actions">
+                <a class="btn btn-primary" href="/create-store.html" data-i18n="cta.primary"
+                  >Create Store / Connect POS</a
+                >
+                <a class="btn btn-secondary" href="/" data-i18n="gallery.back"
+                  >Back</a
+                >
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="gallery-grid">
+          <div class="container">
+            <div class="grid three gallery-cards">
+              <button
+                class="gallery-card"
+                type="button"
+                data-gallery
+                data-src="/assets/kassa1.png"
+                data-alt="POS"
+              >
+                <img src="/assets/kassa1.png" alt="POS" />
+                <span data-i18n="gallery.screen1">Продажи</span>
+              </button>
+              <button
+                class="gallery-card"
+                type="button"
+                data-gallery
+                data-src="/assets/kassa_chek.png"
+                data-alt="Receipt"
+              >
+                <img src="/assets/kassa_chek.png" alt="Receipt" />
+                <span data-i18n="gallery.screen2">Чек</span>
+              </button>
+              <button
+                class="gallery-card"
+                type="button"
+                data-gallery
+                data-src="/assets/sklad.png"
+                data-alt="Inventory"
+              >
+                <img src="/assets/sklad.png" alt="Inventory" />
+                <span data-i18n="gallery.screen3">Склад</span>
+              </button>
+              <button
+                class="gallery-card"
+                type="button"
+                data-gallery
+                data-src="/assets/otchot.png"
+                data-alt="Reports"
+              >
+                <img src="/assets/otchot.png" alt="Reports" />
+                <span data-i18n="gallery.screen4">Отчеты</span>
+              </button>
+              <button
+                class="gallery-card"
+                type="button"
+                data-gallery
+                data-src="/assets/дашбоард.png"
+                data-alt="Dashboard"
+              >
+                <img src="/assets/дашбоард.png" alt="Dashboard" />
+                <span data-i18n="gallery.screen5">Дашборд</span>
+              </button>
+              <button
+                class="gallery-card"
+                type="button"
+                data-gallery
+                data-src="/assets/users.png"
+                data-alt="Users"
+              >
+                <img src="/assets/users.png" alt="Users" />
+                <span data-i18n="gallery.screen6">Пользователи</span>
+              </button>
+              <button
+                class="gallery-card"
+                type="button"
+                data-gallery
+                data-src="/assets/sklad2.png"
+                data-alt="Stock"
+              >
+                <img src="/assets/sklad2.png" alt="Stock" />
+                <span data-i18n="gallery.screen7">Остатки</span>
+              </button>
+              <button
+                class="gallery-card"
+                type="button"
+                data-gallery
+                data-src="/assets/otchot2.png"
+                data-alt="Analytics"
+              >
+                <img src="/assets/otchot2.png" alt="Analytics" />
+                <span data-i18n="gallery.screen8">Аналитика</span>
+              </button>
+              <button
+                class="gallery-card"
+                type="button"
+                data-gallery
+                data-src="/assets/дашбоард2.png"
+                data-alt="Overview"
+              >
+                <img src="/assets/дашбоард2.png" alt="Overview" />
+                <span data-i18n="gallery.screen9">Обзор</span>
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div class="lightbox" data-lightbox>
+      <div class="lightbox-backdrop" data-lightbox-close></div>
+      <div class="lightbox-content" role="dialog" aria-modal="true">
+        <div class="lightbox-toolbar">
+          <button class="icon-btn" type="button" data-prev>‹</button>
+          <button class="icon-btn" type="button" data-zoom-out>-</button>
+          <button class="icon-btn" type="button" data-zoom-in>+</button>
+          <button class="icon-btn" type="button" data-next>›</button>
+          <button class="icon-btn" type="button" data-lightbox-close>
+            ×
+          </button>
+        </div>
+        <div class="lightbox-frame">
+          <img src="" alt="" data-lightbox-image />
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/gallery.js"></script>
+  </body>
+</html>
+
