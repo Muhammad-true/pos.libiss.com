@@ -1,4 +1,5 @@
 import { translations } from "./translations.js";
+import "./styles.css";
 
 const API_BASE = "https://api.libiss.com/api/v1";
 const STORAGE_KEY = "libiss-pos-lang";

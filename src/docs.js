@@ -1,4 +1,5 @@
 import { translations } from "./translations.js";
+import "./styles.css";
 
 const STORAGE_KEY = "libiss-pos-lang";
 const DEFAULT_LANG = "ru";

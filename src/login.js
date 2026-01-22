@@ -1,3 +1,4 @@
+import "./styles.css";
 import { translations } from "./translations.js";
 
 const API_BASE = "https://api.libiss.com/api/v1";
