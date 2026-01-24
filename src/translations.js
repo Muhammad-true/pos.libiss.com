@@ -1,8 +1,13 @@
 export const translations = {
   ru: {
+    "page.title": "Libiss POS — Простой POS для современного ритейла",
+    "page.description": "Libiss POS помогает продавать, управлять складом и работать офлайн — все в одной системе.",
+    "page.ogDescription": "Быстрый чек, офлайн-режим и управление складом в одной простой POS-системе.",
     "hero.title": "Простой POS для современного ритейла",
     "hero.subtitle":
       "Libiss POS помогает продавать, управлять складом и работать офлайн — все в одной системе.",
+    "hero.trial":
+      "Вы можете все посмотреть и у вас на это 7 дней бесплатно для проверки",
     "cta.primary": "Создать магазин / Подключить POS",
     "cta.back": "Назад на Libiss",
     "cta.admin": "Админ-панель",
@@ -30,11 +35,14 @@ export const translations = {
     "start.step1": "Создайте магазин",
     "start.step2": "Установите POS",
     "start.step3": "Начните продавать",
+    "reviews.title": "Смотрите о чем о нас говорят",
+    "reviews.subtitle": "Оставьте свой отзыв на",
+    "reviews.email": "sodiqov.online@gmail.com",
     "final.title": "Готовы начать продажи?",
     "footer.brand": "Libiss ©",
     "footer.pos": "POS",
     "footer.admin": "Админ",
-    "footer.api": "API",
+    "footer.api": "API (сейчас не можем сотрудничать)",
     "footer.shop": "Онлайн-магазин",
     "footer.docs": "Документация",
     "create.eyebrow": "Регистрация",
@@ -194,9 +202,14 @@ export const translations = {
     "office.copyFailed": "Не удалось"
   },
   en: {
+    "page.title": "Libiss POS — Simple POS for modern retail",
+    "page.description": "Libiss POS helps you sell, manage inventory and work offline — all in one system.",
+    "page.ogDescription": "Fast checkout, offline mode, and inventory control in one minimal POS.",
     "hero.title": "Simple POS for modern retail",
     "hero.subtitle":
       "Libiss POS helps you sell, manage inventory and work offline — all in one system.",
+    "hero.trial":
+      "You can explore everything with a 7-day free trial",
     "cta.primary": "Create Store / Connect POS",
     "cta.back": "Back to Libiss",
     "cta.admin": "Admin Dashboard",
@@ -224,11 +237,14 @@ export const translations = {
     "start.step1": "Create your store",
     "start.step2": "Install POS",
     "start.step3": "Start selling",
+    "reviews.title": "See what they say about us",
+    "reviews.subtitle": "Leave your review at",
+    "reviews.email": "sodiqov.online@gmail.com",
     "final.title": "Ready to start selling?",
     "footer.brand": "Libiss ©",
     "footer.pos": "POS",
     "footer.admin": "Admin",
-    "footer.api": "API",
+    "footer.api": "API (currently not available for partnership)",
     "footer.shop": "Online Store",
     "footer.docs": "Docs",
     "create.eyebrow": "Registration",

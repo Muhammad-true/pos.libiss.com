@@ -6,17 +6,20 @@
     <meta
       name="description"
       content="Libiss POS helps store owners sell, manage inventory, and work offline — all in one system."
+      data-i18n-meta="page.description"
     />
-    <meta property="og:title" content="Libiss POS — Simple POS for modern retail" />
+    <meta property="og:title" content="Libiss POS — Simple POS for modern retail" data-i18n-og="page.title" />
     <meta
       property="og:description"
       content="Fast checkout, offline mode, and inventory control in one minimal POS."
+      data-i18n-og="page.ogDescription"
     />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://pos.libiss.com" />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="canonical" href="https://pos.libiss.com" />
-    <title>Libiss POS — Simple POS for modern retail</title>
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <title data-i18n-title="page.title">Libiss POS — Простой POS для современного ритейла</title>
   </head>
   <body>
     <div class="page">
@@ -43,6 +46,9 @@
             <p data-i18n="hero.subtitle">
               Libiss POS helps you sell, manage inventory and work offline — all
               in one system.
+            </p>
+            <p class="trial-banner" data-i18n="hero.trial">
+              Вы можете все посмотреть и у вас на это 7 дней бесплатно для проверки
             </p>
             <div class="actions">
               <a class="btn btn-primary" href="/create-store.html" data-i18n="cta.primary"
@@ -137,6 +143,54 @@
           </div>
         </section>
 
+        <section class="slide">
+          <div class="container slide-inner">
+            <h2 class="section-title" data-i18n="reviews.title">Смотрите о чем о нас говорят</h2>
+            <p class="section-subtitle">
+              <span data-i18n="reviews.subtitle">Оставьте свой отзыв на</span>
+              <a href="mailto:sodiqov.online@gmail.com" class="review-email">sodiqov.online@gmail.com</a>
+            </p>
+            <div class="reviews-grid">
+              <div class="review-card">
+                <div class="review-text">
+                  Очень удобная система! Используем уже полгода, все работает отлично. Особенно нравится офлайн режим.
+                </div>
+                <div class="review-author">
+                  <strong>Алишер Рахимов</strong>
+                  <span>Магазин "Сафар"</span>
+                </div>
+              </div>
+              <div class="review-card">
+                <div class="review-text">
+                  Простая установка, интуитивный интерфейс. Продажи выросли на 30% благодаря быстрой работе кассы.
+                </div>
+                <div class="review-author">
+                  <strong>Фаррух Каримов</strong>
+                  <span>Магазин "Нур"</span>
+                </div>
+              </div>
+              <div class="review-card">
+                <div class="review-text">
+                  Отличная поддержка и быстрая синхронизация. Рекомендую всем владельцам магазинов одежды.
+                </div>
+                <div class="review-author">
+                  <strong>Джамшед Алиев</strong>
+                  <span>Магазин "Зебо"</span>
+                </div>
+              </div>
+              <div class="review-card">
+                <div class="review-text">
+                  Лучшая POS система для нашего магазина. Управление складом стало намного проще.
+                </div>
+                <div class="review-author">
+                  <strong>Мухаммад Саидов</strong>
+                  <span>Магазин "Гулшан"</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section class="slide final">
           <div class="container slide-inner final-inner">
             <div>
@@ -163,11 +217,11 @@
                 <a href="https://admin.libiss.com" data-i18n="footer.admin"
                   >Admin</a
                 >
-                <a href="https://api.libiss.com" data-i18n="footer.api">API</a>
+                <span class="footer-disabled" data-i18n="footer.api">API (сейчас не можем сотрудничать)</span>
                 <a href="https://shop.libiss.com" data-i18n="footer.shop"
                   >Online Store</a
                 >
-                <a href="https://api.libiss.com" data-i18n="footer.docs">Docs</a>
+                <a href="/docs.html" data-i18n="footer.docs">Docs</a>
               </div>
               <div class="lang-toggle footer-lang" role="group" aria-label="Language">
                 <button class="lang-btn is-active" type="button" data-lang="ru">

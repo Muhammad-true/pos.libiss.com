@@ -43,6 +43,43 @@ const applyLang = (lang) => {
       el.textContent = copy[key];
     }
   });
+  
+  // Обновление title
+  const titleEl = document.querySelector("[data-i18n-title]");
+  if (titleEl) {
+    const titleKey = titleEl.dataset.i18nTitle;
+    if (copy[titleKey]) {
+      document.title = copy[titleKey];
+    }
+  }
+  
+  // Обновление meta description
+  const metaDesc = document.querySelector('meta[name="description"][data-i18n-meta]');
+  if (metaDesc) {
+    const descKey = metaDesc.dataset.i18nMeta;
+    if (copy[descKey]) {
+      metaDesc.setAttribute("content", copy[descKey]);
+    }
+  }
+  
+  // Обновление og:title
+  const ogTitle = document.querySelector('meta[property="og:title"][data-i18n-og]');
+  if (ogTitle) {
+    const ogTitleKey = ogTitle.dataset.i18nOg;
+    if (copy[ogTitleKey]) {
+      ogTitle.setAttribute("content", copy[ogTitleKey]);
+    }
+  }
+  
+  // Обновление og:description
+  const ogDesc = document.querySelector('meta[property="og:description"][data-i18n-og]');
+  if (ogDesc) {
+    const ogDescKey = ogDesc.dataset.i18nOg;
+    if (copy[ogDescKey]) {
+      ogDesc.setAttribute("content", copy[ogDescKey]);
+    }
+  }
+  
   document.documentElement.lang = lang;
   langButtons.forEach((btn) => {
     btn.classList.toggle("is-active", btn.dataset.lang === lang);
