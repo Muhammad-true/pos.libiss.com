@@ -192,8 +192,10 @@ const handleCopy = async (button) => {
 document.addEventListener("click", (event) => {
   const target = event.target;
   if (!(target instanceof HTMLElement)) return;
-  if (target.matches("[data-copy]")) {
-    handleCopy(target);
+  const copyButton = target.closest("[data-copy]");
+  if (copyButton) {
+    event.preventDefault();
+    handleCopy(copyButton);
   }
 });
 
@@ -297,38 +299,31 @@ const loadAccount = async () => {
 
   let shopsList = [];
   if (token && user?.id) {
-    const shops = await fetchJson(`${API_BASE}/shops/`, token);
-    const list =
-      (Array.isArray(shops) && shops) ||
-      shops?.data?.shops ||
-      shops?.data ||
-      shops?.shops ||
-      [];
-    const allShops = Array.isArray(list) ? list : [];
-    
-    // Фильтруем только магазины текущего пользователя
-    const userId = String(user.id);
-    shopsList = allShops.filter((shop) => {
-      // Проверяем все возможные поля для идентификации владельца
-      const shopUserId = shop?.userId ? String(shop.userId) : null;
-      const shopOwnerId = shop?.ownerId ? String(shop.ownerId) : null;
-      const shopUser = shop?.user;
-      const shopUserIdFromObj = shopUser?.id ? String(shopUser.id) : null;
-      const shopOwner = shop?.owner;
-      const shopOwnerIdFromObj = shopOwner?.id ? String(shopOwner.id) : null;
+    try {
+      const shops = await fetchJson(`${API_BASE}/shops/`, token);
+      const list =
+        (Array.isArray(shops) && shops) ||
+        shops?.data?.shops ||
+        shops?.data ||
+        shops?.shops ||
+        [];
+      const allShops = Array.isArray(list) ? list : [];
       
-      return (
-        shopUserId === userId ||
-        shopOwnerId === userId ||
-        shopUserIdFromObj === userId ||
-        shopOwnerIdFromObj === userId
-      );
-    });
-    const firstShop = shopsList[0] || null;
-    if (firstShop?.id) {
-      localStorage.setItem("shopId", firstShop.id);
-      if (firstShop?.name) {
-        localStorage.setItem("shopName", firstShop.name);
+      // Показываем все магазины (API уже возвращает только магазины пользователя)
+      shopsList = allShops;
+      
+      const firstShop = shopsList[0] || null;
+      if (firstShop?.id) {
+        localStorage.setItem("shopId", firstShop.id);
+        if (firstShop?.name) {
+          localStorage.setItem("shopName", firstShop.name);
+        }
+      }
+    } catch (error) {
+      console.error("Error loading shops:", error);
+      // Используем кэшированные данные при ошибке
+      if (cachedShopId) {
+        shopsList = [{ id: cachedShopId, name: cachedShopName }];
       }
     }
   }
