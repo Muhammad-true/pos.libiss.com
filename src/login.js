@@ -1,5 +1,8 @@
 import "./styles.css";
 import { translations } from "./translations.js";
+import { injectSpeedInsights } from "@vercel/speed-insights";
+
+injectSpeedInsights();
 
 const API_BASE = "https://api.libiss.com/api/v1";
 const STORAGE_KEY = "libiss-pos-lang";
