@@ -293,8 +293,10 @@ const loadAccount = async () => {
   if (token) {
     const profile = await fetchJson(`${API_BASE}/users/profile`, token);
     if (profile) {
-      user = profile;
-      localStorage.setItem("userData", JSON.stringify(profile));
+      // API может возвращать user в разных форматах
+      user = profile?.user || profile?.data?.user || profile;
+      localStorage.setItem("userData", JSON.stringify(user));
+      console.log("User profile loaded:", user);
     }
   }
 
@@ -324,17 +326,26 @@ const loadAccount = async () => {
       const allShops = Array.isArray(list) ? list : [];
       
       // Фильтруем только магазины текущего пользователя по ownerId
-      if (user?.id) {
-        const userId = String(user.id);
+      // ID может быть как строкой, так и числом
+      let userId = null;
+      if (user?.id !== undefined && user?.id !== null) {
+        userId = String(user.id);
+      } else if (user?.userId !== undefined && user?.userId !== null) {
+        userId = String(user.userId);
+      }
+      
+      if (userId) {
         shopsList = allShops.filter((shop) => {
-          const shopOwnerId = shop?.ownerId ? String(shop.ownerId) : null;
+          if (!shop?.ownerId) return false;
+          const shopOwnerId = String(shop.ownerId);
           return shopOwnerId === userId;
         });
-        console.log("Filtered shops for user:", userId, shopsList);
+        console.log("Filtered shops for user ID:", userId, "Found:", shopsList.length, shopsList);
       } else {
         // Если нет user.id, показываем все (fallback)
         shopsList = allShops;
-        console.log("No user ID, showing all shops:", shopsList);
+        console.log("No user ID found. User object:", user);
+        console.log("Showing all shops:", shopsList.length);
       }
       
       const firstShop = shopsList[0] || null;
