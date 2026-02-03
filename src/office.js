@@ -301,19 +301,28 @@ const loadAccount = async () => {
   renderWelcome(user?.name);
 
   let shopsList = [];
-  if (token && user?.id) {
+  if (token) {
     try {
       const shops = await fetchJson(`${API_BASE}/shops/`, token);
-      const list =
-        (Array.isArray(shops) && shops) ||
-        shops?.data?.shops ||
-        shops?.data ||
-        shops?.shops ||
-        [];
-      const allShops = Array.isArray(list) ? list : [];
+      console.log("Shops API response:", shops);
       
-      // Показываем все магазины (API уже возвращает только магазины пользователя)
-      shopsList = allShops;
+      // Пробуем разные форматы ответа
+      let list = [];
+      if (Array.isArray(shops)) {
+        list = shops;
+      } else if (Array.isArray(shops?.data?.shops)) {
+        list = shops.data.shops;
+      } else if (Array.isArray(shops?.data)) {
+        list = shops.data;
+      } else if (Array.isArray(shops?.shops)) {
+        list = shops.shops;
+      } else if (shops?.data && typeof shops.data === 'object') {
+        // Если data это объект, пробуем извлечь массив
+        list = Object.values(shops.data).filter(Array.isArray).flat() || [];
+      }
+      
+      shopsList = Array.isArray(list) ? list : [];
+      console.log("Parsed shops list:", shopsList);
       
       const firstShop = shopsList[0] || null;
       if (firstShop?.id) {
