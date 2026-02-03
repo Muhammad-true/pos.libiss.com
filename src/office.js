@@ -321,8 +321,21 @@ const loadAccount = async () => {
         list = Object.values(shops.data).filter(Array.isArray).flat() || [];
       }
       
-      shopsList = Array.isArray(list) ? list : [];
-      console.log("Parsed shops list:", shopsList);
+      const allShops = Array.isArray(list) ? list : [];
+      
+      // Фильтруем только магазины текущего пользователя по ownerId
+      if (user?.id) {
+        const userId = String(user.id);
+        shopsList = allShops.filter((shop) => {
+          const shopOwnerId = shop?.ownerId ? String(shop.ownerId) : null;
+          return shopOwnerId === userId;
+        });
+        console.log("Filtered shops for user:", userId, shopsList);
+      } else {
+        // Если нет user.id, показываем все (fallback)
+        shopsList = allShops;
+        console.log("No user ID, showing all shops:", shopsList);
+      }
       
       const firstShop = shopsList[0] || null;
       if (firstShop?.id) {
