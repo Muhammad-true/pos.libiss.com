@@ -868,7 +868,7 @@ textarea {
 }
 
 .office-row.licenses {
-  grid-template-columns: 1.4fr 1.2fr 1.7fr 0.8fr 1fr;
+  grid-template-columns: 1.4fr 1.5fr 2fr 0.8fr 1fr;
   gap: 12px;
 }
 
@@ -902,9 +902,9 @@ textarea {
 .copy-cell > span {
   flex: 1;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  word-break: break-all;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .copy-cell .copy-btn {
@@ -913,7 +913,7 @@ textarea {
 
 .copy-cell span[data-office-license-shop-id],
 .copy-cell span[data-office-license-key] {
-  padding: 4px 8px;
+  padding: 6px 10px;
   border-radius: 10px;
   background: color-mix(in srgb, var(--accent) 10%, transparent);
   color: var(--text);
@@ -921,6 +921,11 @@ textarea {
     Menlo, monospace;
   font-size: 12px;
   border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  display: inline-block;
+  width: 100%;
+  word-break: break-all;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .copy-btn {
