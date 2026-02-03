@@ -167,28 +167,71 @@ const renderLicenses = (licenses) => {
 };
 
 const handleCopy = async (button) => {
+  if (!button) return;
   const field = button.dataset.copy;
+  if (!field) return;
+  
   const row = button.closest("[data-office-license]");
-  if (!row) return;
+  if (!row) {
+    console.error("Could not find license row for copy button");
+    return;
+  }
+  
   const valueNode =
     field === "shopId"
       ? row.querySelector("[data-office-license-shop-id]")
       : row.querySelector("[data-office-license-key]");
-  const value = valueNode?.textContent?.trim();
-  if (!value || value === "—") return;
+  
+  if (!valueNode) {
+    console.error("Could not find value node for field:", field);
+    return;
+  }
+  
+  const value = valueNode.textContent?.trim() || "";
+  if (!value || value === "—" || value === "") {
+    console.warn("No value to copy for field:", field);
+    return;
+  }
+  
   try {
     await navigator.clipboard.writeText(value);
     button.classList.add("is-copied");
-    button.setAttribute("aria-label", translations[detectLang()]["office.copied"]);
+    const lang = detectLang();
+    button.setAttribute("aria-label", translations[lang]["office.copied"]);
+    
     setTimeout(() => {
       button.classList.remove("is-copied");
-      button.setAttribute("aria-label", translations[detectLang()]["office.copy"]);
-    }, 1200);
+      button.setAttribute("aria-label", translations[lang]["office.copy"]);
+    }, 2000);
   } catch (error) {
-    button.setAttribute("aria-label", translations[detectLang()]["office.copyFailed"]);
-    setTimeout(() => {
-      button.setAttribute("aria-label", translations[detectLang()]["office.copy"]);
-    }, 1200);
+    console.error("Failed to copy to clipboard:", error);
+    // Fallback для старых браузеров
+    try {
+      const textArea = document.createElement("textarea");
+      textArea.value = value;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-999999px";
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+      
+      button.classList.add("is-copied");
+      const lang = detectLang();
+      button.setAttribute("aria-label", translations[lang]["office.copied"]);
+      
+      setTimeout(() => {
+        button.classList.remove("is-copied");
+        button.setAttribute("aria-label", translations[lang]["office.copy"]);
+      }, 2000);
+    } catch (fallbackError) {
+      console.error("Fallback copy also failed:", fallbackError);
+      const lang = detectLang();
+      button.setAttribute("aria-label", translations[lang]["office.copyFailed"]);
+      setTimeout(() => {
+        button.setAttribute("aria-label", translations[lang]["office.copy"]);
+      }, 2000);
+    }
   }
 };
 
@@ -293,8 +336,8 @@ const loadAccount = async () => {
   if (token) {
     const profile = await fetchJson(`${API_BASE}/users/profile`, token);
     if (profile) {
-      // API может возвращать user в разных форматах
-      user = profile?.user || profile?.data?.user || profile;
+      // API возвращает { success: true, data: { id, name, ... } }
+      user = profile?.data || profile?.user || profile?.data?.user || profile;
       localStorage.setItem("userData", JSON.stringify(user));
       console.log("User profile loaded:", user);
     }
