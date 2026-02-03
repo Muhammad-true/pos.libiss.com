@@ -23,17 +23,13 @@
       "destination": "/docs.html"
     },
     {
-      "source": "/(.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot))",
-      "destination": "/$1"
-    },
-    {
-      "source": "/(.*)",
+      "source": "/((?!.*\\..*).*)",
       "destination": "/index.html"
     }
   ],
   "headers": [
     {
-      "source": "/(.*\\.html)",
+      "source": "/:path*.html",
       "headers": [
         {
           "key": "Cache-Control",
