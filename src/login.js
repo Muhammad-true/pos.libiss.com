@@ -60,6 +60,11 @@ const setStatus = (message, type) => {
 const handleSubmit = async (event) => {
   event.preventDefault();
   if (!form) return;
+  
+  const submitButton = form.querySelector("button[type='submit']");
+  // Защита от двойного клика
+  if (submitButton && submitButton.disabled) return;
+  
   setStatus("", "");
 
   const formData = new FormData(form);
@@ -68,7 +73,6 @@ const handleSubmit = async (event) => {
     password: formData.get("password")?.toString()
   };
 
-  const submitButton = form.querySelector("button[type='submit']");
   if (submitButton) submitButton.disabled = true;
 
   try {

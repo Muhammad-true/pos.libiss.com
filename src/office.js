@@ -280,6 +280,10 @@ const fetchLicenses = async (token, shops) => {
 
 const createTrialLicense = async () => {
   if (!trialButton) return;
+  
+  // Защита от двойного клика
+  if (trialButton.disabled) return;
+  
   const token = localStorage.getItem("userToken");
   const shopId = localStorage.getItem("shopId");
   if (!token || !shopId) {
@@ -303,6 +307,7 @@ const createTrialLicense = async () => {
       } else {
         setTrialStatus(translations[detectLang()]["office.trialError"], "error");
       }
+      trialButton.disabled = false;
       return;
     }
     const result = await response.json();
@@ -310,6 +315,10 @@ const createTrialLicense = async () => {
       localStorage.setItem("licenseData", JSON.stringify(result.data));
       setTrialStatus(translations[detectLang()]["office.trialSuccess"], "success");
       await fetchLicenses(token);
+      // Обновляем страницу после успешного получения пробной версии
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     }
   } catch (error) {
     setTrialStatus(translations[detectLang()]["office.trialError"], "error");

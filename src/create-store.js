@@ -102,13 +102,24 @@ const updateStepUI = () => {
   steps.forEach((step, index) => {
     step.hidden = index !== currentStep;
   });
-  if (prevButton) prevButton.disabled = currentStep === 0;
+  
+  const isLastStep = currentStep === steps.length - 1;
+  
+  if (prevButton) {
+    prevButton.disabled = currentStep === 0;
+  }
+  
   if (nextButton) {
-    nextButton.hidden = currentStep === steps.length - 1;
+    // Скрываем "Далее" на последнем шаге
+    nextButton.hidden = isLastStep;
     nextButton.disabled = false;
   }
+  
   const submitButton = form?.querySelector("button[type='submit']");
-  if (submitButton) submitButton.hidden = currentStep !== steps.length - 1;
+  if (submitButton) {
+    // Показываем "Создать магазин" только на последнем шаге
+    submitButton.hidden = !isLastStep;
+  }
 };
 
 const isStepValid = () => {
@@ -166,6 +177,11 @@ const loadCities = async () => {
 const handleSubmit = async (event) => {
   event.preventDefault();
   if (!form) return;
+  
+  const submitButton = form.querySelector("button[type='submit']");
+  // Защита от двойного клика
+  if (submitButton && submitButton.disabled) return;
+  
   setStatus("", "");
   if (!validateStep()) return;
   const formData = new FormData(form);
@@ -195,7 +211,6 @@ const handleSubmit = async (event) => {
   const cityId = formData.get("cityId")?.toString().trim();
   if (cityId) payload.cityId = cityId;
 
-  const submitButton = form.querySelector("button[type='submit']");
   if (submitButton) submitButton.disabled = true;
 
   try {
@@ -206,10 +221,12 @@ const handleSubmit = async (event) => {
     });
     if (response.status === 409) {
       setStatus(translations[detectLang()]["form.errorEmail"], "error");
+      if (submitButton) submitButton.disabled = false;
       return;
     }
     if (!response.ok) {
       setStatus(translations[detectLang()]["form.errorGeneric"], "error");
+      if (submitButton) submitButton.disabled = false;
       return;
     }
     const result = await response.json();
@@ -256,10 +273,17 @@ if (form) {
 
 if (nextButton) {
   nextButton.addEventListener("click", () => {
+    // Защита от двойного клика
+    if (nextButton.disabled) return;
     setStatus("", "");
     if (!validateStep()) return;
+    nextButton.disabled = true;
     currentStep = Math.min(currentStep + 1, steps.length - 1);
     updateStepUI();
+    // Включаем кнопку обратно после небольшой задержки
+    setTimeout(() => {
+      nextButton.disabled = false;
+    }, 300);
   });
 }
 
