@@ -1,6 +1,6 @@
-import { translations } from "./translations.js";
-import "./styles.css";
 import { injectSpeedInsights } from "@vercel/speed-insights";
+import "./styles.css";
+import { translations } from "./translations.js";
 
 injectSpeedInsights();
 
@@ -143,7 +143,7 @@ const validateStep = () => {
 const loadCities = async () => {
   if (!citySelect) return;
   try {
-    const response = await fetch(`${API_BASE}/api/v1/cities/`);
+    const response = await fetch(`${API_BASE}/cities/`);
     if (!response.ok) throw new Error("cities");
     const payload = await response.json();
     const cities = payload?.data?.cities || [];
@@ -199,7 +199,7 @@ const handleSubmit = async (event) => {
   if (submitButton) submitButton.disabled = true;
 
   try {
-    const response = await fetch(`${API_BASE}/api/v1/shop-registration/register`, {
+    const response = await fetch(`${API_BASE}/shop-registration/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
