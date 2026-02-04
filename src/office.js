@@ -237,7 +237,7 @@ const handleCopy = async (button) => {
 
 document.addEventListener("click", (event) => {
   const target = event.target;
-  if (!(target instanceof HTMLElement)) return;
+  if (!(target instanceof Element)) return;
   const copyButton = target.closest("[data-copy]");
   if (copyButton) {
     event.preventDefault();
