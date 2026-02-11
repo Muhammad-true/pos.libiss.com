@@ -199,7 +199,8 @@ export const translations = {
     "office.trialErrorAuth": "Войдите в аккаунт, чтобы получить пробный ключ.",
     "office.copy": "Копировать",
     "office.copied": "Скопировано",
-    "office.copyFailed": "Не удалось"
+    "office.copyFailed": "Не удалось",
+    "office.logout": "Выход"
   },
   en: {
     "page.title": "Libiss POS — Simple POS for modern retail",
@@ -401,7 +402,8 @@ export const translations = {
     "office.trialErrorAuth": "Sign in to get a trial license.",
     "office.copy": "Copy",
     "office.copied": "Copied",
-    "office.copyFailed": "Failed"
+    "office.copyFailed": "Failed",
+    "office.logout": "Logout"
   }
 };
 

@@ -25,6 +25,7 @@ const licenseDays = document.querySelector("[data-office-license-days]");
 const licenseExpires = document.querySelector("[data-office-license-expires]");
 const trialButton = document.querySelector("[data-trial-btn]");
 const trialStatus = document.querySelector("[data-trial-status]");
+const logoutButton = document.querySelector("[data-logout]");
 
 const detectLang = () => {
   const saved = localStorage.getItem(STORAGE_KEY);
@@ -335,8 +336,26 @@ const fetchJson = async (url, token) => {
   return response.json();
 };
 
+const logout = () => {
+  // Очищаем все данные пользователя
+  localStorage.removeItem("userToken");
+  localStorage.removeItem("userData");
+  localStorage.removeItem("shopId");
+  localStorage.removeItem("shopName");
+  localStorage.removeItem("licenseData");
+  // Перенаправляем на страницу входа
+  window.location.href = "/login.html";
+};
+
 const loadAccount = async () => {
   const token = localStorage.getItem("userToken");
+  
+  // Если токена нет, перенаправляем на страницу входа
+  if (!token) {
+    logout();
+    return;
+  }
+  
   const cachedUser = localStorage.getItem("userData");
   const cachedShopId = localStorage.getItem("shopId");
   const cachedShopName = localStorage.getItem("shopName");
@@ -428,6 +447,11 @@ const loadAccount = async () => {
 };
 
 applyLang(detectLang());
+
+if (logoutButton) {
+  logoutButton.addEventListener("click", logout);
+}
+
 loadAccount();
 
 if (trialButton) {

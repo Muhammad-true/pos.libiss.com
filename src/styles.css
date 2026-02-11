@@ -83,6 +83,12 @@ img {
   gap: 16px;
 }
 
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .logo {
   display: inline-flex;
   align-items: center;
