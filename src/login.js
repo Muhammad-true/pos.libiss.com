@@ -68,8 +68,13 @@ const handleSubmit = async (event) => {
   setStatus("", "");
 
   const formData = new FormData(form);
+  // Получаем код страны и номер телефона
+  const countryCode = formData.get("countryCode")?.toString().trim() || "+992";
+  const phoneNumber = formData.get("phone")?.toString().trim();
+  const fullPhone = phoneNumber ? `${countryCode}${phoneNumber}` : "";
+  
   const payload = {
-    phone: formData.get("phone")?.toString().trim(),
+    phone: fullPhone,
     password: formData.get("password")?.toString()
   };
 
@@ -117,5 +122,59 @@ if (form) {
   form.addEventListener("submit", handleSubmit);
 }
 
+// Инициализация селектора страны
+const initCountrySelector = () => {
+  const selectors = document.querySelectorAll("[data-country-selector]");
+  
+  selectors.forEach((selector) => {
+    const btn = selector.querySelector("[data-country-btn]");
+    const dropdown = selector.querySelector("[data-country-dropdown]");
+    const flag = selector.querySelector("[data-country-flag]");
+    const code = selector.querySelector("[data-country-code]");
+    const codeInput = document.querySelector("[data-country-code-input]");
+    
+    if (!btn || !dropdown) return;
+    
+    // Обработчик клика на кнопку
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isHidden = dropdown.hidden;
+      // Закрываем все другие дропдауны
+      document.querySelectorAll("[data-country-dropdown]").forEach((d) => {
+        d.hidden = true;
+      });
+      dropdown.hidden = !isHidden;
+    });
+    
+    // Обработчик выбора страны
+    const countryOptions = dropdown.querySelectorAll(".country-option");
+    countryOptions.forEach((option) => {
+      option.addEventListener("click", () => {
+        const country = option.dataset.country;
+        const countryCode = option.dataset.code;
+        const countryFlag = option.querySelector(".country-flag").textContent;
+        
+        if (flag) flag.textContent = countryFlag;
+        if (code) code.textContent = countryCode;
+        
+        // Находим соответствующий codeInput для этого селектора
+        const form = selector.closest("form");
+        const formCodeInput = form?.querySelector("[data-country-code-input]");
+        if (formCodeInput) formCodeInput.value = countryCode;
+        
+        dropdown.hidden = true;
+      });
+    });
+    
+    // Закрытие при клике вне
+    document.addEventListener("click", (e) => {
+      if (!selector.contains(e.target)) {
+        dropdown.hidden = true;
+      }
+    });
+  });
+};
+
 applyLang(detectLang());
+initCountrySelector();
 

@@ -269,6 +269,9 @@ const normalizeList = (payload) => {
 
 const fetchLicenses = async (token, shops) => {
   const licenses = await fetchJson(`${API_BASE}/licenses/my`, token);
+  // Если fetchJson вернул null из-за истекшего токена, logout уже вызван
+  if (!licenses) return;
+  
   const list = normalizeList(licenses);
   const mapped = list.map((license) => {
     if (license?.shop) return license;
@@ -303,6 +306,11 @@ const createTrialLicense = async () => {
       body: JSON.stringify({ shopId })
     });
     if (!response.ok) {
+      // Если токен истек или недействителен (401 Unauthorized), перенаправляем на вход
+      if (response.status === 401) {
+        logout();
+        return;
+      }
       if (response.status === 409) {
         setTrialStatus(translations[detectLang()]["office.trialExists"], "error");
       } else {
@@ -332,6 +340,13 @@ const fetchJson = async (url, token) => {
   const response = await fetch(url, {
     headers: token ? { Authorization: `Bearer ${token}` } : {}
   });
+  
+  // Если токен истек или недействителен (401 Unauthorized), перенаправляем на вход
+  if (response.status === 401) {
+    logout();
+    return null;
+  }
+  
   if (!response.ok) return null;
   return response.json();
 };
@@ -363,12 +378,13 @@ const loadAccount = async () => {
 
   if (token) {
     const profile = await fetchJson(`${API_BASE}/users/profile`, token);
-    if (profile) {
-      // API возвращает { success: true, data: { id, name, ... } }
-      user = profile?.data || profile?.user || profile?.data?.user || profile;
-      localStorage.setItem("userData", JSON.stringify(user));
-      console.log("User profile loaded:", user);
-    }
+    // Если fetchJson вернул null из-за истекшего токена, logout уже вызван
+    if (!profile) return;
+    
+    // API возвращает { success: true, data: { id, name, ... } }
+    user = profile?.data || profile?.user || profile?.data?.user || profile;
+    localStorage.setItem("userData", JSON.stringify(user));
+    console.log("User profile loaded:", user);
   }
 
   renderWelcome(user?.name);
@@ -377,6 +393,9 @@ const loadAccount = async () => {
   if (token) {
     try {
       const shops = await fetchJson(`${API_BASE}/shops/`, token);
+      // Если fetchJson вернул null из-за истекшего токена, logout уже вызван
+      if (!shops) return;
+      
       console.log("Shops API response:", shops);
       
       // Пробуем разные форматы ответа
@@ -428,6 +447,11 @@ const loadAccount = async () => {
       }
     } catch (error) {
       console.error("Error loading shops:", error);
+      // Если ошибка связана с авторизацией, перенаправляем на вход
+      if (error.message?.includes('401') || error.status === 401) {
+        logout();
+        return;
+      }
       // Используем кэшированные данные при ошибке
       if (cachedShopId) {
         shopsList = [{ id: cachedShopId, name: cachedShopName }];

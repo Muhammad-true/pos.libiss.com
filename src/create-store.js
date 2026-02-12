@@ -17,6 +17,10 @@ const citySelect = document.querySelector("#cityId");
 const steps = Array.from(document.querySelectorAll("[data-step]"));
 const nextButton = document.querySelector("[data-next]");
 const prevButton = document.querySelector("[data-prev]");
+const logoInput = document.querySelector("[data-logo-input]");
+const logoPreview = document.querySelector("[data-logo-preview]");
+const logoPreviewImg = document.querySelector("[data-logo-preview-img]");
+const logoRemove = document.querySelector("[data-logo-remove]");
 const errorFields = new Map(
   Array.from(document.querySelectorAll("[data-error-for]")).map((el) => [
     el.dataset.errorFor,
@@ -151,6 +155,93 @@ const validateStep = () => {
   return true;
 };
 
+const uploadLogo = async (file) => {
+  const formData = new FormData();
+  formData.append("image", file);
+
+  // Используем базовый URL API без /api/v1 для эндпоинта загрузки
+  const uploadUrl = API_BASE.replace("/api/v1", "") + "/upload/image?folder=shops";
+  const response = await fetch(uploadUrl, {
+    method: "POST",
+    body: formData
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || "Ошибка загрузки изображения");
+  }
+
+  const data = await response.json();
+  if (data.success) {
+    return data.url;
+  } else {
+    throw new Error(data.error || "Ошибка загрузки изображения");
+  }
+};
+
+const validateLogoFile = (file) => {
+  const maxSize = 50 * 1024 * 1024; // 50MB
+  const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
+
+  if (!allowedTypes.includes(file.type)) {
+    return {
+      valid: false,
+      error: translations[detectLang()]["form.errorLogoFormat"] || "Неподдерживаемый формат изображения."
+    };
+  }
+
+  if (file.size > maxSize) {
+    return {
+      valid: false,
+      error: translations[detectLang()]["form.errorLogoSize"] || "Размер файла превышает 50MB."
+    };
+  }
+
+  return { valid: true };
+};
+
+const showLogoPreview = (file) => {
+  if (!logoPreview || !logoPreviewImg) return;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    logoPreviewImg.src = e.target.result;
+    logoPreview.hidden = false;
+  };
+  reader.readAsDataURL(file);
+};
+
+const hideLogoPreview = () => {
+  if (logoPreview) logoPreview.hidden = true;
+  if (logoInput) logoInput.value = "";
+};
+
+if (logoInput) {
+  logoInput.addEventListener("change", (event) => {
+    const file = event.target.files[0];
+    if (!file) {
+      hideLogoPreview();
+      return;
+    }
+
+    const validation = validateLogoFile(file);
+    if (!validation.valid) {
+      setStatus(validation.error, "error");
+      hideLogoPreview();
+      return;
+    }
+
+    clearFieldError(logoInput);
+    showLogoPreview(file);
+  });
+}
+
+if (logoRemove) {
+  logoRemove.addEventListener("click", () => {
+    hideLogoPreview();
+  });
+}
+
 const loadCities = async () => {
   if (!citySelect) return;
   try {
@@ -211,6 +302,27 @@ const handleSubmit = async (event) => {
   const cityId = formData.get("cityId")?.toString().trim();
   if (cityId) payload.cityId = cityId;
 
+  // Загружаем логотип, если он выбран
+  let logoUrl = "";
+  const logoFile = logoInput?.files[0];
+  if (logoFile) {
+    try {
+      setStatus(translations[detectLang()]["form.logoUploading"] || "Загрузка логотипа...", "");
+      logoUrl = await uploadLogo(logoFile);
+    } catch (error) {
+      setStatus(
+        translations[detectLang()]["form.errorLogoUpload"] || "Ошибка загрузки логотипа.",
+        "error"
+      );
+      if (submitButton) submitButton.disabled = false;
+      return;
+    }
+  }
+
+  if (logoUrl) {
+    payload.logo = logoUrl;
+  }
+
   if (submitButton) submitButton.disabled = true;
 
   try {
@@ -243,6 +355,7 @@ const handleSubmit = async (event) => {
       localStorage.setItem("shopName", result.data.shop.name);
     }
     form.reset();
+    hideLogoPreview();
     setStatus(translations[detectLang()]["form.success"], "success");
     window.location.href = "/office.html";
   } catch (error) {
@@ -324,8 +437,61 @@ const updateAuthButtons = () => {
   });
 };
 
+// Инициализация селектора страны
+const initCountrySelector = () => {
+  const selectors = document.querySelectorAll("[data-country-selector]");
+  
+  selectors.forEach((selector) => {
+    const btn = selector.querySelector("[data-country-btn]");
+    const dropdown = selector.querySelector("[data-country-dropdown]");
+    const flag = selector.querySelector("[data-country-flag]");
+    const code = selector.querySelector("[data-country-code]");
+    
+    if (!btn || !dropdown) return;
+    
+    // Обработчик клика на кнопку
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isHidden = dropdown.hidden;
+      // Закрываем все другие дропдауны
+      document.querySelectorAll("[data-country-dropdown]").forEach((d) => {
+        d.hidden = true;
+      });
+      dropdown.hidden = !isHidden;
+    });
+    
+    // Обработчик выбора страны
+    const countryOptions = dropdown.querySelectorAll(".country-option");
+    countryOptions.forEach((option) => {
+      option.addEventListener("click", () => {
+        const country = option.dataset.country;
+        const countryCode = option.dataset.code;
+        const countryFlag = option.querySelector(".country-flag").textContent;
+        
+        if (flag) flag.textContent = countryFlag;
+        if (code) code.textContent = countryCode;
+        
+        // Находим соответствующий codeInput для этого селектора
+        const form = selector.closest("form");
+        const formCodeInput = form?.querySelector("[data-country-code-input]");
+        if (formCodeInput) formCodeInput.value = countryCode;
+        
+        dropdown.hidden = true;
+      });
+    });
+    
+    // Закрытие при клике вне
+    document.addEventListener("click", (e) => {
+      if (!selector.contains(e.target)) {
+        dropdown.hidden = true;
+      }
+    });
+  });
+};
+
 applyLang(detectLang());
 loadCities();
 updateStepUI();
 updateAuthButtons();
+initCountrySelector();
 

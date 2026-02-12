@@ -52,16 +52,61 @@
                 <form class="form" data-form>
                   <div class="field">
                     <label for="phone" data-i18n="login.phone">Телефон</label>
-                    <input
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      autocomplete="tel"
-                      required
-                      data-i18n-attr="placeholder"
-                      data-i18n-key="login.phonePlaceholder"
-                      placeholder="+998901234567"
-                    />
+                    <div class="phone-input-wrapper">
+                      <div class="country-selector" data-country-selector>
+                        <button type="button" class="country-selector-btn" data-country-btn>
+                          <span class="country-flag" data-country-flag>🇹🇯</span>
+                          <span class="country-code" data-country-code>+992</span>
+                          <svg class="country-arrow" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 4.5L6 7.5L9 4.5"/>
+                          </svg>
+                        </button>
+                        <div class="country-dropdown" data-country-dropdown hidden>
+                          <div class="country-option" data-country="TJ" data-code="+992">
+                            <span class="country-flag">🇹🇯</span>
+                            <span class="country-name">Таджикистан</span>
+                            <span class="country-code">+992</span>
+                          </div>
+                          <div class="country-option" data-country="UZ" data-code="+998">
+                            <span class="country-flag">🇺🇿</span>
+                            <span class="country-name">Узбекистан</span>
+                            <span class="country-code">+998</span>
+                          </div>
+                          <div class="country-option" data-country="KZ" data-code="+7">
+                            <span class="country-flag">🇰🇿</span>
+                            <span class="country-name">Казахстан</span>
+                            <span class="country-code">+7</span>
+                          </div>
+                          <div class="country-option" data-country="KG" data-code="+996">
+                            <span class="country-flag">🇰🇬</span>
+                            <span class="country-name">Кыргызстан</span>
+                            <span class="country-code">+996</span>
+                          </div>
+                          <div class="country-option" data-country="TM" data-code="+993">
+                            <span class="country-flag">🇹🇲</span>
+                            <span class="country-name">Туркменистан</span>
+                            <span class="country-code">+993</span>
+                          </div>
+                          <div class="country-option" data-country="RU" data-code="+7">
+                            <span class="country-flag">🇷🇺</span>
+                            <span class="country-name">Россия</span>
+                            <span class="country-code">+7</span>
+                          </div>
+                        </div>
+                      </div>
+                      <input
+                        id="phone"
+                        name="phone"
+                        type="tel"
+                        autocomplete="tel"
+                        required
+                        data-i18n-attr="placeholder"
+                        data-i18n-key="login.phonePlaceholder"
+                        placeholder="901234567"
+                        data-phone-input
+                      />
+                    </div>
+                    <input type="hidden" name="countryCode" value="+992" data-country-code-input />
                   </div>
                   <div class="field">
                     <label for="password" data-i18n="login.password"
