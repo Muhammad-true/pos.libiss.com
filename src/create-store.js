@@ -104,7 +104,26 @@ let currentStep = 0;
 
 const updateStepUI = () => {
   steps.forEach((step, index) => {
-    step.hidden = index !== currentStep;
+    const isVisible = index === currentStep;
+    step.hidden = !isVisible;
+    
+    // Отключаем required для полей на скрытых шагах, чтобы избежать ошибок валидации браузера
+    const fields = step.querySelectorAll("input[required], textarea[required], select[required]");
+    fields.forEach((field) => {
+      if (!isVisible) {
+        // Сохраняем состояние required перед отключением
+        if (field.hasAttribute("required")) {
+          field.setAttribute("data-was-required", "true");
+          field.removeAttribute("required");
+        }
+      } else {
+        // Восстанавливаем required для видимого шага
+        if (field.getAttribute("data-was-required") === "true") {
+          field.setAttribute("required", "");
+        }
+        field.removeAttribute("data-was-required");
+      }
+    });
   });
   
   const isLastStep = currentStep === steps.length - 1;
@@ -160,7 +179,7 @@ const uploadLogo = async (file) => {
   formData.append("image", file);
 
   // Используем базовый URL API без /api/v1 для эндпоинта загрузки
-  const uploadUrl = API_BASE.replace("/api/v1", "") + "/upload/image?folder=shops";
+  const uploadUrl = API_BASE.replace("/api/v1", "") + "/api/upload/image?folder=shops";
   const response = await fetch(uploadUrl, {
     method: "POST",
     body: formData
@@ -274,6 +293,31 @@ const handleSubmit = async (event) => {
   if (submitButton && submitButton.disabled) return;
   
   setStatus("", "");
+  
+  // Восстанавливаем required для всех полей перед валидацией
+  steps.forEach((step) => {
+    const fields = step.querySelectorAll("input[data-was-required='true'], textarea[data-was-required='true'], select[data-was-required='true']");
+    fields.forEach((field) => {
+      field.setAttribute("required", "");
+    });
+  });
+  
+  // Валидируем все шаги
+  for (let i = 0; i < steps.length; i++) {
+    const step = steps[i];
+    const fields = Array.from(step.querySelectorAll("input, textarea, select"));
+    for (const field of fields) {
+      if (field.hasAttribute("required") && !field.checkValidity()) {
+        setStatus(translations[detectLang()]["form.errorStep"], "error");
+        // Переключаемся на шаг с ошибкой
+        currentStep = i;
+        updateStepUI();
+        field.focus();
+        return;
+      }
+    }
+  }
+  
   if (!validateStep()) return;
   const formData = new FormData(form);
   const password = formData.get("password")?.toString() || "";
@@ -491,6 +535,7 @@ const initCountrySelector = () => {
 
 applyLang(detectLang());
 loadCities();
+// Инициализируем UI шагов перед обновлением, чтобы правильно настроить required атрибуты
 updateStepUI();
 updateAuthButtons();
 initCountrySelector();
