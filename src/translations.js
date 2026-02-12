@@ -207,7 +207,15 @@ export const translations = {
     "office.copy": "Копировать",
     "office.copied": "Скопировано",
     "office.copyFailed": "Не удалось",
-    "office.logout": "Выход"
+    "office.logout": "Выход",
+    "office.uploadLogo": "Загрузить логотип",
+    "office.removeLogo": "Удалить",
+    "office.logoUploading": "Загрузка логотипа...",
+    "office.logoRemoving": "Удаление логотипа...",
+    "office.logoSuccess": "Логотип успешно обновлен",
+    "office.logoRemoved": "Логотип удален",
+    "office.logoError": "Ошибка загрузки логотипа",
+    "office.logoErrorAuth": "Войдите в аккаунт"
   },
   en: {
     "page.title": "Libiss POS — Simple POS for modern retail",
@@ -417,7 +425,15 @@ export const translations = {
     "office.copy": "Copy",
     "office.copied": "Copied",
     "office.copyFailed": "Failed",
-    "office.logout": "Logout"
+    "office.logout": "Logout",
+    "office.uploadLogo": "Upload logo",
+    "office.removeLogo": "Remove",
+    "office.logoUploading": "Uploading logo...",
+    "office.logoRemoving": "Removing logo...",
+    "office.logoSuccess": "Logo updated successfully",
+    "office.logoRemoved": "Logo removed",
+    "office.logoError": "Error uploading logo",
+    "office.logoErrorAuth": "Sign in to your account"
   }
 };
 

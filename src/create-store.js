@@ -346,23 +346,26 @@ const handleSubmit = async (event) => {
   const cityId = formData.get("cityId")?.toString().trim();
   if (cityId) payload.cityId = cityId;
 
-  // Загружаем логотип, если он выбран
+  // Загружаем логотип, если он выбран (опционально)
   let logoUrl = "";
   const logoFile = logoInput?.files[0];
   if (logoFile) {
     try {
       setStatus(translations[detectLang()]["form.logoUploading"] || "Загрузка логотипа...", "");
       logoUrl = await uploadLogo(logoFile);
+      // Очищаем статус после успешной загрузки
+      setStatus("", "");
     } catch (error) {
-      setStatus(
-        translations[detectLang()]["form.errorLogoUpload"] || "Ошибка загрузки логотипа.",
-        "error"
-      );
-      if (submitButton) submitButton.disabled = false;
-      return;
+      // Если загрузка не удалась, продолжаем без логотипа
+      // Показываем предупреждение, но не блокируем регистрацию
+      console.warn("Не удалось загрузить логотип, продолжаем без него:", error);
+      logoUrl = ""; // Продолжаем без логотипа
+      // Не показываем ошибку, чтобы не блокировать регистрацию
+      // setStatus("", ""); // Очищаем статус, чтобы продолжить
     }
   }
 
+  // Добавляем логотип в payload только если он был успешно загружен
   if (logoUrl) {
     payload.logo = logoUrl;
   }

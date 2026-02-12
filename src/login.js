@@ -86,17 +86,23 @@ const handleSubmit = async (event) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
+    
     if (!response.ok) {
       const copy = translations[detectLang()];
+      let errorMessage = "";
+      
       if (response.status === 400) {
-        setStatus(copy["login.error400"], "error");
+        errorMessage = copy["login.error400"] || "Неверные данные. Проверьте формат телефона и пароля.";
       } else if (response.status === 401) {
-        setStatus(copy["login.error401"], "error");
+        errorMessage = copy["login.error401"] || "Неверный телефон или пароль.";
       } else if (response.status === 404) {
-        setStatus(copy["login.error404"], "error");
+        errorMessage = copy["login.error404"] || "Эндпоинт входа еще не реализован.";
       } else {
-        setStatus(copy["login.error500"], "error");
+        errorMessage = copy["login.error500"] || "Ошибка сервера. Попробуйте позже.";
       }
+      
+      setStatus(errorMessage, "error");
+      if (submitButton) submitButton.disabled = false;
       return;
     }
     const result = await response.json();

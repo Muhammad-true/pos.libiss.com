@@ -26,6 +26,12 @@ const licenseExpires = document.querySelector("[data-office-license-expires]");
 const trialButton = document.querySelector("[data-trial-btn]");
 const trialStatus = document.querySelector("[data-trial-status]");
 const logoutButton = document.querySelector("[data-logout]");
+const logoSection = document.querySelector("[data-office-logo-section]");
+const logoInput = document.querySelector("[data-office-logo-input]");
+const logoImg = document.querySelector("[data-office-logo-img]");
+const logoPlaceholder = document.querySelector("[data-office-logo-placeholder]");
+const logoRemove = document.querySelector("[data-office-logo-remove]");
+const logoStatus = document.querySelector("[data-office-logo-status]");
 
 const detectLang = () => {
   const saved = localStorage.getItem(STORAGE_KEY);
@@ -94,6 +100,13 @@ const renderStore = (row, shop) => {
       subNode.textContent =
         translations[detectLang()]["office.subscribedUnknown"];
     }
+  }
+  
+  // Отображаем логотип магазина, если он есть
+  if (shop?.logo) {
+    renderLogo(shop.logo);
+  } else {
+    renderLogo(null);
   }
 };
 
@@ -351,6 +364,74 @@ const fetchJson = async (url, token) => {
   return response.json();
 };
 
+const uploadLogo = async (file, token) => {
+  const formData = new FormData();
+  formData.append("image", file);
+
+  const uploadUrl = API_BASE.replace("/api/v1", "") + "/api/upload/image?folder=shops";
+  const response = await fetch(uploadUrl, {
+    method: "POST",
+    body: formData
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || "Ошибка загрузки изображения");
+  }
+
+  const data = await response.json();
+  if (data.success) {
+    return data.url;
+  } else {
+    throw new Error(data.error || "Ошибка загрузки изображения");
+  }
+};
+
+const updateShopLogo = async (logoUrl, token, shopId) => {
+  const response = await fetch(`${API_BASE}/shops/${shopId}`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ logo: logoUrl })
+  });
+
+  if (response.status === 401) {
+    logout();
+    return null;
+  }
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || "Ошибка обновления логотипа");
+  }
+
+  return response.json();
+};
+
+const renderLogo = (logoUrl) => {
+  if (!logoImg || !logoPlaceholder || !logoRemove) return;
+  
+  if (logoUrl) {
+    logoImg.src = logoUrl;
+    logoImg.hidden = false;
+    logoPlaceholder.hidden = true;
+    logoRemove.hidden = false;
+  } else {
+    logoImg.hidden = true;
+    logoPlaceholder.hidden = false;
+    logoRemove.hidden = true;
+  }
+};
+
+const setLogoStatus = (message, type) => {
+  if (!logoStatus) return;
+  logoStatus.textContent = message;
+  logoStatus.classList.toggle("is-error", type === "error");
+  logoStatus.classList.toggle("is-success", type === "success");
+};
+
 const logout = () => {
   // Очищаем все данные пользователя
   localStorage.removeItem("userToken");
@@ -469,6 +550,93 @@ const loadAccount = async () => {
     await fetchLicenses(token, shopsList);
   }
 };
+
+// Обработчик загрузки логотипа
+if (logoInput) {
+  logoInput.addEventListener("change", async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const token = localStorage.getItem("userToken");
+    const shopId = localStorage.getItem("shopId");
+    
+    if (!token || !shopId) {
+      setLogoStatus(translations[detectLang()]["office.logoErrorAuth"] || "Войдите в аккаунт", "error");
+      return;
+    }
+
+    // Валидация файла
+    const maxSize = 50 * 1024 * 1024; // 50MB
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
+
+    if (!allowedTypes.includes(file.type)) {
+      setLogoStatus(translations[detectLang()]["form.errorLogoFormat"] || "Неподдерживаемый формат изображения.", "error");
+      return;
+    }
+
+    if (file.size > maxSize) {
+      setLogoStatus(translations[detectLang()]["form.errorLogoSize"] || "Размер файла превышает 50MB.", "error");
+      return;
+    }
+
+    setLogoStatus(translations[detectLang()]["office.logoUploading"] || "Загрузка логотипа...", "");
+    
+    try {
+      // Загружаем изображение
+      const logoUrl = await uploadLogo(file, token);
+      
+      // Обновляем логотип магазина
+      await updateShopLogo(logoUrl, token, shopId);
+      
+      // Обновляем отображение
+      renderLogo(logoUrl);
+      setLogoStatus(translations[detectLang()]["office.logoSuccess"] || "Логотип успешно обновлен", "success");
+      
+      // Очищаем статус через 3 секунды
+      setTimeout(() => {
+        setLogoStatus("", "");
+      }, 3000);
+      
+      // Очищаем input
+      logoInput.value = "";
+    } catch (error) {
+      console.error("Ошибка загрузки логотипа:", error);
+      setLogoStatus(translations[detectLang()]["office.logoError"] || "Ошибка загрузки логотипа", "error");
+    }
+  });
+}
+
+// Обработчик удаления логотипа
+if (logoRemove) {
+  logoRemove.addEventListener("click", async () => {
+    const token = localStorage.getItem("userToken");
+    const shopId = localStorage.getItem("shopId");
+    
+    if (!token || !shopId) {
+      setLogoStatus(translations[detectLang()]["office.logoErrorAuth"] || "Войдите в аккаунт", "error");
+      return;
+    }
+
+    setLogoStatus(translations[detectLang()]["office.logoRemoving"] || "Удаление логотипа...", "");
+    
+    try {
+      // Удаляем логотип (отправляем пустую строку)
+      await updateShopLogo("", token, shopId);
+      
+      // Обновляем отображение
+      renderLogo(null);
+      setLogoStatus(translations[detectLang()]["office.logoRemoved"] || "Логотип удален", "success");
+      
+      // Очищаем статус через 3 секунды
+      setTimeout(() => {
+        setLogoStatus("", "");
+      }, 3000);
+    } catch (error) {
+      console.error("Ошибка удаления логотипа:", error);
+      setLogoStatus(translations[detectLang()]["office.logoError"] || "Ошибка удаления логотипа", "error");
+    }
+  });
+}
 
 applyLang(detectLang());
 
