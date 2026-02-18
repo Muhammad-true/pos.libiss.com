@@ -4,6 +4,7 @@ import { injectSpeedInsights } from "@vercel/speed-insights";
 
 injectSpeedInsights();
 
+const API_BASE = "https://api.libiss.com/api/v1";
 const STORAGE_KEY = "libiss-pos-lang";
 const DEFAULT_LANG = "ru";
 
@@ -124,9 +125,117 @@ if (tutorialRestart) {
   });
 }
 
+const formatFileSize = (bytes) => {
+  if (!bytes || bytes === 0) return "—";
+  const k = 1024;
+  const sizes = ["Б", "КБ", "МБ", "ГБ"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
+};
+
+const formatDate = (dateString) => {
+  if (!dateString) return "—";
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("ru-RU", {
+      year: "numeric",
+      month: "short",
+      day: "numeric"
+    });
+  } catch {
+    return "—";
+  }
+};
+
+const getPlatformName = (platform, lang) => {
+  const names = {
+    ru: {
+      windows: "Windows",
+      android: "Android",
+      server: "Сервер"
+    },
+    en: {
+      windows: "Windows",
+      android: "Android",
+      server: "Server"
+    }
+  };
+  return names[lang]?.[platform] || platform;
+};
+
+const fetchUpdates = async () => {
+  const token = localStorage.getItem("userToken");
+  const tbody = document.querySelector("[data-updates-tbody]");
+  const errorDiv = document.querySelector("[data-updates-error]");
+  
+  if (!tbody) return;
+  
+  try {
+    const response = await fetch(`${API_BASE}/admin/updates/`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    });
+    
+    if (!response.ok) {
+      throw new Error("Failed to fetch updates");
+    }
+    
+    const result = await response.json();
+    const updates = result?.data || [];
+    
+    if (updates.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" data-i18n="docs.updatesEmpty">Нет доступных обновлений</td></tr>`;
+      return;
+    }
+    
+    const lang = detectLang();
+    tbody.innerHTML = updates
+      .filter((update) => update.isActive)
+      .map((update) => {
+        const fileUrl = update.fileUrl.startsWith("http")
+          ? update.fileUrl
+          : `https://api.libiss.com${update.fileUrl}`;
+        
+        return `
+          <tr>
+            <td data-label="${translations[lang]?.["docs.updatePlatform"] || "Платформа"}">
+              ${getPlatformName(update.platform, lang)}
+            </td>
+            <td data-label="${translations[lang]?.["docs.updateVersion"] || "Версия"}">
+              <strong>${update.version}</strong>
+            </td>
+            <td data-label="${translations[lang]?.["docs.updateSize"] || "Размер"}">
+              ${formatFileSize(update.fileSize)}
+            </td>
+            <td data-label="${translations[lang]?.["docs.updateDate"] || "Дата"}">
+              ${formatDate(update.createdAt)}
+            </td>
+            <td data-label="${translations[lang]?.["docs.updateNotes"] || "Описание"}">
+              ${update.releaseNotes || "—"}
+            </td>
+            <td data-label="${translations[lang]?.["docs.updateAction"] || "Действие"}">
+              <a href="${fileUrl}" class="btn btn-primary btn-sm" download>
+                ${translations[lang]?.["docs.download"] || "Скачать"}
+              </a>
+            </td>
+          </tr>
+        `;
+      })
+      .join("");
+    
+    if (errorDiv) errorDiv.hidden = true;
+  } catch (error) {
+    console.error("Error fetching updates:", error);
+    tbody.innerHTML = "";
+    if (errorDiv) {
+      errorDiv.hidden = false;
+    }
+  }
+};
+
 applyLang(detectLang());
 renderWelcome();
 if (tutorialSteps.length > 0) {
   updateTutorialUI();
 }
+fetchUpdates();
 

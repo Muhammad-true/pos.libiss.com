@@ -108,6 +108,51 @@
                 </div>
               </div>
             </div>
+            <div class="docs-mysql-warning">
+              <div class="warning-card">
+                <div class="warning-icon">⚠️</div>
+                <div class="warning-content">
+                  <h4 data-i18n="docs.mysqlWarningTitle">Важно: MySQL обязателен</h4>
+                  <p data-i18n="docs.mysqlWarningText">
+                    Перед установкой сервера и программы обязательно установите MySQL. Без MySQL сервер не будет работать.
+                  </p>
+                  <a class="btn btn-secondary" href="https://dev.mysql.com/downloads/mysql/" target="_blank" rel="noopener noreferrer" data-i18n="docs.mysqlDownload">
+                    Скачать MySQL
+                  </a>
+                  <a class="btn btn-secondary" href="/docs.html" data-i18n="docs.mysqlDocs">
+                    Документация по установке
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="docs-updates">
+              <h3 class="section-title" data-i18n="docs.updatesTitle">Доступные обновления</h3>
+              <p class="section-subtitle" data-i18n="docs.updatesSubtitle">
+                Скачайте последние версии программ для вашей платформы.
+              </p>
+              <div class="updates-table-container">
+                <table class="updates-table" data-updates-table>
+                  <thead>
+                    <tr>
+                      <th data-i18n="docs.updatePlatform">Платформа</th>
+                      <th data-i18n="docs.updateVersion">Версия</th>
+                      <th data-i18n="docs.updateSize">Размер</th>
+                      <th data-i18n="docs.updateDate">Дата</th>
+                      <th data-i18n="docs.updateNotes">Описание</th>
+                      <th data-i18n="docs.updateAction">Действие</th>
+                    </tr>
+                  </thead>
+                  <tbody data-updates-tbody>
+                    <tr class="updates-loading">
+                      <td colspan="6" data-i18n="docs.updatesLoading">Загрузка обновлений...</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="updates-error" data-updates-error hidden>
+                  <p data-i18n="docs.updatesError">Не удалось загрузить список обновлений.</p>
+                </div>
+              </div>
+            </div>
             <div class="docs-next">
               <h3 class="section-title" data-i18n="docs.nextTitle">Следующие шаги</h3>
               <div class="grid two">

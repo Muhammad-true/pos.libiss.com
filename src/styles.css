@@ -745,6 +745,180 @@ input[type="file"]::file-selector-button:hover {
   border-left: 1px solid color-mix(in srgb, var(--accent) 60%, var(--border));
 }
 
+.docs-mysql-warning {
+  margin: 40px 0;
+}
+
+.warning-card {
+  display: flex;
+  gap: 16px;
+  padding: 20px;
+  background: #fff3cd;
+  border: 2px solid #ffc107;
+  border-radius: var(--radius-md);
+  align-items: flex-start;
+}
+
+.warning-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+.warning-content {
+  flex: 1;
+}
+
+.warning-content h4 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  color: #856404;
+}
+
+.warning-content p {
+  margin: 0 0 16px 0;
+  color: #856404;
+  line-height: 1.5;
+}
+
+.warning-content .btn {
+  margin-right: 12px;
+  margin-bottom: 8px;
+}
+
+.docs-updates {
+  margin: 40px 0;
+}
+
+.updates-table-container {
+  overflow-x: auto;
+  margin-top: 24px;
+}
+
+.updates-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.updates-table thead {
+  background: var(--card);
+}
+
+.updates-table th {
+  padding: 16px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  border-bottom: 2px solid var(--border);
+}
+
+.updates-table td {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+.updates-table tbody tr:hover {
+  background: var(--card);
+}
+
+.updates-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.updates-loading,
+.updates-error {
+  text-align: center;
+  padding: 40px;
+  color: var(--muted);
+}
+
+.updates-error {
+  background: var(--card);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+
+/* Адаптивная таблица для мобильных */
+@media (max-width: 768px) {
+  .updates-table {
+    display: block;
+  }
+  
+  .updates-table thead {
+    display: none;
+  }
+  
+  .updates-table tbody {
+    display: block;
+  }
+  
+  .updates-table tbody tr {
+    display: block;
+    margin-bottom: 16px;
+    background: var(--card);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    padding: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+  
+  .updates-table tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    text-align: right;
+  }
+  
+  .updates-table tbody td:last-child {
+    border-bottom: none;
+  }
+  
+  .updates-table tbody td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 12px;
+    color: var(--muted);
+    margin-right: 16px;
+    text-align: left;
+    flex: 1;
+  }
+  
+  .updates-table tbody td:last-child {
+    justify-content: flex-end;
+  }
+  
+  .updates-table tbody td:last-child::before {
+    display: none;
+  }
+  
+  .warning-card {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .warning-content .btn {
+    display: block;
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 12px;
+  }
+}
+
 .field-error {
   min-height: 14px;
   font-size: 12px;

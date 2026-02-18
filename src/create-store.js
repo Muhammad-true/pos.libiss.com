@@ -333,11 +333,16 @@ const handleSubmit = async (event) => {
     }
     return;
   }
+  // Получаем код страны и номер телефона
+  const countryCode = formData.get("countryCode")?.toString().trim() || "+992";
+  const phoneNumber = formData.get("phone")?.toString().trim();
+  const fullPhone = phoneNumber ? `${countryCode}${phoneNumber}` : "";
+  
   const payload = {
     name: formData.get("name")?.toString().trim(),
     email: formData.get("email")?.toString().trim(),
     password: password,
-    phone: formData.get("phone")?.toString().trim(),
+    phone: fullPhone,
     shopName: formData.get("shopName")?.toString().trim(),
     inn: formData.get("inn")?.toString().trim(),
     description: formData.get("description")?.toString().trim(),

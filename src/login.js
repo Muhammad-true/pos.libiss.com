@@ -71,12 +71,23 @@ const handleSubmit = async (event) => {
   // Получаем код страны и номер телефона
   const countryCode = formData.get("countryCode")?.toString().trim() || "+992";
   const phoneNumber = formData.get("phone")?.toString().trim();
+  
+  // Объединяем код страны и номер телефона
   const fullPhone = phoneNumber ? `${countryCode}${phoneNumber}` : "";
+  
+  // Проверяем, что номер телефона введен
+  if (!phoneNumber) {
+    setStatus(translations[detectLang()]["login.error400"] || "Введите номер телефона", "error");
+    if (submitButton) submitButton.disabled = false;
+    return;
+  }
   
   const payload = {
     phone: fullPhone,
     password: formData.get("password")?.toString()
   };
+  
+  console.log("Отправка входа:", { phone: fullPhone, countryCode, phoneNumber });
 
   if (submitButton) submitButton.disabled = true;
 
