@@ -2,7 +2,9 @@
 <html lang="ru">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#12a57c" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
@@ -45,20 +47,34 @@
       </header>
 
       <main class="office-page">
-        <section class="office-hero">
-          <div class="container">
-            <div class="office-hero-inner">
-              <span class="eyebrow" data-i18n="office.eyebrow">Мой аккаунт</span>
-              <h1 data-i18n="office.title">Добро пожаловать</h1>
-              <p data-i18n="office.subtitle">
-                Короткие шаги для быстрого запуска POS.
-              </p>
-              <div class="office-welcome" data-office-welcome></div>
+        <div class="container">
+          <nav class="office-tabs" aria-label="Разделы кабинета">
+            <div class="office-tabs-inner">
+              <button type="button" class="office-tab is-active" data-office-nav="dashboard" data-i18n="office.menuDashboard">Главная</button>
+              <button type="button" class="office-tab" data-office-nav="stores" data-i18n="office.menuStores">Мои магазины</button>
+              <button type="button" class="office-tab" data-office-nav="orders" data-i18n="office.menuOrders">Заказы</button>
+              <button type="button" class="office-tab" data-office-nav="products" data-i18n="office.menuProducts">Товары</button>
+              <button type="button" class="office-tab" data-office-nav="licenses" data-i18n="office.menuLicenses">Подписки</button>
             </div>
-          </div>
-        </section>
+          </nav>
+        </div>
 
-        <section class="office-cards">
+        <div class="office-content">
+          <section class="office-panel is-active" data-office-panel="dashboard">
+            <section class="office-hero">
+              <div class="container">
+                <div class="office-hero-inner">
+                  <span class="eyebrow" data-i18n="office.eyebrow">Мой аккаунт</span>
+                  <h1 data-i18n="office.title">Добро пожаловать</h1>
+                  <p data-i18n="office.subtitle">
+                    Короткие шаги для быстрого запуска POS.
+                  </p>
+                  <div class="office-welcome" data-office-welcome></div>
+                </div>
+              </div>
+            </section>
+
+            <section class="office-cards">
           <div class="container">
             <div class="grid two">
               <div class="card">
@@ -94,8 +110,10 @@
               </div>
             </div>
           </div>
-        </section>
+            </section>
+          </section>
 
+          <section class="office-panel" data-office-panel="stores" hidden>
         <section class="office-stores">
           <div class="container">
             <div class="office-stores-header">
@@ -142,23 +160,38 @@
                 <div class="status" data-office-logo-status aria-live="polite"></div>
               </div>
             </div>
-            <div class="office-stores-table">
-              <div class="office-row office-row-head stores">
-                <span data-i18n="office.storeName">Магазин</span>
-                <span data-i18n="office.storeId">ID</span>
-                <span data-i18n="office.storePlan">Подписка</span>
-                <span data-i18n="office.storeSubscribed">Статус</span>
-              </div>
-              <div class="office-row stores" data-office-store>
-                <span data-office-store-name>—</span>
-                <span data-office-store-id>—</span>
-                <span data-office-store-plan data-i18n="office.planEmpty">Нет данных</span>
-                <span data-office-store-subscribed data-i18n="office.subscribedUnknown">—</span>
+            <div class="office-stores-list">
+              <div class="office-stores-body" data-office-stores-body>
+                <div class="office-stores-empty" data-i18n="office.storesEmpty">Магазинов пока нет</div>
               </div>
             </div>
           </div>
         </section>
+          </section>
 
+          <section class="office-panel" data-office-panel="orders" hidden>
+            <div class="container office-panel-inner">
+              <h2 class="section-title" data-i18n="office.ordersTitle">Заказы</h2>
+              <div class="office-orders-list">
+                <div class="office-orders-body" data-office-orders-body>
+                  <div class="office-orders-empty" data-i18n="office.ordersEmpty">Заказов пока нет</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="office-panel" data-office-panel="products" hidden>
+            <div class="container office-panel-inner">
+              <h2 class="section-title" data-i18n="office.productsTitle">Товары</h2>
+              <div class="office-products-list">
+                <div class="office-products-body" data-office-products-body>
+                  <div class="office-products-empty" data-i18n="office.productsEmpty">Товаров пока нет</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="office-panel" data-office-panel="licenses" hidden>
         <section class="office-licenses">
           <div class="container">
             <div class="office-stores-header">
@@ -169,61 +202,16 @@
                 Получить пробный ключ
               </button>
             </div>
-            <div class="office-stores-table">
-              <div class="office-row office-row-head licenses">
-                <span data-i18n="office.licenseShop">Магазин</span>
-                <span data-i18n="office.licenseShopId">ID магазина</span>
-                <span data-i18n="office.licenseKey">Ключ</span>
-                <span data-i18n="office.licenseDays">Осталось</span>
-                <span data-i18n="office.licenseExpires">Действует до</span>
-              </div>
-              <div class="office-row licenses" data-office-license>
-                <span data-office-license-shop>—</span>
-                <span class="copy-cell">
-                  <span data-office-license-shop-id>—</span>
-                  <button
-                    class="copy-btn"
-                    type="button"
-                    data-copy="shopId"
-                    data-i18n-attr="aria-label"
-                    data-i18n-key="office.copy"
-                    aria-label="Копировать"
-                  >
-                    <svg class="icon-copy" viewBox="0 0 24 24" aria-hidden="true">
-                      <rect x="9" y="9" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/>
-                      <rect x="4" y="4" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/>
-                    </svg>
-                    <svg class="icon-check" viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M5 12l4 4 10-10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </button>
-                </span>
-                <span class="copy-cell">
-                  <span data-office-license-key>—</span>
-                  <button
-                    class="copy-btn"
-                    type="button"
-                    data-copy="licenseKey"
-                    data-i18n-attr="aria-label"
-                    data-i18n-key="office.copy"
-                    aria-label="Копировать"
-                  >
-                    <svg class="icon-copy" viewBox="0 0 24 24" aria-hidden="true">
-                      <rect x="9" y="9" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/>
-                      <rect x="4" y="4" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/>
-                    </svg>
-                    <svg class="icon-check" viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M5 12l4 4 10-10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </button>
-                </span>
-                <span data-office-license-days>—</span>
-                <span data-office-license-expires data-i18n="office.planEmpty">Нет данных</span>
+            <div class="office-licenses-list">
+              <div class="office-licenses-body" data-office-licenses-body>
+                <div class="office-licenses-empty" data-i18n="office.licensesEmpty">Подписок пока нет</div>
               </div>
             </div>
             <div class="status" data-trial-status aria-live="polite"></div>
           </div>
         </section>
+          </section>
+        </div>
       </main>
     </div>
 

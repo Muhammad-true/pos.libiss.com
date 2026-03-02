@@ -12,17 +12,12 @@ const elements = Array.from(document.querySelectorAll("[data-i18n]"));
 const attrElements = Array.from(document.querySelectorAll("[data-i18n-attr]"));
 const langButtons = Array.from(document.querySelectorAll(".lang-btn"));
 const welcome = document.querySelector("[data-office-welcome]");
-const storeRow = document.querySelector("[data-office-store]");
+const storesBody = document.querySelector("[data-office-stores-body]");
 const storeName = document.querySelector("[data-office-store-name]");
 const storeId = document.querySelector("[data-office-store-id]");
 const storePlan = document.querySelector("[data-office-store-plan]");
 const storeSubscribed = document.querySelector("[data-office-store-subscribed]");
-const licenseRow = document.querySelector("[data-office-license]");
-const licenseShop = document.querySelector("[data-office-license-shop]");
-const licenseShopId = document.querySelector("[data-office-license-shop-id]");
-const licenseKey = document.querySelector("[data-office-license-key]");
-const licenseDays = document.querySelector("[data-office-license-days]");
-const licenseExpires = document.querySelector("[data-office-license-expires]");
+const licensesBody = document.querySelector("[data-office-licenses-body]");
 const trialButton = document.querySelector("[data-trial-btn]");
 const trialStatus = document.querySelector("[data-trial-status]");
 const logoutButton = document.querySelector("[data-logout]");
@@ -77,56 +72,50 @@ const renderWelcome = (name) => {
   welcome.textContent = name ? `${message} ${name}` : message;
 };
 
-const renderStore = (row, shop) => {
-  if (!row) return;
-  const nameNode = row.querySelector("[data-office-store-name]");
-  const idNode = row.querySelector("[data-office-store-id]");
-  const planNode = row.querySelector("[data-office-store-plan]");
-  const subNode = row.querySelector("[data-office-store-subscribed]");
-  if (nameNode) nameNode.textContent = shop?.name || "—";
-  if (idNode) idNode.textContent = shop?.id || "—";
-  if (planNode) {
-    planNode.textContent =
-      shop?.license?.subscriptionType ||
-      shop?.license?.subscriptionStatus ||
-      translations[detectLang()]["office.planEmpty"];
-  }
-  if (subNode) {
-    if (shop?.isSubscribed === true) {
-      subNode.textContent = translations[detectLang()]["office.subscribedYes"];
-    } else if (shop?.isSubscribed === false) {
-      subNode.textContent = translations[detectLang()]["office.subscribedNo"];
-    } else {
-      subNode.textContent =
-        translations[detectLang()]["office.subscribedUnknown"];
-    }
-  }
-  
-  // Отображаем логотип магазина, если он есть
-  if (shop?.logo) {
-    renderLogo(shop.logo);
-  } else {
-    renderLogo(null);
-  }
+const storeStatusBadgeClass = (isSubscribed) => {
+  if (isSubscribed === true) return "office-store-status--yes";
+  if (isSubscribed === false) return "office-store-status--no";
+  return "office-store-status--unknown";
 };
 
 const renderStores = (shops) => {
-  if (!storeRow) return;
+  if (!storesBody) return;
   const list = Array.isArray(shops) ? shops : [];
-  const parent = storeRow.parentElement;
-  if (!parent) return;
-  parent.querySelectorAll("[data-office-store]").forEach((node) => node.remove());
+  const t = translations[detectLang()];
+  const btnDetails = t["office.orderDetails"] || "Подробнее";
+  storesBody.innerHTML = "";
   if (list.length === 0) {
-    const row = storeRow.cloneNode(true);
-    renderStore(row, {});
-    parent.appendChild(row);
+    storesBody.innerHTML = `<div class="office-stores-empty" data-i18n="office.storesEmpty">${t["office.storesEmpty"] || "Магазинов пока нет"}</div>`;
+    renderLogo(null);
     return;
   }
   list.forEach((shop) => {
-    const row = storeRow.cloneNode(true);
-    renderStore(row, shop);
-    parent.appendChild(row);
+    const plan =
+      shop?.license?.subscriptionType ||
+      shop?.license?.subscriptionStatus ||
+      t["office.planEmpty"];
+    let statusText = t["office.subscribedUnknown"];
+    if (shop?.isSubscribed === true) statusText = t["office.subscribedYes"];
+    else if (shop?.isSubscribed === false) statusText = t["office.subscribedNo"];
+    const statusClass = storeStatusBadgeClass(shop?.isSubscribed);
+    const card = document.createElement("div");
+    card.className = "office-store-card";
+    card.innerHTML = `
+      <div class="office-store-card__header">
+        <span class="office-store-card__name">${(shop?.name || "—").replace(/</g, "&lt;")}</span>
+        <span class="office-store-card__status ${statusClass}">${statusText}</span>
+      </div>
+      <div class="office-store-card__info">
+        <div><strong>${t["office.storeId"] || "ID"}:</strong> <span class="office-store-card__id">${(shop?.id || "—").replace(/</g, "&lt;")}</span></div>
+        <div><strong>${t["office.storePlan"] || "Подписка"}:</strong> ${(plan || "—").replace(/</g, "&lt;")}</div>
+      </div>
+      <div class="office-store-card__action">
+        <a href="/create-store.html" class="btn btn-secondary office-store-card__btn">${btnDetails}</a>
+      </div>
+    `;
+    storesBody.appendChild(card);
   });
+  renderLogo(list[0]?.logo || null);
 };
 
 const formatDate = (value) => {
@@ -136,48 +125,164 @@ const formatDate = (value) => {
   return date.toLocaleDateString();
 };
 
-const renderLicense = (license) => {
-  if (!licenseRow) return;
-  if (licenseShop) licenseShop.textContent = license?.shop?.name || "—";
-  if (licenseShopId) {
-    licenseShopId.textContent = license?.shop?.id || license?.shopId || "—";
-  }
-  if (licenseKey) {
-    licenseKey.textContent = license?.licenseKey || license?.key || "—";
-  }
-  if (licenseDays) {
-    licenseDays.textContent =
-      Number.isFinite(license?.daysRemaining) ? String(license.daysRemaining) : "—";
-  }
-  if (licenseExpires) {
-    licenseExpires.textContent = formatDate(license?.expiresAt || license?.expires_at);
-  }
+const formatCurrency = (amount, currency = "USD") => {
+  if (amount == null || Number.isNaN(Number(amount))) return "—";
+  return new Intl.NumberFormat(detectLang() === "ru" ? "ru-RU" : "en-US", {
+    style: "currency",
+    currency: currency || "USD",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2
+  }).format(Number(amount));
 };
 
-const renderLicenses = (licenses) => {
-  if (!licenseRow || !Array.isArray(licenses) || licenses.length === 0) {
-    renderLicense(null);
+const orderStatusLabel = (status) => {
+  const key = `office.orderStatus_${status}`;
+  const t = translations[detectLang()];
+  return t[key] || status || "—";
+};
+
+const orderStatusBadgeClass = (status) => {
+  const s = (status || "").toLowerCase();
+  if (s === "pending" || s === "ожидает" || s === "waiting") return "office-order-status--pending";
+  if (s === "accepted" || s === "принят" || s === "completed" || s === "done") return "office-order-status--accepted";
+  if (s === "rejected" || s === "отклонён" || s === "cancelled" || s === "canceled") return "office-order-status--rejected";
+  return "";
+};
+
+const fetchOrders = async (token) => {
+  const body = document.querySelector("[data-office-orders-body]");
+  if (!body) return;
+  const res = await fetchJson(`${API_BASE}/shop/orders/?limit=100`, token);
+  if (!res) return;
+  const orders = res?.data?.orders ?? res?.orders ?? (Array.isArray(res?.data) ? res.data : []);
+  const list = Array.isArray(orders) ? orders : [];
+  const t = translations[detectLang()];
+  const btnDetails = t["office.orderDetails"] || "Подробнее";
+  body.innerHTML = "";
+  if (list.length === 0) {
+    body.innerHTML = `<div class="office-orders-empty" data-i18n="office.ordersEmpty">${t["office.ordersEmpty"] || "Заказов пока нет"}</div>`;
     return;
   }
-  const list = licenses.map((license) => {
-    const row = licenseRow.cloneNode(true);
-    row.querySelector("[data-office-license-shop]").textContent =
-      license?.shop?.name || "—";
-    row.querySelector("[data-office-license-shop-id]").textContent =
-      license?.shop?.id || license?.shopId || "—";
-    row.querySelector("[data-office-license-key]").textContent =
-      license?.licenseKey || license?.key || "—";
-    row.querySelector("[data-office-license-days]").textContent =
-      Number.isFinite(license?.daysRemaining) ? String(license.daysRemaining) : "—";
-    row.querySelector("[data-office-license-expires]").textContent =
-      formatDate(license?.expiresAt || license?.expires_at);
-    return row;
+  list.forEach((order, index) => {
+    const orderNumber = order.order_number ?? order.id ?? index + 1;
+    const total = order.total_amount ?? order.totalAmount ?? order.total ?? 0;
+    const currency = order.currency || "USD";
+    const date = order.created_at ?? order.createdAt ?? order.date;
+    const statusText = orderStatusLabel(order.status);
+    const statusClass = orderStatusBadgeClass(order.status);
+    const card = document.createElement("div");
+    card.className = "office-order-card";
+    card.innerHTML = `
+      <div class="office-order-card__header">
+        <span class="office-order-card__id">№ ${orderNumber}</span>
+        <span class="office-order-card__status ${statusClass}">${statusText}</span>
+      </div>
+      <div class="office-order-card__info">
+        <div><strong>${t["office.orderTotal"] || "Сумма"}:</strong> ${formatCurrency(total, currency)}</div>
+        <div><strong>${t["office.orderDate"] || "Дата"}:</strong> ${formatDate(date)}</div>
+      </div>
+      <div class="office-order-card__action">
+        <button type="button" class="btn btn-secondary office-order-card__btn">${btnDetails}</button>
+      </div>
+    `;
+    body.appendChild(card);
   });
-  const parent = licenseRow.parentElement;
-  if (parent) {
-    parent.querySelectorAll("[data-office-license]").forEach((node) => node.remove());
-    list.forEach((row) => parent.appendChild(row));
+};
+
+const fetchProducts = async (token) => {
+  const body = document.querySelector("[data-office-products-body]");
+  if (!body) return;
+  const res = await fetchJson(`${API_BASE}/shop/products/?limit=100`, token);
+  if (!res) return;
+  const products = res?.data?.products ?? res?.products ?? (Array.isArray(res?.data) ? res.data : []);
+  const list = Array.isArray(products) ? products : [];
+  const t = translations[detectLang()];
+  const btnDetails = t["office.orderDetails"] || "Подробнее";
+  body.innerHTML = "";
+  if (list.length === 0) {
+    body.innerHTML = `<div class="office-products-empty" data-i18n="office.productsEmpty">${t["office.productsEmpty"] || "Товаров пока нет"}</div>`;
+    return;
   }
+  const lblCat = t["office.productCategory"] || "Категория";
+  const lblStock = t["office.productStock"] || "Остаток";
+  const lblPrice = t["office.productPrice"] || "Цена";
+  list.forEach((product) => {
+    const name = (product.name || "—").replace(/</g, "&lt;");
+    const categoryName = (product.category?.name ?? product.categoryName ?? "—").replace(/</g, "&lt;");
+    const variations = product.variations ?? [];
+    const totalStock = variations.reduce((sum, v) => sum + (Number(v.stockQuantity) || 0), 0);
+    const firstPrice = variations[0];
+    const price = firstPrice?.price ?? product.price ?? 0;
+    const card = document.createElement("div");
+    card.className = "office-product-card";
+    card.innerHTML = `
+      <div class="office-product-card__header">
+        <span class="office-product-card__name">${name}</span>
+      </div>
+      <div class="office-product-card__info">
+        <div><strong>${lblCat}:</strong> ${categoryName}</div>
+        <div><strong>${lblStock}:</strong> ${totalStock}</div>
+        <div><strong>${lblPrice}:</strong> ${formatCurrency(price)}</div>
+      </div>
+      <div class="office-product-card__action">
+        <button type="button" class="btn btn-secondary office-product-card__btn">${btnDetails}</button>
+      </div>
+    `;
+    body.appendChild(card);
+  });
+};
+
+const COPY_BTN_SVG = `<svg class="icon-copy" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="4" y="4" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><svg class="icon-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4 10-10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+const renderLicenses = (licenses) => {
+  if (!licensesBody) return;
+  const list = Array.isArray(licenses) ? licenses : [];
+  const t = translations[detectLang()];
+  const lblShop = t["office.licenseShop"] || "Магазин";
+  const lblId = t["office.licenseShopId"] || "ID магазина";
+  const lblKey = t["office.licenseKey"] || "Ключ";
+  const lblDays = t["office.licenseDays"] || "Осталось";
+  const lblExpires = t["office.licenseExpires"] || "Действует до";
+  const copyAria = t["office.copy"] || "Копировать";
+  licensesBody.innerHTML = "";
+  if (list.length === 0) {
+    licensesBody.innerHTML = `<div class="office-licenses-empty" data-i18n="office.licensesEmpty">${t["office.licensesEmpty"] || "Подписок пока нет"}</div>`;
+    return;
+  }
+  list.forEach((license) => {
+    const shopName = (license?.shop?.name || "—").replace(/</g, "&lt;");
+    const shopId = (license?.shop?.id || license?.shopId || "—").replace(/</g, "&lt;");
+    const keyVal = (license?.licenseKey || license?.key || "—").replace(/</g, "&lt;");
+    const days = Number.isFinite(license?.daysRemaining) ? String(license.daysRemaining) : "—";
+    const expires = formatDate(license?.expiresAt || license?.expires_at);
+    const card = document.createElement("div");
+    card.className = "office-license-card";
+    card.setAttribute("data-office-license", "");
+    card.innerHTML = `
+      <div class="office-license-card__header">
+        <span class="office-license-card__shop">${shopName}</span>
+      </div>
+      <div class="office-license-card__info">
+        <div class="office-license-card__row">
+          <strong>${lblId}:</strong>
+          <span class="office-license-card__copy-wrap">
+            <span data-office-license-shop-id>${shopId}</span>
+            <button type="button" class="copy-btn" data-copy="shopId" aria-label="${copyAria}">${COPY_BTN_SVG}</button>
+          </span>
+        </div>
+        <div class="office-license-card__row">
+          <strong>${lblKey}:</strong>
+          <span class="office-license-card__copy-wrap">
+            <span data-office-license-key>${keyVal}</span>
+            <button type="button" class="copy-btn" data-copy="licenseKey" aria-label="${copyAria}">${COPY_BTN_SVG}</button>
+          </span>
+        </div>
+        <div><strong>${lblDays}:</strong> ${days}</div>
+        <div><strong>${lblExpires}:</strong> ${expires}</div>
+      </div>
+    `;
+    licensesBody.appendChild(card);
+  });
 };
 
 const handleCopy = async (button) => {
@@ -364,37 +469,18 @@ const fetchJson = async (url, token) => {
   return response.json();
 };
 
-const uploadLogo = async (file, token) => {
+/**
+ * Загрузка логотипа магазина по API: POST /api/v1/shop/:id/logo
+ * Тело: multipart/form-data, поле "logo" — файл изображения.
+ */
+const uploadShopLogo = async (file, token, shopId) => {
   const formData = new FormData();
-  formData.append("image", file);
+  formData.append("logo", file);
 
-  const uploadUrl = API_BASE.replace("/api/v1", "") + "/api/upload/image?folder=shops";
-  const response = await fetch(uploadUrl, {
+  const response = await fetch(`${API_BASE}/shop/${shopId}/logo`, {
     method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
     body: formData
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || "Ошибка загрузки изображения");
-  }
-
-  const data = await response.json();
-  if (data.success) {
-    return data.url;
-  } else {
-    throw new Error(data.error || "Ошибка загрузки изображения");
-  }
-};
-
-const updateShopLogo = async (logoUrl, token, shopId) => {
-  const response = await fetch(`${API_BASE}/shops/${shopId}`, {
-    method: "PATCH",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ logo: logoUrl })
   });
 
   if (response.status === 401) {
@@ -404,17 +490,56 @@ const updateShopLogo = async (logoUrl, token, shopId) => {
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || "Ошибка обновления логотипа");
+    throw new Error(errorData.message || errorData.error || "Ошибка загрузки логотипа");
+  }
+
+  const data = await response.json();
+  const logoUrl =
+    data?.data?.logo ??
+    data?.data?.shop?.logo ??
+    data?.logo ??
+    (typeof data?.data === "string" ? data.data : null);
+  return logoUrl || true;
+};
+
+/**
+ * Удаление логотипа (если бэкенд поддерживает PATCH shops с пустым logo).
+ */
+const clearShopLogo = async (token, shopId) => {
+  const response = await fetch(`${API_BASE}/shops/${shopId}`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ logo: "" })
+  });
+
+  if (response.status === 401) {
+    logout();
+    return null;
+  }
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || errorData.error || "Ошибка удаления логотипа");
   }
 
   return response.json();
+};
+
+const resolveLogoUrl = (url) => {
+  if (!url) return "";
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  const base = "https://api.libiss.com";
+  return url.startsWith("/") ? base + url : base + "/" + url;
 };
 
 const renderLogo = (logoUrl) => {
   if (!logoImg || !logoPlaceholder || !logoRemove) return;
   
   if (logoUrl) {
-    logoImg.src = logoUrl;
+    logoImg.src = resolveLogoUrl(logoUrl);
     logoImg.hidden = false;
     logoPlaceholder.hidden = true;
     logoRemove.hidden = false;
@@ -548,6 +673,8 @@ const loadAccount = async () => {
 
   if (token) {
     await fetchLicenses(token, shopsList);
+    await fetchOrders(token);
+    await fetchProducts(token);
   }
 };
 
@@ -582,14 +709,13 @@ if (logoInput) {
     setLogoStatus(translations[detectLang()]["office.logoUploading"] || "Загрузка логотипа...", "");
     
     try {
-      // Загружаем изображение
-      const logoUrl = await uploadLogo(file, token);
+      const result = await uploadShopLogo(file, token, shopId);
+      if (result === null) return;
       
-      // Обновляем логотип магазина
-      await updateShopLogo(logoUrl, token, shopId);
+      const logoUrl = result === true ? null : (result.startsWith("http") ? result : `https://api.libiss.com${result.startsWith("/") ? "" : "/"}${result}`);
       
       // Обновляем отображение
-      renderLogo(logoUrl);
+      renderLogo(logoUrl || undefined);
       setLogoStatus(translations[detectLang()]["office.logoSuccess"] || "Логотип успешно обновлен", "success");
       
       // Очищаем статус через 3 секунды
@@ -620,10 +746,9 @@ if (logoRemove) {
     setLogoStatus(translations[detectLang()]["office.logoRemoving"] || "Удаление логотипа...", "");
     
     try {
-      // Удаляем логотип (отправляем пустую строку)
-      await updateShopLogo("", token, shopId);
+      const cleared = await clearShopLogo(token, shopId);
+      if (cleared === null) return;
       
-      // Обновляем отображение
       renderLogo(null);
       setLogoStatus(translations[detectLang()]["office.logoRemoved"] || "Логотип удален", "success");
       
@@ -636,6 +761,40 @@ if (logoRemove) {
       setLogoStatus(translations[detectLang()]["office.logoError"] || "Ошибка удаления логотипа", "error");
     }
   });
+}
+
+// Вкладки кабинета: переключение панелей
+const officeNavItems = document.querySelectorAll("[data-office-nav]");
+const officePanels = document.querySelectorAll("[data-office-panel]");
+
+const setActivePanel = (panelId) => {
+  officeNavItems.forEach((btn) => {
+    const id = btn.getAttribute("data-office-nav");
+    btn.classList.toggle("is-active", id === panelId);
+    btn.setAttribute("aria-current", id === panelId ? "page" : null);
+  });
+  officePanels.forEach((panel) => {
+    const id = panel.getAttribute("data-office-panel");
+    const isActive = id === panelId;
+    panel.classList.toggle("is-active", isActive);
+    panel.hidden = !isActive;
+  });
+  if (typeof window.history !== "undefined" && window.history.replaceState) {
+    window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}#${panelId}`);
+  }
+};
+
+officeNavItems.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const panelId = btn.getAttribute("data-office-nav");
+    if (panelId) setActivePanel(panelId);
+  });
+});
+
+// Открыть панель по хешу при загрузке
+const hash = window.location.hash.slice(1);
+if (hash && ["dashboard", "stores", "orders", "products", "licenses"].includes(hash)) {
+  setActivePanel(hash);
 }
 
 applyLang(detectLang());

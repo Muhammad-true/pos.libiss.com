@@ -133,11 +133,12 @@ const formatFileSize = (bytes) => {
   return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
 };
 
-const formatDate = (dateString) => {
+const formatDate = (dateString, lang) => {
   if (!dateString) return "—";
   try {
     const date = new Date(dateString);
-    return date.toLocaleDateString("ru-RU", {
+    const locale = lang === "en" ? "en-US" : "ru-RU";
+    return date.toLocaleDateString(locale, {
       year: "numeric",
       month: "short",
       day: "numeric"
@@ -163,73 +164,87 @@ const getPlatformName = (platform, lang) => {
   return names[lang]?.[platform] || platform;
 };
 
-const fetchUpdates = async () => {
-  const token = localStorage.getItem("userToken");
-  const tbody = document.querySelector("[data-updates-tbody]");
-  const errorDiv = document.querySelector("[data-updates-error]");
-  
-  if (!tbody) return;
-  
+/**
+ * Публичный эндпоинт: GET /api/v1/updates/latest?platform=server|windows|android|shop
+ * Владелец магазина и любой пользователь могут скачивать. Ответ: { success, data: { fileUrl, fileName, version, ... } }
+ */
+const resolveFileUrl = (url) => {
+  if (!url) return "";
+  if (url.startsWith("http")) return url;
+  const base = "https://api.libiss.com";
+  return url.startsWith("/") ? base + url : base + "/" + url;
+};
+
+const loadLatestUpdate = async (platform) => {
+  const card = document.querySelector(`.docs-update-card[data-updates-platform="${platform}"]`);
+  const link = card?.querySelector(`[data-updates-download][data-platform="${platform}"]`);
+  const textSpan = link?.querySelector("[data-updates-btn-text]");
+  const versionEl = card?.querySelector("[data-updates-version]");
+  const sizeEl = card?.querySelector("[data-updates-size]");
+  const dateEl = card?.querySelector("[data-updates-date]");
+  const lang = detectLang();
+  const t = translations[lang];
+  const lblDownload = t["docs.download"] || "Скачать";
+  const lblLoading = t["docs.updatesBtnLoading"] || "Загрузка...";
+  const lblUnavailable = t["docs.updatesBtnUnavailable"] || "Недоступно";
+  const lblVersion = t["docs.updateVersion"] || "Версия";
+  const lblSize = t["docs.updateSize"] || "Размер";
+  const lblDate = t["docs.updateDateLabel"] || t["docs.updateDate"] || "Загружено";
+
+  if (!link || !textSpan) return;
+
+  textSpan.textContent = lblLoading;
+  link.removeAttribute("href");
+  link.classList.add("is-loading");
+
+  const setMeta = (version, size, date) => {
+    if (versionEl) versionEl.textContent = version != null ? `${lblVersion}: ${version}` : "—";
+    if (sizeEl) sizeEl.textContent = size != null ? `${lblSize}: ${size}` : "—";
+    if (dateEl) dateEl.textContent = date != null ? `${lblDate}: ${date}` : "—";
+  };
+
   try {
-    const response = await fetch(`${API_BASE}/admin/updates/`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {}
-    });
-    
-    if (!response.ok) {
-      throw new Error("Failed to fetch updates");
-    }
-    
-    const result = await response.json();
-    const updates = result?.data || [];
-    
-    if (updates.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" data-i18n="docs.updatesEmpty">Нет доступных обновлений</td></tr>`;
+    const response = await fetch(`${API_BASE}/updates/latest?platform=${encodeURIComponent(platform)}`);
+    const result = await response.json().catch(() => ({}));
+
+    if (!response.ok || !result?.success || !result?.data) {
+      link.classList.remove("is-loading");
+      link.classList.add("is-unavailable");
+      textSpan.textContent = lblUnavailable;
+      setMeta(null, null, null);
       return;
     }
-    
-    const lang = detectLang();
-    tbody.innerHTML = updates
-      .filter((update) => update.isActive)
-      .map((update) => {
-        const fileUrl = update.fileUrl.startsWith("http")
-          ? update.fileUrl
-          : `https://api.libiss.com${update.fileUrl}`;
-        
-        return `
-          <tr>
-            <td data-label="${translations[lang]?.["docs.updatePlatform"] || "Платформа"}">
-              ${getPlatformName(update.platform, lang)}
-            </td>
-            <td data-label="${translations[lang]?.["docs.updateVersion"] || "Версия"}">
-              <strong>${update.version}</strong>
-            </td>
-            <td data-label="${translations[lang]?.["docs.updateSize"] || "Размер"}">
-              ${formatFileSize(update.fileSize)}
-            </td>
-            <td data-label="${translations[lang]?.["docs.updateDate"] || "Дата"}">
-              ${formatDate(update.createdAt)}
-            </td>
-            <td data-label="${translations[lang]?.["docs.updateNotes"] || "Описание"}">
-              ${update.releaseNotes || "—"}
-            </td>
-            <td data-label="${translations[lang]?.["docs.updateAction"] || "Действие"}">
-              <a href="${fileUrl}" class="btn btn-primary btn-sm" download>
-                ${translations[lang]?.["docs.download"] || "Скачать"}
-              </a>
-            </td>
-          </tr>
-        `;
-      })
-      .join("");
-    
-    if (errorDiv) errorDiv.hidden = true;
-  } catch (error) {
-    console.error("Error fetching updates:", error);
-    tbody.innerHTML = "";
-    if (errorDiv) {
-      errorDiv.hidden = false;
+
+    const data = result.data;
+    const fileUrl = data.fileUrl ? resolveFileUrl(data.fileUrl) : "";
+    const fileName = data.fileName || "";
+    const version = data.version || "";
+    const sizeStr = formatFileSize(data.fileSize);
+    const dateStr = formatDate(data.createdAt, lang);
+
+    setMeta(version, sizeStr, dateStr);
+
+    if (fileUrl) {
+      link.href = fileUrl;
+      if (fileName) link.setAttribute("download", fileName.replace(/"/g, "&quot;"));
+      link.classList.remove("is-loading", "is-unavailable");
+      textSpan.textContent = lblDownload;
+    } else {
+      link.classList.remove("is-loading");
+      link.classList.add("is-unavailable");
+      textSpan.textContent = lblUnavailable;
     }
+  } catch (err) {
+    console.error("Error fetching latest update for", platform, err);
+    link.classList.remove("is-loading");
+    link.classList.add("is-unavailable");
+    textSpan.textContent = lblUnavailable;
+    setMeta(null, null, null);
   }
+};
+
+const fetchUpdates = () => {
+  ["server", "windows", "android", "shop"].forEach((platform) => loadLatestUpdate(platform));
 };
 
 applyLang(detectLang());

@@ -2,7 +2,9 @@
 <html lang="ru">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#12a57c" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
@@ -70,6 +72,9 @@
                 >Sign in</a
               >
             </div>
+            <p class="hero-swipe-hint" data-i18n="hero.swipeHint">
+              Свайпните вниз, чтобы увидеть больше
+            </p>
           </div>
         </section>
 
@@ -149,9 +154,31 @@
           </div>
         </section>
 
-        <section class="slide">
+        <section class="slide final">
+          <div class="container slide-inner final-inner">
+            <div>
+              <h2 class="section-title" data-i18n="final.title">
+                Готовы начать продажи?
+              </h2>
+            </div>
+            <div class="actions">
+              <a class="btn btn-primary" href="/create-store.html" data-i18n="cta.primary"
+                >Создать магазин / Подключить POS</a
+              >
+              <a
+                class="btn btn-secondary"
+                href="https://admin.libiss.com"
+                data-i18n="cta.admin"
+              >
+                Админ-панель
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide reviews-slide">
           <div class="container slide-inner">
-            <h2 class="section-title" data-i18n="reviews.title">Смотрите о чем о нас говорят</h2>
+            <h2 class="section-title" data-i18n="reviews.title">Смотрите, что о нас говорят</h2>
             <p class="section-subtitle">
               <span data-i18n="reviews.subtitle">Оставьте свой отзыв на</span>
               <a href="mailto:sodiqov.online@gmail.com" class="review-email">sodiqov.online@gmail.com</a>
@@ -163,7 +190,7 @@
                 </div>
                 <div class="review-author">
                   <strong>Алишер Рахимов</strong>
-                  <span>Магазин "Сафар"</span>
+                  <span>Магазин «Сафар»</span>
                 </div>
               </div>
               <div class="review-card">
@@ -172,7 +199,7 @@
                 </div>
                 <div class="review-author">
                   <strong>Фаррух Каримов</strong>
-                  <span>Магазин "Нур"</span>
+                  <span>Магазин «Нур»</span>
                 </div>
               </div>
               <div class="review-card">
@@ -181,7 +208,7 @@
                 </div>
                 <div class="review-author">
                   <strong>Джамшед Алиев</strong>
-                  <span>Магазин "Зебо"</span>
+                  <span>Магазин «Зебо»</span>
                 </div>
               </div>
               <div class="review-card">
@@ -190,31 +217,9 @@
                 </div>
                 <div class="review-author">
                   <strong>Мухаммад Саидов</strong>
-                  <span>Магазин "Гулшан"</span>
+                  <span>Магазин «Гулшан»</span>
                 </div>
               </div>
-            </div>
-          </div>
-        </section>
-
-        <section class="slide final">
-          <div class="container slide-inner final-inner">
-            <div>
-              <h2 class="section-title" data-i18n="final.title">
-                Ready to start selling?
-              </h2>
-            </div>
-            <div class="actions">
-              <a class="btn btn-primary" href="/create-store.html" data-i18n="cta.primary"
-                >Create Store / Connect POS</a
-              >
-              <a
-                class="btn btn-secondary"
-                href="https://admin.libiss.com"
-                data-i18n="cta.admin"
-              >
-                Admin Dashboard
-              </a>
             </div>
             <footer class="footer">
               <div class="footer-links">
@@ -225,9 +230,9 @@
                 >
                 <span class="footer-disabled" data-i18n="footer.api">API (сейчас не можем сотрудничать)</span>
                 <a href="https://shop.libiss.com" data-i18n="footer.shop"
-                  >Online Store</a
+                  >Онлайн-магазин</a
                 >
-                <a href="/docs.html" data-i18n="footer.docs">Docs</a>
+                <a href="/docs.html" data-i18n="footer.docs">Документация</a>
               </div>
               <div class="lang-toggle footer-lang" role="group" aria-label="Language">
                 <button class="lang-btn is-active" type="button" data-lang="ru">

@@ -2,7 +2,9 @@
 <html lang="ru">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#12a57c" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
@@ -126,30 +128,50 @@
               </div>
             </div>
             <div class="docs-updates">
-              <h3 class="section-title" data-i18n="docs.updatesTitle">Доступные обновления</h3>
+              <h3 class="section-title" data-i18n="docs.updatesTitle">Скачивание программ</h3>
               <p class="section-subtitle" data-i18n="docs.updatesSubtitle">
-                Скачайте последние версии программ для вашей платформы.
+                Скачайте последнюю версию для вашей платформы. Доступно без входа в кабинет.
               </p>
-              <div class="updates-table-container">
-                <table class="updates-table" data-updates-table>
-                  <thead>
-                    <tr>
-                      <th data-i18n="docs.updatePlatform">Платформа</th>
-                      <th data-i18n="docs.updateVersion">Версия</th>
-                      <th data-i18n="docs.updateSize">Размер</th>
-                      <th data-i18n="docs.updateDate">Дата</th>
-                      <th data-i18n="docs.updateNotes">Описание</th>
-                      <th data-i18n="docs.updateAction">Действие</th>
-                    </tr>
-                  </thead>
-                  <tbody data-updates-tbody>
-                    <tr class="updates-loading">
-                      <td colspan="6" data-i18n="docs.updatesLoading">Загрузка обновлений...</td>
-                    </tr>
-                  </tbody>
-                </table>
-                <div class="updates-error" data-updates-error hidden>
-                  <p data-i18n="docs.updatesError">Не удалось загрузить список обновлений.</p>
+              <div class="docs-updates-cards">
+                <div class="docs-update-card" data-updates-platform="server">
+                  <h4 class="docs-update-card__title" data-i18n="docs.updateServerTitle">Сервер</h4>
+                  <p class="docs-update-card__desc" data-i18n="docs.updateServerDesc">Node.js (архив .zip)</p>
+                  <div class="docs-update-card__meta">
+                    <span class="docs-update-card__version" data-updates-version data-platform="server">—</span>
+                    <span class="docs-update-card__size" data-updates-size data-platform="server">—</span>
+                    <span class="docs-update-card__date" data-updates-date data-platform="server">—</span>
+                  </div>
+                  <a data-updates-download data-platform="server" class="btn btn-primary docs-update-card__btn" href="#"><span data-updates-btn-text>Загрузка...</span></a>
+                </div>
+                <div class="docs-update-card" data-updates-platform="windows">
+                  <h4 class="docs-update-card__title" data-i18n="docs.updateWindowsTitle">Windows</h4>
+                  <p class="docs-update-card__desc" data-i18n="docs.updateWindowsDesc">Приложение Flutter для Windows (.exe)</p>
+                  <div class="docs-update-card__meta">
+                    <span class="docs-update-card__version" data-updates-version data-platform="windows">—</span>
+                    <span class="docs-update-card__size" data-updates-size data-platform="windows">—</span>
+                    <span class="docs-update-card__date" data-updates-date data-platform="windows">—</span>
+                  </div>
+                  <a data-updates-download data-platform="windows" class="btn btn-primary docs-update-card__btn" href="#"><span data-updates-btn-text>Загрузка...</span></a>
+                </div>
+                <div class="docs-update-card" data-updates-platform="android">
+                  <h4 class="docs-update-card__title" data-i18n="docs.updateAndroidTitle">Android</h4>
+                  <p class="docs-update-card__desc" data-i18n="docs.updateAndroidDesc">Основное Android-приложение (.apk)</p>
+                  <div class="docs-update-card__meta">
+                    <span class="docs-update-card__version" data-updates-version data-platform="android">—</span>
+                    <span class="docs-update-card__size" data-updates-size data-platform="android">—</span>
+                    <span class="docs-update-card__date" data-updates-date data-platform="android">—</span>
+                  </div>
+                  <a data-updates-download data-platform="android" class="btn btn-primary docs-update-card__btn" href="#"><span data-updates-btn-text>Загрузка...</span></a>
+                </div>
+                <div class="docs-update-card" data-updates-platform="shop">
+                  <h4 class="docs-update-card__title" data-i18n="docs.updateShopTitle">Интернет-магазин Libiss</h4>
+                  <p class="docs-update-card__desc" data-i18n="docs.updateShopDesc">Приложение интернет-магазина (libiss.apk), отдельно от Android</p>
+                  <div class="docs-update-card__meta">
+                    <span class="docs-update-card__version" data-updates-version data-platform="shop">—</span>
+                    <span class="docs-update-card__size" data-updates-size data-platform="shop">—</span>
+                    <span class="docs-update-card__date" data-updates-date data-platform="shop">—</span>
+                  </div>
+                  <a data-updates-download data-platform="shop" class="btn btn-primary docs-update-card__btn" href="#"><span data-updates-btn-text>Загрузка...</span></a>
                 </div>
               </div>
             </div>
