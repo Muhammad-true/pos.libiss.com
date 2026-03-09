@@ -1,5 +1,5 @@
-import { translations } from "./translations.js";
-import "./styles.css";
+import { translations } from "../lib/translations.js";
+import "../../styles.css";
 import { injectSpeedInsights } from "@vercel/speed-insights";
 
 injectSpeedInsights();
@@ -137,4 +137,5 @@ window.addEventListener("keydown", (event) => {
 });
 
 applyLang(detectLang());
+document.body.style.opacity = "1";
 

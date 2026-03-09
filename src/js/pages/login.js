@@ -1,10 +1,9 @@
-import "./styles.css";
-import { translations } from "./translations.js";
+import "../../styles.css";
+import { translations } from "../lib/translations.js";
+import { api } from "../lib/api.js";
 import { injectSpeedInsights } from "@vercel/speed-insights";
 
 injectSpeedInsights();
-
-const API_BASE = "https://api.libiss.com/api/v1";
 const STORAGE_KEY = "libiss-pos-lang";
 const DEFAULT_LANG = "ru";
 
@@ -92,31 +91,20 @@ const handleSubmit = async (event) => {
   if (submitButton) submitButton.disabled = true;
 
   try {
-    const response = await fetch(`${API_BASE}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-    
-    if (!response.ok) {
-      const copy = translations[detectLang()];
+    const result = await api.post("/auth/login", payload, { token: null });
+    const copy = translations[detectLang()];
+
+    if (result && result.error) {
       let errorMessage = "";
-      
-      if (response.status === 400) {
-        errorMessage = copy["login.error400"] || "Неверные данные. Проверьте формат телефона и пароля.";
-      } else if (response.status === 401) {
-        errorMessage = copy["login.error401"] || "Неверный телефон или пароль.";
-      } else if (response.status === 404) {
-        errorMessage = copy["login.error404"] || "Эндпоинт входа еще не реализован.";
-      } else {
-        errorMessage = copy["login.error500"] || "Ошибка сервера. Попробуйте позже.";
-      }
-      
+      if (result.status === 400) errorMessage = copy["login.error400"] || "Неверные данные. Проверьте формат телефона и пароля.";
+      else if (result.status === 401) errorMessage = copy["login.error401"] || "Неверный телефон или пароль.";
+      else if (result.status === 404) errorMessage = copy["login.error404"] || "Эндпоинт входа еще не реализован.";
+      else errorMessage = copy["login.error500"] || "Ошибка сервера. Попробуйте позже.";
+      if (result.message) errorMessage = result.message;
       setStatus(errorMessage, "error");
       if (submitButton) submitButton.disabled = false;
       return;
     }
-    const result = await response.json();
     if (result?.data?.token) {
       localStorage.setItem("userToken", result.data.token);
     }
@@ -193,5 +181,6 @@ const initCountrySelector = () => {
 };
 
 applyLang(detectLang());
+document.body.style.opacity = "1";
 initCountrySelector();
 

@@ -2,7 +2,12 @@
 <html lang="ru">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#12a57c" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <meta
       name="description"
       content="Создайте магазин в Libiss POS за несколько минут."
@@ -16,10 +21,18 @@
     <meta property="og:url" content="https://pos.libiss.com/create-store" />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="canonical" href="https://pos.libiss.com/create-store" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/logo.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/logo.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/logo.png" />
+    <link rel="shortcut icon" href="/logo.png" />
     <title>Libiss POS — Создать магазин</title>
-    <script type="module" crossorigin src="/assets/create-store-BnOzchQe.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/styles-DXc76zUi.js">
-    <link rel="stylesheet" crossorigin href="/assets/styles-CqFCPLPl.css">
+    <style>body { opacity: 0; transition: opacity 0.3s; }</style>
+    <script type="module" crossorigin src="/assets/create-store-7o9wg3qd.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/styles-CbfXDMIG.js">
+    <link rel="modulepreload" crossorigin href="/assets/index-DNQiN_gI.js">
+    <link rel="modulepreload" crossorigin href="/assets/translations-gtF6RjSa.js">
+    <link rel="modulepreload" crossorigin href="/assets/api-DoKsueW2.js">
+    <link rel="stylesheet" crossorigin href="/assets/styles-CIG4EEur.css">
   </head>
   <body>
     <div class="page">
@@ -121,6 +134,22 @@
                       />
                       <span class="field-error" data-error-for="address"></span>
                     </div>
+                    <div class="field">
+                      <label for="logo" data-i18n="form.logo">Логотип магазина</label>
+                      <input
+                        id="logo"
+                        name="logo"
+                        type="file"
+                        accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                        data-logo-input
+                      />
+                      <span class="hint" data-i18n="form.logoHint">Опционально. JPG, PNG, GIF, WebP до 50MB</span>
+                      <div class="logo-preview" data-logo-preview hidden>
+                        <img data-logo-preview-img src="" alt="Preview" />
+                        <button type="button" class="logo-remove" data-logo-remove data-i18n="form.logoRemove">Удалить</button>
+                      </div>
+                      <span class="field-error" data-error-for="logo"></span>
+                    </div>
                   </div>
 
                   <div class="form-step" data-step="1" hidden>
@@ -154,16 +183,61 @@
                     </div>
                     <div class="field">
                       <label for="phone" data-i18n="form.phone">Телефон</label>
-                      <input
-                        id="phone"
-                        name="phone"
-                        type="tel"
-                        autocomplete="tel"
-                        required
-                        data-i18n-attr="placeholder"
-                        data-i18n-key="form.phonePlaceholder"
-                        placeholder="+998901234567"
-                      />
+                      <div class="phone-input-wrapper">
+                        <div class="country-selector" data-country-selector>
+                          <button type="button" class="country-selector-btn" data-country-btn>
+                            <span class="country-flag" data-country-flag>🇹🇯</span>
+                            <span class="country-code" data-country-code>+992</span>
+                            <svg class="country-arrow" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2">
+                              <path d="M3 4.5L6 7.5L9 4.5"/>
+                            </svg>
+                          </button>
+                          <div class="country-dropdown" data-country-dropdown hidden>
+                            <div class="country-option" data-country="TJ" data-code="+992">
+                              <span class="country-flag">🇹🇯</span>
+                              <span class="country-name">Таджикистан</span>
+                              <span class="country-code">+992</span>
+                            </div>
+                            <div class="country-option" data-country="UZ" data-code="+998">
+                              <span class="country-flag">🇺🇿</span>
+                              <span class="country-name">Узбекистан</span>
+                              <span class="country-code">+998</span>
+                            </div>
+                            <div class="country-option" data-country="KZ" data-code="+7">
+                              <span class="country-flag">🇰🇿</span>
+                              <span class="country-name">Казахстан</span>
+                              <span class="country-code">+7</span>
+                            </div>
+                            <div class="country-option" data-country="KG" data-code="+996">
+                              <span class="country-flag">🇰🇬</span>
+                              <span class="country-name">Кыргызстан</span>
+                              <span class="country-code">+996</span>
+                            </div>
+                            <div class="country-option" data-country="TM" data-code="+993">
+                              <span class="country-flag">🇹🇲</span>
+                              <span class="country-name">Туркменистан</span>
+                              <span class="country-code">+993</span>
+                            </div>
+                            <div class="country-option" data-country="RU" data-code="+7">
+                              <span class="country-flag">🇷🇺</span>
+                              <span class="country-name">Россия</span>
+                              <span class="country-code">+7</span>
+                            </div>
+                          </div>
+                        </div>
+                        <input
+                          id="phone"
+                          name="phone"
+                          type="tel"
+                          autocomplete="tel"
+                          required
+                          data-i18n-attr="placeholder"
+                          data-i18n-key="form.phonePlaceholder"
+                          placeholder="901234567"
+                          data-phone-input
+                        />
+                      </div>
+                      <input type="hidden" name="countryCode" value="+992" data-country-code-input />
                       <span class="field-error" data-error-for="phone"></span>
                     </div>
                   </div>
@@ -210,7 +284,7 @@
                     <button class="btn btn-secondary" type="button" data-next data-i18n="form.next">
                       Далее
                     </button>
-                    <button class="btn btn-primary" type="submit" data-i18n="form.submit">
+                    <button class="btn btn-primary" type="submit" data-i18n="form.submit" hidden>
                       Создать магазин
                     </button>
                   </div>

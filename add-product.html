@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#12a57c" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta name="description" content="Добавить товар в каталог Libiss POS." />
+    <meta property="og:title" content="Libiss POS — Добавить товар" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/logo.png" />
+    <link rel="shortcut icon" href="/logo.png" />
+    <title>Libiss POS — Добавить товар</title>
+    <style>body { opacity: 0; transition: opacity 0.3s; }</style>
+  </head>
+  <body>
+    <div class="page">
+      <div data-app-header data-app-title-key="addProduct.title" data-app-logo-href="/office.html"></div>
+      <main class="form-page add-product-page">
+        <section class="form-hero">
+          <div class="container">
+            <div class="form-hero-inner">
+              <span class="eyebrow" data-i18n="addProduct.eyebrow">Добавить товар</span>
+              <p data-i18n="addProduct.subtitle">Заполните данные по шагам.</p>
+              <div class="form-card">
+                <form class="form" data-add-product-form>
+                  <!-- Шаг 1: название, описание, пол, сезон, базовая цена, скидка -->
+                  <div class="form-step" data-step="0">
+                    <div class="field">
+                      <label for="productName" data-i18n="addProduct.name">Название товара</label>
+                      <input
+                        id="productName"
+                        name="name"
+                        type="text"
+                        required
+                        data-i18n-attr="placeholder"
+                        data-i18n-key="addProduct.namePlaceholder"
+                        placeholder="Например: Футболка с принтом"
+                      />
+                      <span class="field-error" data-error-for="name"></span>
+                    </div>
+                    <div class="field">
+                      <label for="productQrCodeUrl" data-i18n="addProduct.qrCodeUrl">QR-код</label>
+                      <div class="barcode-wrapper">
+                        <input
+                          id="productQrCodeUrl"
+                          name="qrCodeUrl"
+                          type="text"
+                          readonly
+                          data-i18n-attr="placeholder"
+                          data-i18n-key="addProduct.qrCodeUrlPlaceholder"
+                          placeholder="Только со сканера"
+                          data-scan-only
+                        />
+                        <button type="button" class="btn btn-secondary btn-icon" data-scan-btn title="Сканировать камерой">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/>
+                            <rect x="7" y="7" width="10" height="10" rx="1"/>
+                            <path d="M12 12h.01"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label for="productDescription" data-i18n="addProduct.description">Описание</label>
+                      <textarea
+                        id="productDescription"
+                        name="description"
+                        rows="3"
+                        data-i18n-attr="placeholder"
+                        data-i18n-key="addProduct.descriptionPlaceholder"
+                        placeholder="Необязательно"
+                      ></textarea>
+                      <span class="hint" data-i18n="addProduct.descriptionHint">Необязательно</span>
+                    </div>
+                    <div class="field">
+                      <label data-i18n="addProduct.gender">Пол</label>
+                      <div class="radio-group" role="group" aria-label="Пол">
+                        <label class="radio-label">
+                          <input type="radio" name="gender" value="unisex" required checked />
+                          <span data-i18n="addProduct.genderUnisex">Унисекс</span>
+                        </label>
+                        <label class="radio-label">
+                          <input type="radio" name="gender" value="male" />
+                          <span data-i18n="addProduct.genderMale">Мужской</span>
+                        </label>
+                        <label class="radio-label">
+                          <input type="radio" name="gender" value="female" />
+                          <span data-i18n="addProduct.genderFemale">Женский</span>
+                        </label>
+                      </div>
+                      <span class="field-error" data-error-for="gender"></span>
+                    </div>
+                    <div class="field">
+                      <label for="categoryId" data-i18n="addProduct.category">Категория</label>
+                      <input type="hidden" id="categoryId" name="categoryId" required>
+                      <div class="category-selector" id="categorySelector">
+                        <button type="button" class="category-trigger" data-category-trigger>
+                          <span data-selected-category data-i18n="addProduct.categoryPlaceholder">Выберите категорию</span>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="chevron">
+                            <path d="M6 9l6 6 6-6"/>
+                          </svg>
+                        </button>
+                        <div class="category-dropdown" data-category-dropdown hidden>
+                           <!-- Levels will be injected here -->
+                        </div>
+                      </div>
+                      <span class="field-error" data-error-for="categoryId"></span>
+                    </div>
+                    <div class="field">
+                      <label for="seasonId" data-i18n="addProduct.season">Сезон</label>
+                      <input type="hidden" id="seasonId" name="seasonId">
+                      <div class="category-selector" id="seasonSelector">
+                        <button type="button" class="category-trigger" data-category-trigger>
+                          <span data-selected-category data-i18n="addProduct.seasonPlaceholder">Выберите сезон</span>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="chevron">
+                            <path d="M6 9l6 6 6-6"/>
+                          </svg>
+                        </button>
+                        <div class="category-dropdown" data-category-dropdown hidden></div>
+                      </div>
+                      <span class="field-error" data-error-for="seasonId"></span>
+                    </div>
+                    <div class="grid two">
+                      <div class="field">
+                        <label for="price" data-i18n="addProduct.price">Цена</label>
+                        <input
+                          id="price"
+                          name="price"
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          required
+                          data-i18n-attr="placeholder"
+                          data-i18n-key="addProduct.pricePlaceholder"
+                          placeholder="0"
+                        />
+                        <span class="field-error" data-error-for="price"></span>
+                      </div>
+                      <div class="field">
+                        <label for="discount" data-i18n="addProduct.discount">Скидка (%)</label>
+                        <div class="discount-wrapper">
+                          <input
+                            id="discount"
+                            name="discount"
+                            type="number"
+                            min="0"
+                            max="100"
+                            step="1"
+                            data-i18n-attr="placeholder"
+                            data-i18n-key="addProduct.discountPlaceholder"
+                            placeholder="0"
+                          />
+                          <div class="final-price" data-final-price hidden>
+                            <span class="old-price" data-old-price></span>
+                            <span class="new-price" data-new-price></span>
+                          </div>
+                        </div>
+                        <span class="field-error" data-error-for="discount"></span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Шаг 2: атрибуты (цвета и размеры) -->
+                  <div class="form-step" data-step="1" hidden>
+                    <div class="field">
+                      <label data-i18n="addProduct.colors">Цвет</label>
+                      <div class="color-options" data-color-options role="group" aria-label="Цвет">
+                        <!-- Colors loaded dynamically -->
+                      </div>
+                      <span class="field-error" data-error-for="color"></span>
+                    </div>
+                    <div class="field">
+                      <label data-i18n="addProduct.sizes">Размеры</label>
+                      <input type="hidden" id="sizeTypeId" name="sizeTypeId">
+                      <div class="category-selector" id="sizeTypeSelector" style="margin-bottom: 12px;">
+                        <button type="button" class="category-trigger" data-category-trigger>
+                          <span data-selected-category>Выберите тип размера</span>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="chevron">
+                            <path d="M6 9l6 6 6-6"/>
+                          </svg>
+                        </button>
+                        <div class="category-dropdown" data-category-dropdown hidden></div>
+                      </div>
+                      <div class="size-options" data-size-options role="group" aria-label="Размеры">
+                        <!-- Sizes loaded dynamically -->
+                      </div>
+                      <span class="field-error" data-error-for="size"></span>
+                    </div>
+                  </div>
+
+                  <!-- Шаг 3: вариации (количество, цена, QR) -->
+                  <div class="form-step" data-step="2" hidden>
+                    <label data-i18n="addProduct.variations">Вариации товара</label>
+                    <div class="variations-list" data-variations-container>
+                      <!-- Variations loaded dynamically -->
+                    </div>
+                    <span class="field-error" data-error-for="variations"></span>
+                  </div>
+
+                  <!-- Шаг 4: фото по цветам -->
+                  <div class="form-step" data-step="3" hidden>
+                    <div class="field" data-photo-modes hidden></div>
+                    <div class="field" data-photos-by-color>
+                      <label data-i18n="addProduct.photos">Фото по цветам</label>
+                      <p class="hint" data-i18n="addProduct.photosHint">Выберите цвет и загрузите одно или несколько фото.</p>
+                      <div class="photos-by-color" data-photos-container></div>
+                      <span class="field-error" data-error-for="photos"></span>
+                    </div>
+                  </div>
+
+                  <!-- Шаг 5: проверка -->
+                  <div class="form-step" data-step="4" hidden>
+                    <h3 data-i18n="addProduct.review">Проверка данных</h3>
+                    <div class="field review-upload-mode" data-review-upload-mode>
+                      <label data-i18n="addProduct.uploadPhotoMode">Как отправить фото</label>
+                      <div class="radio-group" role="group">
+                        <label class="radio-label">
+                          <input type="radio" name="uploadPhotoMode" value="compressed" checked>
+                          <span data-i18n="addProduct.uploadModeCompressed">Сжатые (WebP, макс. 3024px)</span>
+                        </label>
+                        <label class="radio-label">
+                          <input type="radio" name="uploadPhotoMode" value="original">
+                          <span data-i18n="addProduct.uploadModeOriginal">Оригинал</span>
+                        </label>
+                      </div>
+                    </div>
+                    <div class="review-data" data-review-container>
+                      <!-- Summary loaded dynamically -->
+                    </div>
+                  </div>
+
+                  <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" data-prev data-i18n="addProduct.prev">Назад</button>
+                    <button type="button" class="btn btn-primary" data-next data-i18n="addProduct.next">Далее</button>
+                  </div>
+                </form>
+              </div>
+              <p class="form-status" data-status></p>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+    <div class="scanner-modal" data-scanner-modal hidden>
+      <div class="scanner-content">
+        <div id="reader"></div>
+        <button type="button" class="btn btn-secondary" data-stop-scan data-i18n="addProduct.stopScan">Закрыть</button>
+      </div>
+    </div>
+    <script type="module" src="/src/js/pages/add-product.js"></script>
+  </body>
+</html>

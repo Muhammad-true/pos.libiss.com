@@ -2,7 +2,12 @@
 <html lang="ru">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#12a57c" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <meta
       name="description"
       content="Пошаговая настройка Libiss POS."
@@ -16,10 +21,18 @@
     <meta property="og:url" content="https://pos.libiss.com/docs" />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="canonical" href="https://pos.libiss.com/docs" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/logo.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/logo.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/logo.png" />
+    <link rel="shortcut icon" href="/logo.png" />
     <title>Libiss POS — Документация</title>
-    <script type="module" crossorigin src="/assets/docs-Cs35oL8v.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/styles-DXc76zUi.js">
-    <link rel="stylesheet" crossorigin href="/assets/styles-CqFCPLPl.css">
+    <style>body { opacity: 0; transition: opacity 0.3s; }</style>
+    <script type="module" crossorigin src="/assets/docs-BCaJb8sz.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/styles-CbfXDMIG.js">
+    <link rel="modulepreload" crossorigin href="/assets/translations-gtF6RjSa.js">
+    <link rel="modulepreload" crossorigin href="/assets/api-DoKsueW2.js">
+    <link rel="modulepreload" crossorigin href="/assets/index-DNQiN_gI.js">
+    <link rel="stylesheet" crossorigin href="/assets/styles-CIG4EEur.css">
   </head>
   <body>
     <div class="page">
@@ -65,7 +78,7 @@
                   Сервер для кассы 1 + MySQL + программа. Всё в одном установщике.
                 </p>
                 <div class="actions">
-                  <a class="btn btn-primary" href="https://drive.google.com/file/d/1qtjAUGUOwYvNFNlIWr8Wd6sf25I1vrc0/view?usp=drive_link" target="_blank" rel="noopener noreferrer" data-i18n="docs.downloadFull"
+                  <a class="btn btn-primary" href="https://drive.google.com/file/d/1uOf0U7DZispbO7vil1UPDeyhA86t0f5G/view?usp=sharing" data-i18n="docs.downloadFull"
                     >Скачать полный пакет</a
                   >
                 </div>
@@ -76,7 +89,7 @@
                   Если у вас уже есть MySQL, скачайте только сервер и программу. Без сервера касса 1 не будет работать.
                 </p>
                 <div class="actions">
-                  <a class="btn btn-secondary" href="https://drive.google.com/file/d/18cJ6uig05FM4YOPxhdmyWychmu-N9AJk/view?usp=drive_link" target="_blank" rel="noopener noreferrer" data-i18n="docs.downloadServer"
+                  <a class="btn btn-secondary" href="https://drive.google.com/file/d/1Zv4V_VHecm61sOZgiU3AhfxnoZy4zgas/view?usp=sharing" data-i18n="docs.downloadServer"
                     >Скачать сервер + программа</a
                   >
                 </div>
@@ -87,7 +100,7 @@
                   Для касс 2, 3 и далее — только программа POS.
                 </p>
                 <div class="actions">
-                  <a class="btn btn-secondary" href="https://drive.google.com/file/d/1z_2OVIBJAnSPDEAwo54ejfo7qdWjwKoQ/view?usp=drive_link" target="_blank" rel="noopener noreferrer" data-i18n="docs.downloadApp"
+                  <a class="btn btn-secondary" href="https://drive.google.com/file/d/1ezcYBSsMqoCgmXh64jzMKdNhG6twp3Am/view?usp=sharing" data-i18n="docs.downloadApp"
                     >Скачать программу</a
                   >
                 </div>
@@ -101,6 +114,71 @@
                   <a class="btn btn-secondary" href="#" data-i18n="docs.downloadAndroid"
                     >Скачать для Android</a
                   >
+                </div>
+              </div>
+            </div>
+            <div class="docs-mysql-warning">
+              <div class="warning-card">
+                <div class="warning-icon">⚠️</div>
+                <div class="warning-content">
+                  <h4 data-i18n="docs.mysqlWarningTitle">Важно: MySQL обязателен</h4>
+                  <p data-i18n="docs.mysqlWarningText">
+                    Перед установкой сервера и программы обязательно установите MySQL. Без MySQL сервер не будет работать.
+                  </p>
+                  <a class="btn btn-secondary" href="https://dev.mysql.com/downloads/mysql/" target="_blank" rel="noopener noreferrer" data-i18n="docs.mysqlDownload">
+                    Скачать MySQL
+                  </a>
+                  <a class="btn btn-secondary" href="/docs.html" data-i18n="docs.mysqlDocs">
+                    Документация по установке
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="docs-updates">
+              <h3 class="section-title" data-i18n="docs.updatesTitle">Скачивание программ</h3>
+              <p class="section-subtitle" data-i18n="docs.updatesSubtitle">
+                Скачайте последнюю версию для вашей платформы. Доступно без входа в кабинет.
+              </p>
+              <div class="docs-updates-cards">
+                <div class="docs-update-card" data-updates-platform="server">
+                  <h4 class="docs-update-card__title" data-i18n="docs.updateServerTitle">Сервер</h4>
+                  <p class="docs-update-card__desc" data-i18n="docs.updateServerDesc">Node.js (архив .zip)</p>
+                  <div class="docs-update-card__meta">
+                    <span class="docs-update-card__version" data-updates-version data-platform="server">—</span>
+                    <span class="docs-update-card__size" data-updates-size data-platform="server">—</span>
+                    <span class="docs-update-card__date" data-updates-date data-platform="server">—</span>
+                  </div>
+                  <a data-updates-download data-platform="server" class="btn btn-primary docs-update-card__btn" href="#"><span data-updates-btn-text>Загрузка...</span></a>
+                </div>
+                <div class="docs-update-card" data-updates-platform="windows">
+                  <h4 class="docs-update-card__title" data-i18n="docs.updateWindowsTitle">Windows</h4>
+                  <p class="docs-update-card__desc" data-i18n="docs.updateWindowsDesc">Приложение Flutter для Windows (.exe)</p>
+                  <div class="docs-update-card__meta">
+                    <span class="docs-update-card__version" data-updates-version data-platform="windows">—</span>
+                    <span class="docs-update-card__size" data-updates-size data-platform="windows">—</span>
+                    <span class="docs-update-card__date" data-updates-date data-platform="windows">—</span>
+                  </div>
+                  <a data-updates-download data-platform="windows" class="btn btn-primary docs-update-card__btn" href="#"><span data-updates-btn-text>Загрузка...</span></a>
+                </div>
+                <div class="docs-update-card" data-updates-platform="android">
+                  <h4 class="docs-update-card__title" data-i18n="docs.updateAndroidTitle">Android</h4>
+                  <p class="docs-update-card__desc" data-i18n="docs.updateAndroidDesc">Основное Android-приложение (.apk)</p>
+                  <div class="docs-update-card__meta">
+                    <span class="docs-update-card__version" data-updates-version data-platform="android">—</span>
+                    <span class="docs-update-card__size" data-updates-size data-platform="android">—</span>
+                    <span class="docs-update-card__date" data-updates-date data-platform="android">—</span>
+                  </div>
+                  <a data-updates-download data-platform="android" class="btn btn-primary docs-update-card__btn" href="#"><span data-updates-btn-text>Загрузка...</span></a>
+                </div>
+                <div class="docs-update-card" data-updates-platform="shop">
+                  <h4 class="docs-update-card__title" data-i18n="docs.updateShopTitle">Интернет-магазин Libiss</h4>
+                  <p class="docs-update-card__desc" data-i18n="docs.updateShopDesc">Приложение интернет-магазина (libiss.apk), отдельно от Android</p>
+                  <div class="docs-update-card__meta">
+                    <span class="docs-update-card__version" data-updates-version data-platform="shop">—</span>
+                    <span class="docs-update-card__size" data-updates-size data-platform="shop">—</span>
+                    <span class="docs-update-card__date" data-updates-date data-platform="shop">—</span>
+                  </div>
+                  <a data-updates-download data-platform="shop" class="btn btn-primary docs-update-card__btn" href="#"><span data-updates-btn-text>Загрузка...</span></a>
                 </div>
               </div>
             </div>

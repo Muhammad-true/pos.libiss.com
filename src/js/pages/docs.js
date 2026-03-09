@@ -1,10 +1,9 @@
-import { translations } from "./translations.js";
-import "./styles.css";
+import { translations } from "../lib/translations.js";
+import { api } from "../lib/api.js";
+import "../../styles.css";
 import { injectSpeedInsights } from "@vercel/speed-insights";
 
 injectSpeedInsights();
-
-const API_BASE = "https://api.libiss.com/api/v1";
 const STORAGE_KEY = "libiss-pos-lang";
 const DEFAULT_LANG = "ru";
 
@@ -168,12 +167,7 @@ const getPlatformName = (platform, lang) => {
  * Публичный эндпоинт: GET /api/v1/updates/latest?platform=server|windows|android|shop
  * Владелец магазина и любой пользователь могут скачивать. Ответ: { success, data: { fileUrl, fileName, version, ... } }
  */
-const resolveFileUrl = (url) => {
-  if (!url) return "";
-  if (url.startsWith("http")) return url;
-  const base = "https://api.libiss.com";
-  return url.startsWith("/") ? base + url : base + "/" + url;
-};
+const resolveFileUrl = (url) => api.resolveAssetUrl(url || "");
 
 const loadLatestUpdate = async (platform) => {
   const card = document.querySelector(`.docs-update-card[data-updates-platform="${platform}"]`);
@@ -204,10 +198,9 @@ const loadLatestUpdate = async (platform) => {
   };
 
   try {
-    const response = await fetch(`${API_BASE}/updates/latest?platform=${encodeURIComponent(platform)}`);
-    const result = await response.json().catch(() => ({}));
+    const result = await api.get(`/updates/latest?platform=${encodeURIComponent(platform)}`, { token: null });
 
-    if (!response.ok || !result?.success || !result?.data) {
+    if (!result || result.error || !result?.success || !result?.data) {
       link.classList.remove("is-loading");
       link.classList.add("is-unavailable");
       textSpan.textContent = lblUnavailable;
@@ -248,6 +241,7 @@ const fetchUpdates = () => {
 };
 
 applyLang(detectLang());
+document.body.style.opacity = "1";
 renderWelcome();
 if (tutorialSteps.length > 0) {
   updateTutorialUI();

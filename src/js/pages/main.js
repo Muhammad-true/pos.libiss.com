@@ -1,5 +1,5 @@
-import { translations } from "./translations.js";
-import "./styles.css";
+import { translations } from "../lib/translations.js";
+import "../../styles.css";
 import { injectSpeedInsights } from "@vercel/speed-insights";
 
 injectSpeedInsights();
@@ -132,4 +132,7 @@ const updateAuthButtons = () => {
 
 applyLang(detectLang());
 updateAuthButtons();
+
+// Prevent FOUC
+document.body.style.opacity = "1";
 

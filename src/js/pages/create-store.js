@@ -1,10 +1,9 @@
 import { injectSpeedInsights } from "@vercel/speed-insights";
-import "./styles.css";
-import { translations } from "./translations.js";
+import "../../styles.css";
+import { translations } from "../lib/translations.js";
+import { api } from "../lib/api.js";
 
 injectSpeedInsights();
-
-const API_BASE = "https://api.libiss.com/api/v1";
 const STORAGE_KEY = "libiss-pos-lang";
 const DEFAULT_LANG = "ru";
 
@@ -21,6 +20,10 @@ const logoInput = document.querySelector("[data-logo-input]");
 const logoPreview = document.querySelector("[data-logo-preview]");
 const logoPreviewImg = document.querySelector("[data-logo-preview-img]");
 const logoRemove = document.querySelector("[data-logo-remove]");
+const certificatePhotoInput = document.querySelector("[data-certificate-photo-input]");
+const certificatePhotoPreview = document.querySelector("[data-certificate-photo-preview]");
+const certificatePhotoPreviewImg = document.querySelector("[data-certificate-photo-preview-img]");
+const certificatePhotoRemove = document.querySelector("[data-certificate-photo-remove]");
 const errorFields = new Map(
   Array.from(document.querySelectorAll("[data-error-for]")).map((el) => [
     el.dataset.errorFor,
@@ -175,27 +178,9 @@ const validateStep = () => {
 };
 
 const uploadLogo = async (file) => {
-  const formData = new FormData();
-  formData.append("image", file);
-
-  // Используем базовый URL API без /api/v1 для эндпоинта загрузки
-  const uploadUrl = API_BASE.replace("/api/v1", "") + "/api/upload/image?folder=shops";
-  const response = await fetch(uploadUrl, {
-    method: "POST",
-    body: formData
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || "Ошибка загрузки изображения");
-  }
-
-  const data = await response.json();
-  if (data.success) {
-    return data.url;
-  } else {
-    throw new Error(data.error || "Ошибка загрузки изображения");
-  }
+  const result = await api.uploadImage("shops", file, { token: null });
+  if (typeof result === "string") return result;
+  throw new Error(result?.message || "Ошибка загрузки изображения");
 };
 
 const validateLogoFile = (file) => {
@@ -261,13 +246,51 @@ if (logoRemove) {
   });
 }
 
+const showCertificatePhotoPreview = (file) => {
+  if (!certificatePhotoPreview || !certificatePhotoPreviewImg) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    certificatePhotoPreviewImg.src = e.target.result;
+    certificatePhotoPreview.hidden = false;
+  };
+  reader.readAsDataURL(file);
+};
+
+const hideCertificatePhotoPreview = () => {
+  if (certificatePhotoPreview) certificatePhotoPreview.hidden = true;
+  if (certificatePhotoInput) certificatePhotoInput.value = "";
+};
+
+if (certificatePhotoInput) {
+  certificatePhotoInput.addEventListener("change", (event) => {
+    const file = event.target.files[0];
+    if (!file) {
+      hideCertificatePhotoPreview();
+      return;
+    }
+    const validation = validateLogoFile(file);
+    if (!validation.valid) {
+      setStatus(validation.error, "error");
+      hideCertificatePhotoPreview();
+      return;
+    }
+    clearFieldError(certificatePhotoInput);
+    showCertificatePhotoPreview(file);
+  });
+}
+
+if (certificatePhotoRemove) {
+  certificatePhotoRemove.addEventListener("click", () => {
+    hideCertificatePhotoPreview();
+  });
+}
+
 const loadCities = async () => {
   if (!citySelect) return;
   try {
-    const response = await fetch(`${API_BASE}/cities/`);
-    if (!response.ok) throw new Error("cities");
-    const payload = await response.json();
-    const cities = payload?.data?.cities || [];
+    const payload = await api.get("/cities/", { token: null });
+    if (payload && payload.error) throw new Error("cities");
+    const cities = payload?.data?.cities || payload?.data || [];
     cities.forEach((city) => {
       if (!city?.id || !city?.name) return;
       const option = document.createElement("option");
@@ -345,11 +368,33 @@ const handleSubmit = async (event) => {
     phone: fullPhone,
     shopName: formData.get("shopName")?.toString().trim(),
     inn: formData.get("inn")?.toString().trim(),
+    certificate: formData.get("certificate")?.toString().trim(),
     description: formData.get("description")?.toString().trim(),
     address: formData.get("address")?.toString().trim()
   };
   const cityId = formData.get("cityId")?.toString().trim();
   if (cityId) payload.cityId = cityId;
+
+  // Фото сертификата — обязательно: загружаем и передаём URL
+  const certificatePhotoFile = certificatePhotoInput?.files[0];
+  if (!certificatePhotoFile) {
+    setStatus(translations[detectLang()]["form.errorCertificatePhotoRequired"] || "Загрузите фото сертификата.", "error");
+    const certField = form.querySelector("#certificatePhoto");
+    if (certField) setFieldError(certField, translations[detectLang()]["form.errorCertificatePhotoRequired"] || "Обязательное поле.");
+    return;
+  }
+  let certificatePhotoUrl = "";
+  try {
+    setStatus(translations[detectLang()]["form.certificatePhotoUploading"] || "Загрузка фото сертификата...", "");
+    certificatePhotoUrl = await uploadLogo(certificatePhotoFile);
+    if (!certificatePhotoUrl) throw new Error("No URL");
+    setStatus("", "");
+  } catch (error) {
+    setStatus(translations[detectLang()]["form.errorCertificatePhotoUpload"] || "Не удалось загрузить фото сертификата.", "error");
+    if (submitButton) submitButton.disabled = false;
+    return;
+  }
+  payload.certificatePhotoUrl = certificatePhotoUrl;
 
   // Загружаем логотип, если он выбран (опционально)
   let logoUrl = "";
@@ -358,19 +403,13 @@ const handleSubmit = async (event) => {
     try {
       setStatus(translations[detectLang()]["form.logoUploading"] || "Загрузка логотипа...", "");
       logoUrl = await uploadLogo(logoFile);
-      // Очищаем статус после успешной загрузки
       setStatus("", "");
     } catch (error) {
-      // Если загрузка не удалась, продолжаем без логотипа
-      // Показываем предупреждение, но не блокируем регистрацию
       console.warn("Не удалось загрузить логотип, продолжаем без него:", error);
-      logoUrl = ""; // Продолжаем без логотипа
-      // Не показываем ошибку, чтобы не блокировать регистрацию
-      // setStatus("", ""); // Очищаем статус, чтобы продолжить
+      logoUrl = "";
     }
   }
 
-  // Добавляем логотип в payload только если он был успешно загружен
   if (logoUrl) {
     payload.logo = logoUrl;
   }
@@ -378,22 +417,13 @@ const handleSubmit = async (event) => {
   if (submitButton) submitButton.disabled = true;
 
   try {
-    const response = await fetch(`${API_BASE}/shop-registration/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-    if (response.status === 409) {
-      setStatus(translations[detectLang()]["form.errorEmail"], "error");
+    const result = await api.post("/shop-registration/register", payload, { token: null });
+    if (result && result.error) {
+      if (result.status === 409) setStatus(translations[detectLang()]["form.errorEmail"], "error");
+      else setStatus(translations[detectLang()]["form.errorGeneric"], "error");
       if (submitButton) submitButton.disabled = false;
       return;
     }
-    if (!response.ok) {
-      setStatus(translations[detectLang()]["form.errorGeneric"], "error");
-      if (submitButton) submitButton.disabled = false;
-      return;
-    }
-    const result = await response.json();
     if (result?.data?.token) {
       localStorage.setItem("userToken", result.data.token);
     }
@@ -408,6 +438,7 @@ const handleSubmit = async (event) => {
     }
     form.reset();
     hideLogoPreview();
+    hideCertificatePhotoPreview();
     setStatus(translations[detectLang()]["form.success"], "success");
     window.location.href = "/office.html";
   } catch (error) {
@@ -542,6 +573,7 @@ const initCountrySelector = () => {
 };
 
 applyLang(detectLang());
+document.body.style.opacity = "1";
 loadCities();
 // Инициализируем UI шагов перед обновлением, чтобы правильно настроить required атрибуты
 updateStepUI();

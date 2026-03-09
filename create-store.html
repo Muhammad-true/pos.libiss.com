@@ -26,6 +26,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/logo.png" />
     <link rel="shortcut icon" href="/logo.png" />
     <title>Libiss POS — Создать магазин</title>
+    <style>body { opacity: 0; transition: opacity 0.3s; }</style>
   </head>
   <body>
     <div class="page">
@@ -86,6 +87,36 @@
                         placeholder="123456789"
                       />
                       <span class="field-error" data-error-for="inn"></span>
+                    </div>
+                    <div class="field">
+                      <label for="certificate" data-i18n="form.certificate">Сертификат</label>
+                      <input
+                        id="certificate"
+                        name="certificate"
+                        type="text"
+                        required
+                        data-i18n-attr="placeholder"
+                        data-i18n-key="form.certificatePlaceholder"
+                        placeholder="Номер или название сертификата"
+                      />
+                      <span class="field-error" data-error-for="certificate"></span>
+                    </div>
+                    <div class="field">
+                      <label for="certificatePhoto" data-i18n="form.certificatePhoto">Фото сертификата</label>
+                      <input
+                        id="certificatePhoto"
+                        name="certificatePhoto"
+                        type="file"
+                        accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                        required
+                        data-certificate-photo-input
+                      />
+                      <span class="hint" data-i18n="form.certificatePhotoHint">Обязательно. Загрузите фото — в форме будет передан полученный URL.</span>
+                      <div class="certificate-photo-preview" data-certificate-photo-preview hidden>
+                        <img data-certificate-photo-preview-img src="" alt="Preview" />
+                        <button type="button" class="logo-remove" data-certificate-photo-remove data-i18n="form.logoRemove">Удалить</button>
+                      </div>
+                      <span class="field-error" data-error-for="certificatePhoto"></span>
                     </div>
                     <div class="field">
                       <label for="description" data-i18n="form.description"
@@ -293,7 +324,7 @@
       </main>
     </div>
 
-    <script type="module" src="/src/create-store.js"></script>
+    <script type="module" src="/src/js/pages/create-store.js"></script>
   </body>
 </html>
 

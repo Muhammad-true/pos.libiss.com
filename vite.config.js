@@ -19,7 +19,8 @@ export default defineConfig({
         office: resolve(__dirname, "office.html"),
         gallery: resolve(__dirname, "gallery.html"),
         docs: resolve(__dirname, "docs.html"),
-        orders: resolve(__dirname, "orders.html")
+        orders: resolve(__dirname, "orders.html"),
+        "add-product": resolve(__dirname, "add-product.html")
       }
     }
   },

@@ -23,42 +23,12 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/logo.png" />
     <link rel="shortcut icon" href="/logo.png" />
     <title>Libiss POS — Мой аккаунт</title>
+    <style>body { opacity: 0; transition: opacity 0.3s; }</style>
   </head>
   <body>
     <div class="page">
-      <header class="topbar">
-        <div class="container nav">
-          <a class="logo" href="/" aria-label="Libiss POS">
-            <img class="logo-image" src="/logo.png" alt="Libiss" />
-            <span>Libiss POS</span>
-          </a>
-          <div class="nav-actions">
-            <button class="btn btn-secondary" type="button" data-logout data-i18n="office.logout">
-              Выход
-            </button>
-            <div class="lang-toggle" role="group" aria-label="Language">
-              <button class="lang-btn is-active" type="button" data-lang="ru">
-                RU
-              </button>
-              <button class="lang-btn" type="button" data-lang="en">EN</button>
-            </div>
-          </div>
-        </div>
-      </header>
-
+      <div data-app-header data-app-title="Главная" data-app-title-key="office.menuDashboard" data-app-logo-href="/"></div>
       <main class="office-page">
-        <div class="container">
-          <nav class="office-tabs" aria-label="Разделы кабинета">
-            <div class="office-tabs-inner">
-              <button type="button" class="office-tab is-active" data-office-nav="dashboard" data-i18n="office.menuDashboard">Главная</button>
-              <button type="button" class="office-tab" data-office-nav="stores" data-i18n="office.menuStores">Мои магазины</button>
-              <button type="button" class="office-tab" data-office-nav="orders" data-i18n="office.menuOrders">Заказы</button>
-              <button type="button" class="office-tab" data-office-nav="products" data-i18n="office.menuProducts">Товары</button>
-              <button type="button" class="office-tab" data-office-nav="licenses" data-i18n="office.menuLicenses">Подписки</button>
-            </div>
-          </nav>
-        </div>
-
         <div class="office-content">
           <section class="office-panel is-active" data-office-panel="dashboard">
             <section class="office-hero">
@@ -70,6 +40,7 @@
                     Короткие шаги для быстрого запуска POS.
                   </p>
                   <div class="office-welcome" data-office-welcome></div>
+                  <div class="office-verification-banner" data-office-verification-banner hidden aria-live="polite"></div>
                 </div>
               </div>
             </section>
@@ -182,7 +153,12 @@
 
           <section class="office-panel" data-office-panel="products" hidden>
             <div class="container office-panel-inner">
-              <h2 class="section-title" data-i18n="office.productsTitle">Товары</h2>
+              <div class="office-products-header">
+                <h2 class="section-title" data-i18n="office.productsTitle">Товары</h2>
+                <button type="button" class="office-add-product-btn" data-office-add-product data-i18n-attr="aria-label" data-i18n-key="office.addProduct" aria-label="Добавить товар" title="Добавить товар">
+                  <svg class="office-add-product-btn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </button>
+              </div>
               <div class="office-products-list">
                 <div class="office-products-body" data-office-products-body>
                   <div class="office-products-empty" data-i18n="office.productsEmpty">Товаров пока нет</div>
@@ -215,7 +191,37 @@
       </main>
     </div>
 
-    <script type="module" src="/src/office.js"></script>
+    <div class="order-modal" data-order-modal hidden>
+      <div class="order-modal-backdrop" data-close-order-modal></div>
+      <div class="order-modal-content">
+        <button type="button" class="order-modal-close" data-close-order-modal>×</button>
+        <div class="order-modal-body" data-order-details>
+          <!-- Order details and actions injected here -->
+        </div>
+      </div>
+    </div>
+
+    <div class="product-modal" data-product-modal hidden>
+      <div class="product-modal-backdrop" data-close-modal></div>
+      <div class="product-modal-content">
+        <button type="button" class="product-modal-close" data-close-modal>×</button>
+        <div class="product-modal-body" data-product-details>
+          <!-- Details injected here -->
+        </div>
+      </div>
+    </div>
+
+    <div class="lightbox" data-office-lightbox>
+      <div class="lightbox-backdrop" data-lightbox-close></div>
+      <div class="lightbox-content">
+        <div class="lightbox-frame">
+          <img src="" alt="" data-lightbox-image />
+        </div>
+        <button class="icon-btn lightbox-close-btn" type="button" data-lightbox-close>×</button>
+      </div>
+    </div>
+
+    <script type="module" src="/src/js/pages/office.js"></script>
   </body>
 </html>
 
