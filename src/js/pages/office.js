@@ -11,6 +11,7 @@ const ORDERS_POLL_MS = 90 * 1000;
 const DEFAULT_LANG = "ru";
 let lastFetchedOrderIds = [];
 let ordersPollTimer = null;
+let currentShopsList = [];
 
 const elements = Array.from(document.querySelectorAll("[data-i18n]"));
 const attrElements = Array.from(document.querySelectorAll("[data-i18n-attr]"));
@@ -1104,11 +1105,8 @@ const loadAccount = async () => {
     }
   }
 
-  renderStores(
-    shopsList.length > 0
-      ? shopsList
-      : [{ id: cachedShopId, name: cachedShopName }]
-  );
+  currentShopsList = shopsList.length > 0 ? shopsList : [{ id: cachedShopId, name: cachedShopName }];
+  renderStores(currentShopsList);
 
   if (token) {
     const shopMe = await fetchShopMe(token);
@@ -1208,6 +1206,142 @@ if (logoRemove) {
     }
   });
 }
+
+// --- Редактирование магазина (PUT /shop/me) ---
+const getStoreEditModal = () => document.querySelector("[data-store-edit-modal]");
+const getStoreEditForm = () => document.querySelector("[data-store-edit-form]");
+const getStoreEditStatus = () => document.querySelector("[data-store-edit-status]");
+const getStoreEditCitySelect = () => document.querySelector("#store-edit-cityId");
+
+const setStoreEditStatus = (message, type) => {
+  const el = getStoreEditStatus();
+  if (!el) return;
+  el.textContent = message || "";
+  el.classList.toggle("is-error", type === "error");
+  el.classList.toggle("is-success", type === "success");
+};
+
+const loadCitiesForStoreEdit = async () => {
+  const select = getStoreEditCitySelect();
+  if (!select) return;
+  const firstOption = select.querySelector("option[value='']") || select.options[0];
+  select.innerHTML = firstOption ? firstOption.outerHTML : "<option value=\"\">—</option>";
+  try {
+    const res = await api.get("/cities/", { token: null });
+    const cities = res?.data?.cities ?? res?.data ?? [];
+    (Array.isArray(cities) ? cities : []).forEach((city) => {
+      if (!city?.id || !city?.name) return;
+      const opt = document.createElement("option");
+      opt.value = city.id;
+      opt.textContent = city.name;
+      select.appendChild(opt);
+    });
+  } catch (_) {}
+};
+
+const fillStoreEditForm = (shop) => {
+  const form = getStoreEditForm();
+  if (!form || !shop) return;
+  const set = (name, value) => {
+    const el = form.querySelector(`[data-store-edit-field="${name}"]`);
+    if (el) el.value = value != null && value !== undefined ? String(value) : "";
+  };
+  set("name", shop.name);
+  set("description", shop.description);
+  set("address", shop.address);
+  set("phone", shop.phone);
+  set("email", shop.email);
+  set("telegram", shop.telegram);
+  set("instagram", shop.instagram);
+  set("primaryColor", shop.primaryColor ?? shop.primary_color);
+  set("background", shop.background);
+  set("cityId", shop.cityId ?? shop.city_id ?? "");
+};
+
+const openStoreEditModal = async () => {
+  const modal = getStoreEditModal();
+  if (!modal) return;
+  const token = localStorage.getItem("userToken");
+  if (!token) return;
+  setStoreEditStatus("", "");
+  try {
+    const shop = await fetchShopMe(token);
+    if (!shop) {
+      setStoreEditStatus(translations[detectLang()]["office.editStoreErrorLoad"] || "Не удалось загрузить данные магазина", "error");
+      return;
+    }
+    await loadCitiesForStoreEdit();
+    fillStoreEditForm(shop);
+    modal.hidden = false;
+  } catch (e) {
+    setStoreEditStatus(translations[detectLang()]["office.editStoreErrorLoad"] || "Ошибка загрузки", "error");
+  }
+};
+
+const closeStoreEditModal = () => {
+  const modal = getStoreEditModal();
+  if (modal) modal.hidden = true;
+  setStoreEditStatus("", "");
+};
+
+const handleStoreEditSubmit = async (e) => {
+  e.preventDefault();
+  const form = getStoreEditForm();
+  if (!form) return;
+  const token = localStorage.getItem("userToken");
+  if (!token) return;
+  const payload = {};
+  ["name", "description", "address", "phone", "email", "telegram", "instagram", "primaryColor", "background", "cityId"].forEach((name) => {
+    const el = form.querySelector(`[data-store-edit-field="${name}"]`);
+    if (!el) return;
+    const val = el.value != null ? String(el.value).trim() : "";
+    if (name === "cityId") {
+      payload.cityId = val || undefined;
+    } else {
+      if (val !== "") payload[name] = val;
+    }
+  });
+  const submitBtn = form.querySelector('button[type="submit"]');
+  if (submitBtn) submitBtn.disabled = true;
+  setStoreEditStatus(translations[detectLang()]["office.editStoreSaving"] || "Сохранение...", "");
+  try {
+    const res = await api.put("/shop/me", payload, { token });
+    if (res && res.error) {
+      setStoreEditStatus(res.message || translations[detectLang()]["office.editStoreErrorSave"] || "Ошибка сохранения", "error");
+      if (submitBtn) submitBtn.disabled = false;
+      return;
+    }
+    const updated = res?.data?.shop ?? res?.shop ?? res?.data ?? res;
+    if (updated && currentShopsList.length > 0) {
+      const idx = currentShopsList.findIndex((s) => String(s?.id) === String(updated.id));
+      if (idx >= 0) currentShopsList[idx] = { ...currentShopsList[idx], ...updated };
+      else currentShopsList[0] = { ...currentShopsList[0], ...updated };
+      renderStores(currentShopsList);
+    }
+    if (updated?.name) localStorage.setItem("shopName", updated.name);
+    setStoreEditStatus(translations[detectLang()]["office.editStoreSuccess"] || "Сохранено", "success");
+    setTimeout(() => {
+      closeStoreEditModal();
+      setStoreEditStatus("", "");
+    }, 800);
+  } catch (err) {
+    setStoreEditStatus(translations[detectLang()]["office.editStoreErrorSave"] || "Ошибка сохранения", "error");
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
+  }
+};
+
+const storeEditForm = getStoreEditForm();
+if (storeEditForm) storeEditForm.addEventListener("submit", handleStoreEditSubmit);
+
+document.addEventListener("click", (e) => {
+  if (e.target.closest("[data-office-edit-store]")) {
+    openStoreEditModal();
+  }
+  if (e.target.closest("[data-close-store-edit-modal]")) {
+    closeStoreEditModal();
+  }
+});
 
 // Заголовок в апбаре по выбранному разделу
 const PANEL_TITLE_KEYS = {

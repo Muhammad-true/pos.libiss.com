@@ -77,6 +77,46 @@ const setStatus = (message, type) => {
   status.classList.toggle("is-success", type === "success");
 };
 
+// --- Progress Modal (процесс создания магазина) ---
+const getProgressModal = () => document.querySelector("[data-create-store-progress-modal]");
+const getProgressText = () => document.querySelector("[data-create-store-progress-text]");
+const getProgressSpinner = () => document.querySelector("[data-create-store-progress-spinner]");
+const getProgressActions = () => document.querySelector("[data-create-store-progress-actions]");
+const getProgressCloseBtn = () => document.querySelector("[data-create-store-progress-close]");
+
+const showProgressModal = (message) => {
+  const modal = getProgressModal();
+  const textEl = getProgressText();
+  const spinner = getProgressSpinner();
+  const actions = getProgressActions();
+  if (modal) modal.hidden = false;
+  if (textEl) textEl.textContent = message || "";
+  if (spinner) spinner.hidden = false;
+  if (actions) actions.hidden = true;
+};
+
+const setProgressText = (message) => {
+  const textEl = getProgressText();
+  if (textEl) textEl.textContent = message || "";
+};
+
+const hideProgressModal = () => {
+  const modal = getProgressModal();
+  if (modal) modal.hidden = true;
+};
+
+const showProgressDone = (message, isError = false) => {
+  const spinner = getProgressSpinner();
+  const actions = getProgressActions();
+  const textEl = getProgressText();
+  if (textEl) {
+    textEl.textContent = message || "";
+    textEl.classList.toggle("is-error", isError);
+  }
+  if (spinner) spinner.hidden = true;
+  if (actions) actions.hidden = false;
+};
+
 const clearFieldError = (field) => {
   field.classList.remove("is-invalid");
   const errorNode = errorFields.get(field.name);
@@ -177,8 +217,42 @@ const validateStep = () => {
   return true;
 };
 
-const uploadLogo = async (file) => {
-  const result = await api.uploadImage("shops", file, { token: null });
+/** Сжатие изображения в WebP (макс. ширина 1920px, качество 0.82). */
+const compressToWebp = (file, quality = 0.82, maxWidth = 1920) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (e) => {
+      const img = new Image();
+      img.src = e.target.result;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let { width, height } = img;
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width;
+          width = maxWidth;
+        }
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const name = (file.name || "image").replace(/\.[^/.]+$/, "") + ".webp";
+              resolve(new File([blob], name, { type: "image/webp", lastModified: Date.now() }));
+            } else reject(new Error("Canvas toBlob failed"));
+          },
+          "image/webp",
+          quality
+        );
+      };
+      img.onerror = () => reject(new Error("Image load failed"));
+    };
+    reader.onerror = () => reject(new Error("FileReader failed"));
+  });
+
+const uploadImageShops = async (file, options = {}) => {
+  const result = await api.uploadImage("shops", file, { token: null, ...options });
   if (typeof result === "string") return result;
   throw new Error(result?.message || "Ошибка загрузки изображения");
 };
@@ -375,7 +449,7 @@ const handleSubmit = async (event) => {
   const cityId = formData.get("cityId")?.toString().trim();
   if (cityId) payload.cityId = cityId;
 
-  // Фото сертификата — обязательно: загружаем и передаём URL
+  // Фото сертификата — обязательно
   const certificatePhotoFile = certificatePhotoInput?.files[0];
   if (!certificatePhotoFile) {
     setStatus(translations[detectLang()]["form.errorCertificatePhotoRequired"] || "Загрузите фото сертификата.", "error");
@@ -383,67 +457,60 @@ const handleSubmit = async (event) => {
     if (certField) setFieldError(certField, translations[detectLang()]["form.errorCertificatePhotoRequired"] || "Обязательное поле.");
     return;
   }
+
+  if (submitButton) submitButton.disabled = true;
+  const t = translations[detectLang()];
+  showProgressModal(t["form.progressPreparing"] || "Подготовка...");
+
   let certificatePhotoUrl = "";
   try {
-    setStatus(translations[detectLang()]["form.certificatePhotoUploading"] || "Загрузка фото сертификата...", "");
-    certificatePhotoUrl = await uploadLogo(certificatePhotoFile);
+    setProgressText(t["form.progressCertificatePhoto"] || "Сжатие и загрузка фото сертификата...");
+    const certWebp = await compressToWebp(certificatePhotoFile);
+    certificatePhotoUrl = await uploadImageShops(certWebp, { readyWebp: true });
     if (!certificatePhotoUrl) throw new Error("No URL");
-    setStatus("", "");
   } catch (error) {
-    setStatus(translations[detectLang()]["form.errorCertificatePhotoUpload"] || "Не удалось загрузить фото сертификата.", "error");
+    showProgressDone(t["form.errorCertificatePhotoUpload"] || "Не удалось загрузить фото сертификата.", true);
     if (submitButton) submitButton.disabled = false;
     return;
   }
   payload.certificatePhotoUrl = certificatePhotoUrl;
 
-  // Загружаем логотип, если он выбран (опционально)
   let logoUrl = "";
   const logoFile = logoInput?.files[0];
   if (logoFile) {
     try {
-      setStatus(translations[detectLang()]["form.logoUploading"] || "Загрузка логотипа...", "");
-      logoUrl = await uploadLogo(logoFile);
-      setStatus("", "");
+      setProgressText(t["form.progressLogo"] || "Сжатие и загрузка логотипа...");
+      const logoWebp = await compressToWebp(logoFile);
+      logoUrl = await uploadImageShops(logoWebp, { readyWebp: true });
     } catch (error) {
       console.warn("Не удалось загрузить логотип, продолжаем без него:", error);
-      logoUrl = "";
     }
   }
-
-  if (logoUrl) {
-    payload.logo = logoUrl;
-  }
-
-  if (submitButton) submitButton.disabled = true;
+  if (logoUrl) payload.logo = logoUrl;
 
   try {
+    setProgressText(t["form.progressRegister"] || "Регистрация магазина...");
     const result = await api.post("/shop-registration/register", payload, { token: null });
     if (result && result.error) {
-      if (result.status === 409) setStatus(translations[detectLang()]["form.errorEmail"], "error");
-      else setStatus(translations[detectLang()]["form.errorGeneric"], "error");
+      const errMsg = result.status === 409 ? (t["form.errorEmail"] || "Email уже используется.") : (t["form.errorGeneric"] || "Не удалось отправить.");
+      showProgressDone(errMsg, true);
       if (submitButton) submitButton.disabled = false;
       return;
     }
-    if (result?.data?.token) {
-      localStorage.setItem("userToken", result.data.token);
-    }
-    if (result?.data?.user) {
-      localStorage.setItem("userData", JSON.stringify(result.data.user));
-    }
-    if (result?.data?.shop?.id) {
-      localStorage.setItem("shopId", result.data.shop.id);
-    }
-    if (result?.data?.shop?.name) {
-      localStorage.setItem("shopName", result.data.shop.name);
-    }
+    if (result?.data?.token) localStorage.setItem("userToken", result.data.token);
+    if (result?.data?.user) localStorage.setItem("userData", JSON.stringify(result.data.user));
+    if (result?.data?.shop?.id) localStorage.setItem("shopId", result.data.shop.id);
+    if (result?.data?.shop?.name) localStorage.setItem("shopName", result.data.shop.name);
     form.reset();
     hideLogoPreview();
     hideCertificatePhotoPreview();
-    setStatus(translations[detectLang()]["form.success"], "success");
-    window.location.href = "/office.html";
+    showProgressDone(t["form.progressSuccess"] || "Готово! Перенаправление в кабинет...", false);
+    setTimeout(() => {
+      hideProgressModal();
+      window.location.href = "/office.html";
+    }, 1800);
   } catch (error) {
-    setStatus(translations[detectLang()]["form.errorGeneric"], "error");
-  } finally {
+    showProgressDone(t["form.errorGeneric"] || "Не удалось отправить. Попробуйте позже.", true);
     if (submitButton) submitButton.disabled = false;
   }
 };
@@ -572,10 +639,19 @@ const initCountrySelector = () => {
   });
 };
 
+// Закрытие модального окна процесса (при ошибке)
+const progressCloseBtn = getProgressCloseBtn();
+if (progressCloseBtn) {
+  progressCloseBtn.addEventListener("click", () => {
+    hideProgressModal();
+    const sb = form?.querySelector("button[type='submit']");
+    if (sb) sb.disabled = false;
+  });
+}
+
 applyLang(detectLang());
 document.body.style.opacity = "1";
 loadCities();
-// Инициализируем UI шагов перед обновлением, чтобы правильно настроить required атрибуты
 updateStepUI();
 updateAuthButtons();
 initCountrySelector();

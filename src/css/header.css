@@ -12,6 +12,12 @@
   border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
 }
 
+/* Апбар Libiss POS: отступы по бокам, слева иконка — справа выбор языка */
+.topbar .container.nav {
+  padding-left: calc(20px + env(safe-area-inset-left, 0px));
+  padding-right: calc(20px + env(safe-area-inset-right, 0px));
+}
+
 .nav {
   display: flex;
   align-items: center;
@@ -32,13 +38,26 @@
   gap: 10px;
   font-weight: 600;
   letter-spacing: -0.02em;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.topbar .logo {
+  flex-shrink: 0;
 }
 
 .logo-image {
   width: 34px;
   height: 34px;
+  min-width: 34px;
+  min-height: 34px;
   border-radius: 10px;
   object-fit: cover;
+  display: block;
+}
+
+.topbar .lang-toggle {
+  flex-shrink: 0;
 }
 
 .lang-toggle {

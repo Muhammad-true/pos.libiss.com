@@ -91,13 +91,19 @@
               <h2 class="section-title" data-i18n="office.storesTitle">
                 Ваши магазины
               </h2>
-              <a class="btn btn-secondary" href="/create-store.html" data-i18n="office.createStore">
-                Создать магазин
-              </a>
+              <div class="office-stores-header-actions">
+                <button type="button" class="btn btn-secondary" data-office-edit-store data-i18n="office.editStore">
+                  Изменить данные магазина
+                </button>
+                <a class="btn btn-secondary" href="/create-store.html" data-i18n="office.createStore">
+                  Создать магазин
+                </a>
+              </div>
             </div>
             <div class="office-logo-section" data-office-logo-section>
+              <h3 class="office-logo-section__title" data-i18n="office.logoSectionTitle">Логотип магазина</h3>
               <div class="office-logo-container">
-                <div class="office-logo-preview">
+                <div class="office-logo-preview" aria-hidden="true">
                   <img data-office-logo-img src="" alt="Logo" hidden />
                   <div class="office-logo-placeholder" data-office-logo-placeholder>
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -208,6 +214,63 @@
         <div class="product-modal-body" data-product-details>
           <!-- Details injected here -->
         </div>
+      </div>
+    </div>
+
+    <div class="store-edit-modal" data-store-edit-modal hidden role="dialog" aria-labelledby="store-edit-modal-title">
+      <div class="store-edit-modal-backdrop" data-close-store-edit-modal></div>
+      <div class="store-edit-modal-content">
+        <button type="button" class="store-edit-modal-close" data-close-store-edit-modal aria-label="Закрыть">×</button>
+        <h2 id="store-edit-modal-title" class="store-edit-modal-title" data-i18n="office.editStoreTitle">Данные магазина</h2>
+        <form class="store-edit-form" data-store-edit-form>
+          <div class="field">
+            <label for="store-edit-name" data-i18n="office.editStoreName">Название</label>
+            <input id="store-edit-name" name="name" type="text" data-store-edit-field="name" />
+          </div>
+          <div class="field">
+            <label for="store-edit-description" data-i18n="office.editStoreDescription">Описание</label>
+            <textarea id="store-edit-description" name="description" rows="2" data-store-edit-field="description"></textarea>
+          </div>
+          <div class="field">
+            <label for="store-edit-address" data-i18n="office.editStoreAddress">Адрес</label>
+            <input id="store-edit-address" name="address" type="text" data-store-edit-field="address" />
+          </div>
+          <div class="field">
+            <label for="store-edit-phone" data-i18n="office.editStorePhone">Телефон</label>
+            <input id="store-edit-phone" name="phone" type="tel" data-store-edit-field="phone" />
+          </div>
+          <div class="field">
+            <label for="store-edit-email" data-i18n="office.editStoreEmail">Email магазина</label>
+            <input id="store-edit-email" name="email" type="email" data-store-edit-field="email" />
+          </div>
+          <div class="field">
+            <label for="store-edit-telegram" data-i18n="office.editStoreTelegram">Telegram</label>
+            <input id="store-edit-telegram" name="telegram" type="text" placeholder="@username или ссылка" data-store-edit-field="telegram" />
+          </div>
+          <div class="field">
+            <label for="store-edit-instagram" data-i18n="office.editStoreInstagram">Instagram</label>
+            <input id="store-edit-instagram" name="instagram" type="text" placeholder="@username или ссылка" data-store-edit-field="instagram" />
+          </div>
+          <div class="field">
+            <label for="store-edit-primaryColor" data-i18n="office.editStorePrimaryColor">Основной цвет (hex)</label>
+            <input id="store-edit-primaryColor" name="primaryColor" type="text" placeholder="#12a57c" data-store-edit-field="primaryColor" />
+          </div>
+          <div class="field">
+            <label for="store-edit-background" data-i18n="office.editStoreBackground">Фон (URL или цвет)</label>
+            <input id="store-edit-background" name="background" type="text" data-store-edit-field="background" />
+          </div>
+          <div class="field">
+            <label for="store-edit-cityId" data-i18n="office.editStoreCity">Город</label>
+            <select id="store-edit-cityId" name="cityId" data-store-edit-field="cityId">
+              <option value="">—</option>
+            </select>
+          </div>
+          <div class="store-edit-modal-actions">
+            <button type="button" class="btn btn-secondary" data-close-store-edit-modal data-i18n="office.editStoreCancel">Отмена</button>
+            <button type="submit" class="btn btn-primary" data-i18n="office.saveStore">Сохранить</button>
+          </div>
+          <div class="status" data-store-edit-status aria-live="polite"></div>
+        </form>
       </div>
     </div>
 

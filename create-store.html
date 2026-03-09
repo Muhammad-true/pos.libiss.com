@@ -322,6 +322,21 @@
           </div>
         </section>
       </main>
+
+      <!-- Модальное окно процесса создания магазина -->
+      <div class="create-store-progress-modal" data-create-store-progress-modal hidden role="dialog" aria-labelledby="progress-modal-title" aria-live="polite">
+        <div class="create-store-progress-backdrop"></div>
+        <div class="create-store-progress-content">
+          <h2 id="progress-modal-title" class="create-store-progress-title" data-i18n="form.progressModalTitle">Создание магазина</h2>
+          <div class="create-store-progress-body">
+            <p class="create-store-progress-text" data-create-store-progress-text></p>
+            <div class="create-store-progress-spinner" data-create-store-progress-spinner aria-hidden="true"></div>
+          </div>
+          <div class="create-store-progress-actions" data-create-store-progress-actions hidden>
+            <button type="button" class="btn btn-primary" data-create-store-progress-close data-i18n="form.close">Закрыть</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script type="module" src="/src/js/pages/create-store.js"></script>
