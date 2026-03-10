@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#12a57c" />
+    <title>Условия и политика — Libiss POS</title>
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <link rel="stylesheet" href="/src/styles.css" />
+    <style>
+      .legal-page { max-width: 720px; margin: 0 auto; padding: 24px 16px 48px; }
+      .legal-page h1 { font-size: 1.35rem; margin-bottom: 16px; }
+      .legal-content { line-height: 1.6; color: var(--text-secondary, #666); }
+      .legal-content p { margin-bottom: 12px; }
+      .legal-content a { color: var(--accent, #12a57c); }
+      .label-checkbox { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 0.95rem; }
+      .label-checkbox input[type="checkbox"] { margin-top: 4px; }
+      .field--checkbox { margin-top: 12px; }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <div class="container nav">
+          <a class="logo" href="/create-store.html" aria-label="Назад">← Libiss POS</a>
+        </div>
+      </header>
+      <main class="legal-page">
+        <h1 data-legal-title>Загрузка…</h1>
+        <div class="legal-content" data-legal-content></div>
+        <p style="margin-top: 24px;"><a href="/create-store.html">← Вернуться к регистрации</a></p>
+      </main>
+    </div>
+    <script type="module" src="/src/js/pages/legal-view.js"></script>
+  </body>
+</html>

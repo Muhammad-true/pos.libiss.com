@@ -126,8 +126,14 @@
                       placeholder="••••••••"
                     />
                   </div>
+                  <div class="field field--checkbox" data-agree-block>
+                    <label class="label-checkbox">
+                      <input type="checkbox" name="agreeTerms" id="loginAgreeTerms" data-agree-terms />
+                      <span data-i18n-html="login.agreeTermsHtml">Входя, вы соглашаетесь с <a href="/legal-view.html#terms_shop" target="_blank" rel="noopener">условиями</a> и <a href="/legal-view.html#privacy_shop" target="_blank" rel="noopener">политикой конфиденциальности</a></span>
+                    </label>
+                  </div>
                   <div class="form-actions">
-                    <button class="btn btn-primary" type="submit" data-i18n="login.submit">
+                    <button class="btn btn-primary" type="submit" data-i18n="login.submit" data-login-submit disabled>
                       Войти
                     </button>
                     <a class="btn btn-secondary" href="/" data-i18n="login.back">

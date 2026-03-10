@@ -179,7 +179,7 @@ const orderStatusBadgeClass = (status) => {
   if (s === "confirmed" || s === "accepted" || s === "принят" || s === "completed" || s === "done" || s === "return_accepted") return "office-order-status--accepted";
   if (s === "rejected" || s === "отклонён" || s === "cancelled" || s === "canceled") return "office-order-status--rejected";
   if (s === "returned") return "office-order-status--returned";
-  if (s === "indelivery" || s === "in_delivery" || s === "inDelivery" || s === "preparing" || s === "fitting") return "office-order-status--pending";
+  if (s === "indelivery" || s === "in_delivery" || s === "inDelivery" || s === "atdoor" || s === "preparing" || s === "fitting") return "office-order-status--pending";
   return "";
 };
 
@@ -310,16 +310,30 @@ const openOrderDetails = async (id) => {
   modal.style.visibility = "visible";
   try {
     const token = localStorage.getItem("userToken");
+    if (!token) {
+      body.innerHTML = '<p class="status is-error">Войдите в аккаунт</p>';
+      return;
+    }
     const res = await api.get(`/shop/orders/${id}`, { token });
-    if (!res || res.error) {
-      body.innerHTML = '<p class="status is-error">' + (res?.message || "Не удалось загрузить заказ") + "</p>";
+    if (!res) {
+      body.innerHTML = '<p class="status is-error">Нет ответа от сервера. Проверьте интернет или войдите снова.</p>';
+      return;
+    }
+    if (res.error) {
+      const msg = res.message || res.status === 404 ? "Заказ не найден" : "Не удалось загрузить заказ";
+      body.innerHTML = '<p class="status is-error">' + msg + "</p>";
       return;
     }
     const order = res.data?.order ?? res.order ?? res.data ?? res;
+    if (!order || (order.id == null && order.order_number == null)) {
+      body.innerHTML = '<p class="status is-error">Неверный ответ сервера</p>';
+      return;
+    }
     renderOrderDetails(order);
   } catch (e) {
     console.error(e);
-    body.innerHTML = '<p class="status is-error">Ошибка сети</p>';
+    const msg = e?.message || (e && String(e)) || "Ошибка сети";
+    body.innerHTML = '<p class="status is-error">' + msg + "</p>";
   }
 };
 
@@ -364,11 +378,13 @@ const openReceipt = async (orderId, orderNumber) => {
       body.innerHTML = '<p class="status is-error">' + (res.message || "Не удалось загрузить чек") + "</p>";
       return;
     }
-    const data = res?.data ?? res;
+    const data = res?.data?.data ?? res?.data ?? res;
     const items = data?.items ?? [];
     const shops = data?.shops ?? [];
     const total = data?.total_amount ?? 0;
     const currency = data?.currency ?? "TJS";
+    const tryOnFee = data?.try_on_fee;
+    const tryOnFeeLabel = data?.try_on_fee_label || "Платное ожидание (примерка)";
     const pdfUrl = data?.pdf_url;
     const num = orderNumber ?? data?.order_number ?? orderId;
     let shopsHtml = "";
@@ -393,11 +409,15 @@ const openReceipt = async (orderId, orderNumber) => {
       });
       itemsHtml += "</tbody></table>";
     }
+    const tryOnFeeHtml = (tryOnFee != null && tryOnFee > 0)
+      ? "<div class=\"review-section\"><p><strong>" + (tryOnFeeLabel.replace(/</g, "&lt;")) + ":</strong> " + formatCurrency(tryOnFee, currency) + "</p></div>"
+      : "";
     body.innerHTML =
       "<div class=\"review-section\"><h2 style=\"margin-bottom: 12px;\">Чек заказа № " + String(num).replace(/</g, "&lt;") + "</h2>" +
       (pdfUrl ? "<p><a href=\"" + pdfUrl.replace(/"/g, "&quot;") + "\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"admin-link-download\">Скачать чек (PDF)</a></p>" : "") +
       "</div>" + shopsHtml +
       "<div class=\"review-section\"><h3 style=\"margin-bottom: 8px;\">Товары</h3>" + (itemsHtml || "<p>Нет данных</p>") + "</div>" +
+      tryOnFeeHtml +
       "<div class=\"review-section\"><p><strong>Итого:</strong> " + formatCurrency(total, currency) + "</p></div>" +
       "<button type=\"button\" class=\"btn btn-secondary\" data-receipt-close>Закрыть</button>";
     body.querySelector("[data-receipt-close]")?.addEventListener("click", () => {

@@ -12,6 +12,8 @@ const attrElements = Array.from(document.querySelectorAll("[data-i18n-attr]"));
 const langButtons = Array.from(document.querySelectorAll(".lang-btn"));
 const form = document.querySelector("[data-form]");
 const status = document.querySelector("[data-status]");
+const agreeCheckbox = document.querySelector("[data-agree-terms]");
+const loginSubmitBtn = document.querySelector("[data-login-submit]");
 
 const detectLang = () => {
   const saved = localStorage.getItem(STORAGE_KEY);
@@ -34,6 +36,10 @@ const applyLang = (lang) => {
     if (attr && key && copy[key]) {
       el.setAttribute(attr, copy[key]);
     }
+  });
+  document.querySelectorAll("[data-i18n-html]").forEach((el) => {
+    const key = el.dataset.i18nHtml;
+    if (key && copy[key]) el.innerHTML = copy[key];
   });
   document.documentElement.lang = lang;
   langButtons.forEach((btn) => {
@@ -61,8 +67,11 @@ const handleSubmit = async (event) => {
   if (!form) return;
   
   const submitButton = form.querySelector("button[type='submit']");
-  // Защита от двойного клика
   if (submitButton && submitButton.disabled) return;
+  if (agreeCheckbox && !agreeCheckbox.checked) {
+    setStatus(translations[detectLang()]["login.errorAgreeTerms"] || "Подтвердите согласие с условиями и политикой конфиденциальности.", "error");
+    return;
+  }
   
   setStatus("", "");
 
@@ -122,6 +131,12 @@ const handleSubmit = async (event) => {
     if (submitButton) submitButton.disabled = false;
   }
 };
+
+if (agreeCheckbox && loginSubmitBtn) {
+  agreeCheckbox.addEventListener("change", () => {
+    loginSubmitBtn.disabled = !agreeCheckbox.checked;
+  });
+}
 
 if (form) {
   form.addEventListener("submit", handleSubmit);

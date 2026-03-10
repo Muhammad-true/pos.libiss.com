@@ -16,6 +16,7 @@ export default defineConfig({
         main: resolve(__dirname, "index.html"),
         "create-store": resolve(__dirname, "create-store.html"),
         login: resolve(__dirname, "login.html"),
+        "legal-view": resolve(__dirname, "legal-view.html"),
         office: resolve(__dirname, "office.html"),
         gallery: resolve(__dirname, "gallery.html"),
         docs: resolve(__dirname, "docs.html"),

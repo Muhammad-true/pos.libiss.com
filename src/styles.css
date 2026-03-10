@@ -454,6 +454,30 @@ h1 {
   letter-spacing: 0.08em;
 }
 
+.field--checkbox {
+  margin-top: 8px;
+}
+
+.field--checkbox .label-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text);
+}
+
+.field--checkbox .label-checkbox input[type="checkbox"] {
+  width: auto;
+  margin-top: 4px;
+}
+
+.field--checkbox .label-checkbox a {
+  color: var(--accent);
+}
+
 input,
 textarea,
 select {

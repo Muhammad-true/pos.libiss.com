@@ -53,6 +53,10 @@ const applyLang = (lang) => {
       el.setAttribute(attr, copy[key]);
     }
   });
+  document.querySelectorAll("[data-i18n-html]").forEach((el) => {
+    const key = el.dataset.i18nHtml;
+    if (key && copy[key]) el.innerHTML = copy[key];
+  });
   document.documentElement.lang = lang;
   langButtons.forEach((btn) => {
     btn.classList.toggle("is-active", btn.dataset.lang === lang);
@@ -183,8 +187,13 @@ const updateStepUI = () => {
   
   const submitButton = form?.querySelector("button[type='submit']");
   if (submitButton) {
-    // Показываем "Создать магазин" только на последнем шаге
     submitButton.hidden = !isLastStep;
+    const agreeCheckbox = form?.querySelector("[data-agree-terms]");
+    if (isLastStep && agreeCheckbox) {
+      submitButton.disabled = !agreeCheckbox.checked;
+    } else {
+      submitButton.disabled = false;
+    }
   }
 };
 
@@ -416,6 +425,11 @@ const handleSubmit = async (event) => {
   }
   
   if (!validateStep()) return;
+  const agreeCheckbox = form.querySelector("[data-agree-terms]");
+  if (agreeCheckbox && !agreeCheckbox.checked) {
+    setStatus(translations[detectLang()]["form.errorAgreeTerms"] || "Подтвердите согласие с условиями и политикой конфиденциальности.", "error");
+    return;
+  }
   const formData = new FormData(form);
   const password = formData.get("password")?.toString() || "";
   const passwordConfirm = formData.get("passwordConfirm")?.toString() || "";
@@ -555,6 +569,16 @@ if (prevButton) {
     setStatus("", "");
     currentStep = Math.max(currentStep - 1, 0);
     updateStepUI();
+  });
+}
+
+const agreeCheckbox = form?.querySelector("[data-agree-terms]");
+if (agreeCheckbox) {
+  agreeCheckbox.addEventListener("change", () => {
+    const submitButton = form?.querySelector("button[type='submit']");
+    if (submitButton && currentStep === steps.length - 1) {
+      submitButton.disabled = !agreeCheckbox.checked;
+    }
   });
 }
 
