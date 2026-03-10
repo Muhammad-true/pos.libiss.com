@@ -176,10 +176,10 @@ const orderStatusLabel = (status) => {
 const orderStatusBadgeClass = (status) => {
   const s = (status || "").toLowerCase();
   if (s === "pending" || s === "ожидает" || s === "waiting") return "office-order-status--pending";
-  if (s === "confirmed" || s === "accepted" || s === "принят" || s === "completed" || s === "done") return "office-order-status--accepted";
+  if (s === "confirmed" || s === "accepted" || s === "принят" || s === "completed" || s === "done" || s === "return_accepted") return "office-order-status--accepted";
   if (s === "rejected" || s === "отклонён" || s === "cancelled" || s === "canceled") return "office-order-status--rejected";
   if (s === "returned") return "office-order-status--returned";
-  if (s === "indelivery" || s === "in_delivery" || s === "preparing") return "office-order-status--pending";
+  if (s === "indelivery" || s === "in_delivery" || s === "inDelivery" || s === "preparing" || s === "fitting") return "office-order-status--pending";
   return "";
 };
 
@@ -345,6 +345,84 @@ const updateOrderStatus = async (orderId, status) => {
   }
 };
 
+const getReceiptModal = () => document.querySelector("[data-receipt-modal]");
+const getReceiptModalBody = () => document.querySelector("[data-receipt-body]");
+
+const openReceipt = async (orderId, orderNumber) => {
+  const token = localStorage.getItem("userToken");
+  if (!token) return;
+  const modal = getReceiptModal();
+  const body = getReceiptModalBody();
+  if (!modal || !body) return;
+  body.innerHTML = '<div class="review-loading"><div class="spinner"></div><p>Загрузка чека...</p></div>';
+  modal.hidden = false;
+  modal.style.opacity = "1";
+  modal.style.visibility = "visible";
+  try {
+    const res = await api.get(`/shop/orders/${orderId}/receipt`, { token });
+    if (res && res.error) {
+      body.innerHTML = '<p class="status is-error">' + (res.message || "Не удалось загрузить чек") + "</p>";
+      return;
+    }
+    const data = res?.data ?? res;
+    const items = data?.items ?? [];
+    const shops = data?.shops ?? [];
+    const total = data?.total_amount ?? 0;
+    const currency = data?.currency ?? "TJS";
+    const pdfUrl = data?.pdf_url;
+    const num = orderNumber ?? data?.order_number ?? orderId;
+    let shopsHtml = "";
+    if (shops.length > 0) {
+      shopsHtml = "<div class=\"review-section\"><h3 style=\"margin-bottom: 8px;\">Магазин</h3>";
+      shops.forEach((s) => {
+        shopsHtml += "<p><strong>Название:</strong> " + (s.shop_name || "—") + "</p>";
+        shopsHtml += "<p><strong>ИНН:</strong> " + (s.inn || "—") + "</p>";
+        shopsHtml += "<p><strong>Сертификат:</strong> " + (s.certificate ? "№ " + s.certificate : "—") + "</p>";
+      });
+      shopsHtml += "</div>";
+    }
+    let itemsHtml = "";
+    if (items.length > 0) {
+      itemsHtml = '<table class="review-variations-table"><thead><tr><th>Товар</th><th>Кол-во</th><th>Цена</th><th>Сумма</th></tr></thead><tbody>';
+      items.forEach((item) => {
+        const name = (item.name || "—").replace(/</g, "&lt;");
+        const qty = item.quantity ?? 0;
+        const price = item.price ?? 0;
+        const sum = item.subtotal ?? price * qty;
+        itemsHtml += "<tr><td>" + name + "</td><td>" + qty + "</td><td>" + formatCurrency(price, currency) + "</td><td>" + formatCurrency(sum, currency) + "</td></tr>";
+      });
+      itemsHtml += "</tbody></table>";
+    }
+    body.innerHTML =
+      "<div class=\"review-section\"><h2 style=\"margin-bottom: 12px;\">Чек заказа № " + String(num).replace(/</g, "&lt;") + "</h2>" +
+      (pdfUrl ? "<p><a href=\"" + pdfUrl.replace(/"/g, "&quot;") + "\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"admin-link-download\">Скачать чек (PDF)</a></p>" : "") +
+      "</div>" + shopsHtml +
+      "<div class=\"review-section\"><h3 style=\"margin-bottom: 8px;\">Товары</h3>" + (itemsHtml || "<p>Нет данных</p>") + "</div>" +
+      "<div class=\"review-section\"><p><strong>Итого:</strong> " + formatCurrency(total, currency) + "</p></div>" +
+      "<button type=\"button\" class=\"btn btn-secondary\" data-receipt-close>Закрыть</button>";
+    body.querySelector("[data-receipt-close]")?.addEventListener("click", () => {
+      modal.style.opacity = "0";
+      modal.style.visibility = "hidden";
+      setTimeout(() => { modal.hidden = true; }, 200);
+    });
+  } catch (e) {
+    console.error(e);
+    body.innerHTML = "<p class=\"status is-error\">Ошибка загрузки чека</p>";
+  }
+};
+
+/** Есть ли в заказе возврат (хотя бы частично): по статусу заказа или по позициям. */
+function orderHasReturn(order) {
+  const s = (order.status || "").toLowerCase();
+  if (s === "returned" || s === "partially_rejected") return true;
+  const items = order.items ?? order.order_items ?? [];
+  const fromShopGroups = (order.items_by_shop || []).flatMap((g) => g.items || []);
+  const allItems = items.length ? items : fromShopGroups;
+  return allItems.some(
+    (item) => ((item.item_status || item.status || "").toLowerCase() === "returned")
+  );
+}
+
 const renderOrderDetails = (order) => {
   const body = getOrderModalBody();
   if (!body) return;
@@ -356,6 +434,7 @@ const renderOrderDetails = (order) => {
   const statusText = orderStatusLabel(order.status);
   const statusClass = orderStatusBadgeClass(order.status);
   const items = order.items ?? order.order_items ?? [];
+  const hasReturn = orderHasReturn(order);
   let itemsHtml = "";
   if (items.length > 0) {
     itemsHtml = '<table class="review-variations-table"><thead><tr><th>Товар</th><th>Кол-во</th><th>Цена</th><th>Сумма</th></tr></thead><tbody>';
@@ -387,9 +466,19 @@ const renderOrderDetails = (order) => {
         <button type="button" class="btn btn-primary" data-order-status="confirmed">${t["office.orderActionConfirm"] || "Подтвердить"}</button>
         <button type="button" class="btn btn-secondary" data-order-status="rejected">${t["office.orderActionReject"] || "Отклонить"}</button>
         <button type="button" class="btn btn-secondary" data-order-status="returned">${t["office.orderActionReturn"] || "Возврат"}</button>
+        <button type="button" class="btn btn-secondary" data-order-status="inDelivery">${t["office.orderActionHandedToDelivery"] || "Отдал доставку"}</button>
+        ${hasReturn ? `<button type="button" class="btn btn-secondary" data-order-status="return_accepted">${t["office.orderActionAcceptReturn"] || "Принял возврат"}</button>` : ""}
+        <button type="button" class="btn btn-secondary" data-order-receipt="${orderId}" data-order-number="${(orderNumber + "").replace(/"/g, "&quot;")}">${t["office.orderReceipt"] || "Показать чек"}</button>
       </div>
     </div>
   `;
+  body.querySelectorAll("[data-order-receipt]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.orderReceipt;
+      const num = btn.dataset.orderNumber;
+      if (id) openReceipt(id, num);
+    });
+  });
   body.querySelectorAll("[data-order-status]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const status = btn.dataset.orderStatus;
@@ -572,6 +661,15 @@ document.addEventListener("click", (e) => {
   }
   if (target.matches("[data-close-order-modal]") || target.closest("[data-close-order-modal]")) {
     const modal = getOrderModal();
+    if (modal) {
+      modal.style.opacity = "0";
+      modal.style.visibility = "hidden";
+      setTimeout(() => { modal.hidden = true; }, 200);
+    }
+    return;
+  }
+  if (target.matches("[data-close-receipt-modal]") || target.closest("[data-close-receipt-modal]")) {
+    const modal = getReceiptModal();
     if (modal) {
       modal.style.opacity = "0";
       modal.style.visibility = "hidden";
