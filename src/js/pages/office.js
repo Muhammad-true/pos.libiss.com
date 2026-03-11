@@ -447,6 +447,7 @@ const renderOrderDetails = (order) => {
   const body = getOrderModalBody();
   if (!body) return;
   const t = translations[detectLang()];
+  const orderId = order.id;
   const orderNumber = order.order_number ?? order.id ?? "—";
   const total = order.total_amount ?? order.totalAmount ?? order.total ?? 0;
   const currency = order.currency || "USD";
