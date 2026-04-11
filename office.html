@@ -41,6 +41,7 @@
                   </p>
                   <div class="office-welcome" data-office-welcome></div>
                   <div class="office-verification-banner" data-office-verification-banner hidden aria-live="polite"></div>
+                  <p class="office-local-sync office-local-sync--muted" data-office-local-sync hidden></p>
                 </div>
               </div>
             </section>
@@ -170,6 +171,69 @@
                   <div class="office-products-empty" data-i18n="office.productsEmpty">Товаров пока нет</div>
                 </div>
               </div>
+            </div>
+          </section>
+
+          <section class="office-panel" data-office-panel="reports" hidden>
+            <div class="container office-panel-inner office-pos-panel">
+              <div class="office-pos-panel__head">
+                <h2 class="section-title" data-i18n="office.menuReports">Отчёты склада</h2>
+                <button type="button" class="btn btn-secondary" data-office-pos-refresh data-i18n="office.posRefresh">Обновить</button>
+              </div>
+              <p class="office-pos-sync-status" data-office-pos-sync-status></p>
+              <p class="office-pos-pricing-note" data-i18n="office.posPricingNote">
+                Суммы на складе приходят из локального POS уже в расшифрованном виде (как в вашей локальной базе).
+              </p>
+              <div class="office-pos-body" data-office-pos-reports-body></div>
+            </div>
+          </section>
+
+          <section class="office-panel" data-office-panel="cashier" hidden>
+            <div class="container office-panel-inner office-pos-panel">
+              <div class="office-pos-panel__head">
+                <h2 class="section-title" data-i18n="office.menuCashier">Отчёты по кассирам</h2>
+                <button type="button" class="btn btn-secondary" data-office-pos-refresh data-i18n="office.posRefresh">Обновить</button>
+              </div>
+              <p class="office-pos-sync-status" data-office-pos-sync-status></p>
+              <div class="office-pos-cashier-toolbar">
+                <label class="office-pos-cashier-toolbar__label" for="office-cashier-period" data-i18n="office.posCashierFilterLabel">Период</label>
+                <select id="office-cashier-period" class="office-pos-cashier-select" data-office-cashier-period aria-describedby="office-cashier-period-hint">
+                  <option value="today" selected data-i18n="office.posPeriodToday">Сегодня</option>
+                  <option value="last7" data-i18n="office.posPeriod7">7 дней</option>
+                  <option value="last30" data-i18n="office.posPeriod30">30 дней</option>
+                  <option value="customRange" data-i18n="office.posPeriodCustom">Свои даты</option>
+                </select>
+              </div>
+              <p id="office-cashier-period-hint" class="office-pos-period-hint" data-i18n="office.posCashierFilterHint">
+                Периоды посчитаны на локальном сервере при последней отправке в облако. Свои даты — после следующей синхронизации с нужным периодом (настройка на сервере).
+              </p>
+              <div class="office-pos-custom-range">
+                <span class="office-pos-custom-range__title" data-i18n="office.posCustomRangeTitle">Свой период (например один день)</span>
+                <div class="office-pos-custom-range__row">
+                  <label class="sr-only" for="office-cashier-from" data-i18n="office.posDateFrom">С даты</label>
+                  <input type="date" id="office-cashier-from" class="office-pos-cashier-select" data-office-cashier-from />
+                  <span class="office-pos-custom-range__dash">—</span>
+                  <label class="sr-only" for="office-cashier-to" data-i18n="office.posDateTo">По дату</label>
+                  <input type="date" id="office-cashier-to" class="office-pos-cashier-select" data-office-cashier-to />
+                  <button type="button" class="btn btn-secondary" data-office-cashier-range-save data-i18n="office.posSaveRange">Сохранить</button>
+                </div>
+              </div>
+              <p class="office-pos-period-hint office-pos-custom-hint" data-i18n="office.posCustomRangeHint">
+                На локальном сервере: с 00:00 первой даты по 23:59 последней (часовой пояс компьютера с POS). После сохранения перезапустите локальный API с интернетом.
+              </p>
+              <p class="office-pos-range-msg" data-office-pos-range-msg hidden aria-live="polite"></p>
+              <div class="office-pos-body" data-office-pos-cashier-body></div>
+            </div>
+          </section>
+
+          <section class="office-panel" data-office-panel="debtors" hidden>
+            <div class="container office-panel-inner office-pos-panel">
+              <div class="office-pos-panel__head">
+                <h2 class="section-title" data-i18n="office.menuDebtors">Должники</h2>
+                <button type="button" class="btn btn-secondary" data-office-pos-refresh data-i18n="office.posRefresh">Обновить</button>
+              </div>
+              <p class="office-pos-sync-status" data-office-pos-sync-status></p>
+              <div class="office-pos-body" data-office-pos-debtors-body></div>
             </div>
           </section>
 

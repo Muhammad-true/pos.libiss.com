@@ -1,6 +1,7 @@
 import { translations } from "../lib/translations.js";
 import { AppHeader } from "../components/app-header.js";
 import { api } from "../lib/api.js";
+import { initOfficePosPanels } from "./office-pos-panels.js";
 import "../../styles.css";
 import { injectSpeedInsights } from "@vercel/speed-insights";
 
@@ -33,6 +34,7 @@ const logoPlaceholder = document.querySelector("[data-office-logo-placeholder]")
 const logoRemove = document.querySelector("[data-office-logo-remove]");
 const logoStatus = document.querySelector("[data-office-logo-status]");
 const verificationBanner = document.querySelector("[data-office-verification-banner]");
+const localSyncLine = document.querySelector("[data-office-local-sync]");
 
 const detectLang = () => {
   const saved = localStorage.getItem(STORAGE_KEY);
@@ -85,6 +87,26 @@ const fetchShopMe = async (token) => {
   } catch (_) {
     return null;
   }
+};
+
+const renderLocalSyncLine = (shop) => {
+  if (!localSyncLine) return;
+  const t = translations[detectLang()] || {};
+  const raw = shop?.localApiDataReceivedAt ?? shop?.local_api_data_received_at;
+  if (!raw) {
+    localSyncLine.textContent = t["office.localSyncNever"] || "Данные с локального POS ещё не поступали в облако (запустите локальный сервер с интернетом).";
+    localSyncLine.hidden = false;
+    localSyncLine.classList.add("office-local-sync--muted");
+    return;
+  }
+  const d = new Date(raw);
+  const formatted = Number.isNaN(d.getTime()) ? String(raw) : d.toLocaleString(detectLang() === "ru" ? "ru-RU" : "en-US", {
+    dateStyle: "medium",
+    timeStyle: "short"
+  });
+  localSyncLine.textContent = (t["office.localSyncLast"] || "Последний контакт с локальным API: %s").replace("%s", formatted);
+  localSyncLine.hidden = false;
+  localSyncLine.classList.remove("office-local-sync--muted");
 };
 
 const renderVerificationBanner = (shop) => {
@@ -166,6 +188,8 @@ const formatCurrency = (amount, currency = "USD") => {
     maximumFractionDigits: 2
   }).format(Number(amount));
 };
+
+const officePosPanels = initOfficePosPanels({ formatCurrency, detectLang, translations });
 
 const orderStatusLabel = (status) => {
   const key = `office.orderStatus_${status}`;
@@ -1229,7 +1253,12 @@ const loadAccount = async () => {
 
   if (token) {
     const shopMe = await fetchShopMe(token);
-    if (shopMe) renderVerificationBanner(shopMe);
+    if (shopMe) {
+      renderVerificationBanner(shopMe);
+      renderLocalSyncLine(shopMe);
+    } else {
+      renderLocalSyncLine(null);
+    }
     await fetchLicenses(token, shopsList);
     await fetchOrders(token);
     await fetchProducts(token);
@@ -1237,6 +1266,7 @@ const loadAccount = async () => {
     startOrdersPolling(token);
   } else {
     renderVerificationBanner(null);
+    if (localSyncLine) localSyncLine.hidden = true;
     stopOrdersPolling();
   }
 };
@@ -1468,6 +1498,9 @@ const PANEL_TITLE_KEYS = {
   stores: "office.menuStores",
   orders: "office.menuOrders",
   products: "office.menuProducts",
+  reports: "office.menuReports",
+  cashier: "office.menuCashier",
+  debtors: "office.menuDebtors",
   licenses: "office.menuLicenses"
 };
 
@@ -1506,6 +1539,9 @@ const setActivePanel = (panelId) => {
     window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}#${panelId}`);
   }
   updateOfficeTitle(panelId);
+  if (["reports", "cashier", "debtors"].includes(panelId)) {
+    officePosPanels.onPanelShown(panelId, localStorage.getItem("userToken"));
+  }
 };
 
 AppHeader.init({
@@ -1515,7 +1551,10 @@ AppHeader.init({
 
 // Открыть панель по хешу при загрузке
 const hash = window.location.hash.slice(1);
-if (hash && ["dashboard", "stores", "orders", "products", "licenses"].includes(hash)) {
+if (
+  hash &&
+  ["dashboard", "stores", "orders", "products", "reports", "cashier", "debtors", "licenses"].includes(hash)
+) {
   setActivePanel(hash);
 } else {
   AppHeader.setActiveNav("dashboard");
