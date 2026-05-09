@@ -133,6 +133,44 @@ const storeStatusBadgeClass = (isSubscribed) => {
   return "office-store-status--unknown";
 };
 
+/** Сырой URL логотипа из объекта магазина (разные форматы API). Пустая строка → null. */
+const getShopLogoRaw = (shop) => {
+  if (!shop || typeof shop !== "object") return null;
+  const v = shop.logo ?? shop.logoUrl ?? shop.logo_url ?? shop.Logo;
+  if (v == null || v === false) return null;
+  const s = String(v).trim();
+  return s.length > 0 ? s : null;
+};
+
+const patchShopLogoInList = (shopId, logoRaw) => {
+  const id = String(shopId);
+  currentShopsList = currentShopsList.map((s) => (String(s.id) === id ? { ...s, logo: logoRaw ?? "" } : s));
+};
+
+/** Подтянуть поле logo из GET /shop/stores (после загрузки файла, если API не вернуло URL в ответе). */
+const syncStoreLogosFromApi = async (token) => {
+  if (!token) return;
+  try {
+    const r = await api.get("/shop/stores", { token });
+    if (!r || r.error || !Array.isArray(r?.data?.stores)) return;
+    const logos = new Map(r.data.stores.map((s) => [String(s.id), s.logo ?? ""]));
+    currentShopsList = (Array.isArray(currentShopsList) ? currentShopsList : []).map((s) => {
+      const id = String(s.id);
+      if (!logos.has(id)) return s;
+      return { ...s, logo: logos.get(id) };
+    });
+  } catch (_) {
+    /* ignore */
+  }
+};
+
+const renderLogoForSelectedShop = () => {
+  const list = Array.isArray(currentShopsList) ? currentShopsList : [];
+  const sel = localStorage.getItem(SELECTED_SHOP_KEY);
+  const shop = list.find((s) => String(s.id) === String(sel)) || list[0];
+  renderLogo(getShopLogoRaw(shop));
+};
+
 const renderStores = (shops) => {
   if (!storesBody) return;
   const list = Array.isArray(shops) ? shops : [];
@@ -166,9 +204,7 @@ const renderStores = (shops) => {
     `;
     storesBody.appendChild(card);
   });
-  const sel = localStorage.getItem(SELECTED_SHOP_KEY);
-  const logoShop = list.find((s) => String(s.id) === String(sel)) || list[0];
-  renderLogo(logoShop?.logo || null);
+  renderLogoForSelectedShop();
 };
 
 const formatDate = (value) => {
@@ -233,6 +269,7 @@ const renderShopPicker = (shopsList, token) => {
     localStorage.setItem("shopId", v);
     const picked = list.find((s) => String(s.id) === v);
     if (picked?.name) localStorage.setItem("shopName", picked.name);
+    renderLogoForSelectedShop();
     officePosPanels.invalidate();
     await refreshScopedShopData(token);
   };
@@ -1195,19 +1232,49 @@ const clearShopLogo = async (token, shopId) => {
   return data;
 };
 
+const showLogoPlaceholder = () => {
+  if (!logoImg || !logoPlaceholder || !logoRemove) return;
+  logoImg.onerror = null;
+  logoImg.onload = null;
+  logoImg.removeAttribute("src");
+  logoImg.alt = "";
+  logoImg.hidden = true;
+  logoPlaceholder.hidden = false;
+  logoRemove.hidden = true;
+};
+
 const renderLogo = (logoUrl) => {
   if (!logoImg || !logoPlaceholder || !logoRemove) return;
-  
-  if (logoUrl) {
-    logoImg.src = api.resolveAssetUrl(logoUrl);
-    logoImg.hidden = false;
-    logoPlaceholder.hidden = true;
-    logoRemove.hidden = false;
-  } else {
-    logoImg.hidden = true;
-    logoPlaceholder.hidden = false;
-    logoRemove.hidden = true;
+
+  logoImg.onload = null;
+  logoImg.onerror = null;
+
+  const raw = logoUrl != null && String(logoUrl).trim() !== "" ? String(logoUrl).trim() : null;
+  if (!raw) {
+    showLogoPlaceholder();
+    return;
   }
+
+  const full = api.resolveAssetUrl(raw);
+  if (!full) {
+    showLogoPlaceholder();
+    return;
+  }
+
+  logoImg.onerror = () => {
+    logoImg.onerror = null;
+    showLogoPlaceholder();
+  };
+  logoImg.onload = () => {
+    logoImg.onload = null;
+    if (!logoImg.hidden) logoPlaceholder.hidden = true;
+  };
+
+  logoImg.alt = "Logo";
+  logoImg.hidden = false;
+  logoPlaceholder.hidden = true;
+  logoRemove.hidden = false;
+  logoImg.src = full;
 };
 
 const setLogoStatus = (message, type) => {
@@ -1390,11 +1457,12 @@ if (logoInput) {
     try {
       const result = await uploadShopLogo(file, token, shopId);
       if (result === null) return;
-      
-      const logoUrl = result === true ? null : api.resolveAssetUrl(result);
-      
-      // Обновляем отображение
-      renderLogo(logoUrl || undefined);
+
+      const rawPath = typeof result === "string" && result.trim() ? result.trim() : null;
+      if (rawPath) patchShopLogoInList(shopId, rawPath);
+      else await syncStoreLogosFromApi(token);
+
+      renderLogoForSelectedShop();
       setLogoStatus(translations[detectLang()]["office.logoSuccess"] || "Логотип успешно обновлен", "success");
       
       // Очищаем статус через 3 секунды
@@ -1428,7 +1496,8 @@ if (logoRemove) {
       const cleared = await clearShopLogo(token, shopId);
       if (cleared === null) return;
       
-      renderLogo(null);
+      patchShopLogoInList(shopId, "");
+      renderLogoForSelectedShop();
       setLogoStatus(translations[detectLang()]["office.logoRemoved"] || "Логотип удален", "success");
       
       // Очищаем статус через 3 секунды
