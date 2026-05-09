@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#12a57c" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <title>Libiss POS — Новая точка</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="/logo.png" />
+    <style>body { opacity: 0; transition: opacity 0.3s; }</style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <div class="container nav">
+          <a class="logo" href="/" aria-label="Libiss POS">
+            <img class="logo-image" src="/logo.png" alt="Libiss" />
+            <span>Libiss POS</span>
+          </a>
+          <div class="lang-toggle" role="group" aria-label="Language">
+            <button class="lang-btn is-active" type="button" data-lang="ru">RU</button>
+            <button class="lang-btn" type="button" data-lang="en">EN</button>
+          </div>
+        </div>
+      </header>
+      <main class="form-page">
+        <section class="form-hero">
+          <div class="container">
+            <div class="form-hero-inner">
+              <span class="eyebrow" data-i18n="office.addStoreOutlet">Добавить точку</span>
+              <h1 data-i18n="addStorePage.title">Новая торговая точка</h1>
+              <p data-i18n="addStorePage.subtitle">
+                Добавьте магазин к аккаунту владельца.
+              </p>
+              <a class="btn btn-secondary" href="/office.html" data-i18n="office.menuDashboard">Кабинет</a>
+              <div class="form-card">
+                <form class="form" data-form>
+                  <div class="field">
+                    <label for="shopName" data-i18n="form.shopName">Название магазина</label>
+                    <input id="shopName" name="shopName" type="text" required />
+                    <span class="field-error" data-error-for="shopName"></span>
+                  </div>
+                  <div class="field">
+                    <label for="inn" data-i18n="form.inn">ИНН</label>
+                    <input id="inn" name="inn" type="text" required />
+                    <span class="field-error" data-error-for="inn"></span>
+                  </div>
+                  <div class="field">
+                    <label for="certificate" data-i18n="form.certificate">Сертификат</label>
+                    <input id="certificate" name="certificate" type="text" required />
+                    <span class="field-error" data-error-for="certificate"></span>
+                  </div>
+                  <div class="field">
+                    <label for="certificatePhoto" data-i18n="form.certificatePhoto">Фото сертификата</label>
+                    <input
+                      id="certificatePhoto"
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                      required
+                      data-certificate-photo-input
+                    />
+                    <div class="certificate-photo-preview" data-certificate-photo-preview hidden>
+                      <img data-certificate-photo-preview-img src="" alt="" />
+                      <button type="button" class="logo-remove" data-certificate-photo-remove data-i18n="form.logoRemove">Удалить</button>
+                    </div>
+                    <span class="field-error" data-error-for="certificatePhoto"></span>
+                  </div>
+                  <div class="field">
+                    <label for="description" data-i18n="form.description">Описание</label>
+                    <textarea id="description" name="description" rows="2" required></textarea>
+                    <span class="field-error" data-error-for="description"></span>
+                  </div>
+                  <div class="field">
+                    <label for="cityId" data-i18n="form.city">Город</label>
+                    <select id="cityId" name="cityId">
+                      <option value="" data-i18n="form.cityPlaceholder">Выберите город</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="address" data-i18n="form.address">Адрес</label>
+                    <input id="address" name="address" type="text" required />
+                    <span class="field-error" data-error-for="address"></span>
+                  </div>
+                  <div class="field">
+                    <label for="logo" data-i18n="form.logo">Логотип</label>
+                    <input id="logo" type="file" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp" data-logo-input />
+                    <div class="logo-preview" data-logo-preview hidden>
+                      <img data-logo-preview-img src="" alt="" />
+                      <button type="button" class="logo-remove" data-logo-remove data-i18n="form.logoRemove">Удалить</button>
+                    </div>
+                  </div>
+                  <div class="form-actions">
+                    <button class="btn btn-primary" type="submit" data-i18n="addStorePage.submit">Отправить</button>
+                  </div>
+                  <div class="status" data-status aria-live="polite"></div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+      <div class="create-store-progress-modal" data-create-store-progress-modal hidden role="dialog" aria-live="polite">
+        <div class="create-store-progress-backdrop"></div>
+        <div class="create-store-progress-content">
+          <h2 class="create-store-progress-title" data-i18n="form.progressModalTitle">Создание магазина</h2>
+          <div class="create-store-progress-body">
+            <p class="create-store-progress-text" data-create-store-progress-text></p>
+            <div class="create-store-progress-spinner" data-create-store-progress-spinner aria-hidden="true"></div>
+          </div>
+          <div class="create-store-progress-actions" data-create-store-progress-actions hidden>
+            <button type="button" class="btn btn-primary" data-create-store-progress-close data-i18n="form.close">Закрыть</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/js/pages/add-store.js"></script>
+  </body>
+</html>

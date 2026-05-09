@@ -25,6 +25,7 @@ function getToken() {
 function handleUnauthorized() {
   localStorage.removeItem("userToken");
   localStorage.removeItem("shopId");
+  localStorage.removeItem("officeSelectedShopId");
   const redirect = encodeURIComponent(window.location.pathname + window.location.search);
   window.location.href = "/login.html?redirect=" + redirect;
 }
@@ -35,12 +36,34 @@ function handleUnauthorized() {
  * @returns {Promise<object | { error: true, status: number, message: string } | null>}
  *   null — при 401 (редирект выполнен, если не suppress401); иначе JSON или { error, status, message }.
  */
+/**
+ * Для владельца с несколькими точками: заголовок X-Shop-Id (из localStorage officeSelectedShopId).
+ * Отключите для агрегированных запросов: options.shopContext === false
+ */
+function shouldAttachShopContext(path, options) {
+  if (options?.shopContext === false) return false;
+  if (!path.includes("/shop/")) return false;
+  if (path.includes("shop-registration")) return false;
+  return Boolean(localStorage.getItem("officeSelectedShopId"));
+}
+
 async function request(url, options = {}) {
   const isFullUrl = url.startsWith("http://") || url.startsWith("https://");
   const fullUrl = isFullUrl ? url : getApiBase() + (url.startsWith("/") ? url : "/" + url);
   const token = options.token !== undefined ? options.token : getToken();
   const headers = { ...(options.headers || {}) };
   if (token) headers.Authorization = `Bearer ${token}`;
+  const pathForCtx = isFullUrl ? (() => {
+    try {
+      return new URL(fullUrl).pathname.replace(/^\/api\/v1/, "") || "/";
+    } catch {
+      return url;
+    }
+  })() : url;
+  if (shouldAttachShopContext(pathForCtx, options)) {
+    const sid = localStorage.getItem("officeSelectedShopId");
+    if (sid) headers["X-Shop-Id"] = sid;
+  }
   const body = options.body;
   if (body != null && !(body instanceof FormData)) {
     if (typeof body === "object" && !headers["Content-Type"]) {

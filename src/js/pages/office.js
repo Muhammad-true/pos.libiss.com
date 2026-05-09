@@ -8,6 +8,7 @@ import { injectSpeedInsights } from "@vercel/speed-insights";
 injectSpeedInsights();
 const STORAGE_KEY = "libiss-pos-lang";
 const SEEN_ORDERS_KEY = "officeSeenOrderIds";
+const SELECTED_SHOP_KEY = "officeSelectedShopId";
 const ORDERS_POLL_MS = 90 * 1000;
 const DEFAULT_LANG = "ru";
 let lastFetchedOrderIds = [];
@@ -136,7 +137,6 @@ const renderStores = (shops) => {
   if (!storesBody) return;
   const list = Array.isArray(shops) ? shops : [];
   const t = translations[detectLang()];
-  const btnDetails = t["office.orderDetails"] || "Подробнее";
   storesBody.innerHTML = "";
   if (list.length === 0) {
     storesBody.innerHTML = `<div class="office-stores-empty" data-i18n="office.storesEmpty">${t["office.storesEmpty"] || "Магазинов пока нет"}</div>`;
@@ -163,13 +163,12 @@ const renderStores = (shops) => {
         <div><strong>${t["office.storeId"] || "ID"}:</strong> <span class="office-store-card__id">${(shop?.id || "—").replace(/</g, "&lt;")}</span></div>
         <div><strong>${t["office.storePlan"] || "Подписка"}:</strong> ${(plan || "—").replace(/</g, "&lt;")}</div>
       </div>
-      <div class="office-store-card__action">
-        <a href="/create-store.html" class="btn btn-secondary office-store-card__btn">${btnDetails}</a>
-      </div>
     `;
     storesBody.appendChild(card);
   });
-  renderLogo(list[0]?.logo || null);
+  const sel = localStorage.getItem(SELECTED_SHOP_KEY);
+  const logoShop = list.find((s) => String(s.id) === String(sel)) || list[0];
+  renderLogo(logoShop?.logo || null);
 };
 
 const formatDate = (value) => {
@@ -191,6 +190,73 @@ const formatCurrency = (amount, currency = "USD") => {
 
 const officePosPanels = initOfficePosPanels({ formatCurrency, detectLang, translations });
 
+const ensureSelectedShopInStorage = (shopsList) => {
+  const list = (Array.isArray(shopsList) ? shopsList : []).filter((s) => s && s.id);
+  const ids = list.map((s) => String(s.id));
+  let sel = localStorage.getItem(SELECTED_SHOP_KEY);
+  if (!sel || !ids.includes(sel)) {
+    sel = ids[0] || localStorage.getItem("shopId") || "";
+    if (sel) localStorage.setItem(SELECTED_SHOP_KEY, String(sel));
+    else localStorage.removeItem(SELECTED_SHOP_KEY);
+  }
+  const shop = list.find((s) => String(s.id) === String(sel)) || list[0];
+  if (shop?.id) {
+    localStorage.setItem("shopId", String(shop.id));
+    if (shop.name) localStorage.setItem("shopName", shop.name);
+  }
+};
+
+const renderShopPicker = (shopsList, token) => {
+  const el = document.querySelector("[data-office-shop-select]");
+  if (!el) return;
+  const t = translations[detectLang()];
+  el.innerHTML = "";
+  const list = (Array.isArray(shopsList) ? shopsList : []).filter((s) => s && s.id);
+  if (!list.length) {
+    el.innerHTML = `<option value="">${t["office.noStoresSelect"] || "Нет магазинов"}</option>`;
+    el.disabled = true;
+    return;
+  }
+  el.disabled = false;
+  list.forEach((shop) => {
+    const o = document.createElement("option");
+    o.value = String(shop.id);
+    o.textContent = shop.name || String(shop.id);
+    el.appendChild(o);
+  });
+  const sel = localStorage.getItem(SELECTED_SHOP_KEY);
+  if (sel && [...el.options].some((o) => o.value === sel)) el.value = sel;
+  el.onchange = async () => {
+    const v = el.value;
+    if (!v) return;
+    localStorage.setItem(SELECTED_SHOP_KEY, v);
+    localStorage.setItem("shopId", v);
+    const picked = list.find((s) => String(s.id) === v);
+    if (picked?.name) localStorage.setItem("shopName", picked.name);
+    officePosPanels.invalidate();
+    await refreshScopedShopData(token);
+  };
+};
+
+const refreshScopedShopData = async (token) => {
+  if (!token) return;
+  const shopMe = await fetchShopMe(token);
+  if (shopMe) {
+    renderVerificationBanner(shopMe);
+    renderLocalSyncLine(shopMe);
+  } else {
+    renderLocalSyncLine(null);
+  }
+  await fetchOrders(token);
+  await fetchProducts(token);
+  updateOrdersBadge();
+  const panel = document.querySelector(".office-panel.is-active");
+  const pid = panel?.getAttribute("data-office-panel");
+  if (pid && typeof officePosPanels.onPanelShown === "function") {
+    await officePosPanels.onPanelShown(pid, token);
+  }
+};
+
 const orderStatusLabel = (status) => {
   const key = `office.orderStatus_${status}`;
   const t = translations[detectLang()];
@@ -210,7 +276,7 @@ const orderStatusBadgeClass = (status) => {
 const fetchOrders = async (token) => {
   const body = document.querySelector("[data-office-orders-body]");
   if (!body) return;
-  const res = await api.get("/shop/orders/?limit=100", { token });
+  const res = await api.get("/shop/orders/?limit=100", { token, shopContext: false });
   if (res == null || (res && res.error)) return;
   const orders = res?.data?.orders ?? res?.orders ?? (Array.isArray(res?.data) ? res.data : []);
   const list = Array.isArray(orders) ? orders : [];
@@ -285,7 +351,7 @@ function updateOrdersBadge() {
 async function pollOrdersForNew(token) {
   if (!token) return;
   try {
-    const res = await api.get("/shop/orders/?limit=100", { token });
+    const res = await api.get("/shop/orders/?limit=100", { token, shopContext: false });
     if (res == null || res.error) return;
     const orders = res?.data?.orders ?? res?.orders ?? (Array.isArray(res?.data) ? res.data : []);
     const currentIds = (Array.isArray(orders) ? orders : []).map((o) => String(o.id));
@@ -338,7 +404,7 @@ const openOrderDetails = async (id) => {
       body.innerHTML = '<p class="status is-error">Войдите в аккаунт</p>';
       return;
     }
-    const res = await api.get(`/shop/orders/${id}`, { token });
+    const res = await api.get(`/shop/orders/${id}`, { token, shopContext: false });
     if (!res) {
       body.innerHTML = '<p class="status is-error">Нет ответа от сервера. Проверьте интернет или войдите снова.</p>';
       return;
@@ -365,7 +431,7 @@ const updateOrderStatus = async (orderId, status) => {
   const token = localStorage.getItem("userToken");
   if (!token) return;
   try {
-    const res = await api.put(`/shop/orders/${orderId}/status`, { status }, { token });
+    const res = await api.put(`/shop/orders/${orderId}/status`, { status }, { token, shopContext: false });
     if (res && res.error) {
       alert(res.message || "Ошибка обновления статуса");
       return;
@@ -397,7 +463,7 @@ const openReceipt = async (orderId, orderNumber) => {
   modal.style.opacity = "1";
   modal.style.visibility = "visible";
   try {
-    const res = await api.get(`/shop/orders/${orderId}/receipt`, { token });
+    const res = await api.get(`/shop/orders/${orderId}/receipt`, { token, shopContext: false });
     if (res && res.error) {
       body.innerHTML = '<p class="status is-error">' + (res.message || "Не удалось загрузить чек") + "</p>";
       return;
@@ -535,7 +601,7 @@ const renderOrderDetails = (order) => {
 const fetchProducts = async (token) => {
   const body = document.querySelector("[data-office-products-body]");
   if (!body) return;
-  const res = await api.get("/shop/products/?limit=100", { token });
+  const res = await api.get("/shop/products/?limit=100", { token, shopContext: false });
   if (res == null || (res && res.error)) return;
   const products = res?.data?.products ?? res?.products ?? (Array.isArray(res?.data) ? res.data : []);
   const list = Array.isArray(products) ? products : [];
@@ -628,7 +694,7 @@ const handleProductAction = async (target) => {
       if (confirm("Вы уверены, что хотите удалить этот товар? Это действие нельзя отменить.")) {
         try {
           const token = localStorage.getItem("userToken");
-          const res = await api.delete(`/shop/products/${id}`, { token });
+          const res = await api.delete(`/shop/products/${id}`, { token, shopContext: false });
           if (res && res.error) {
             alert(res.message || "Ошибка удаления товара");
           } else {
@@ -1048,7 +1114,16 @@ const fetchLicenses = async (token, shops) => {
     return shop ? { ...license, shop } : license;
   });
   renderLicenses(mapped);
-  setTrialState(mapped.length > 0);
+  const selectedShopId = String(localStorage.getItem(SELECTED_SHOP_KEY) || localStorage.getItem("shopId") || "");
+  const hasActiveForSelected = selectedShopId
+    ? mapped.some((l) => {
+        const sid = String(l.shopId ?? l.shop?.id ?? "");
+        if (sid !== selectedShopId) return false;
+        const st = (l.subscriptionStatus || l.subscription_status || "").toLowerCase();
+        return st === "active" && (l.isValid !== false);
+      })
+    : false;
+  setTrialState(hasActiveForSelected);
 };
 
 const createTrialLicense = async () => {
@@ -1149,6 +1224,7 @@ const logout = () => {
   localStorage.removeItem("shopId");
   localStorage.removeItem("shopName");
   localStorage.removeItem("licenseData");
+  localStorage.removeItem("officeSelectedShopId");
   // Перенаправляем на страницу входа
   window.location.href = "/login.html";
 };
@@ -1182,56 +1258,59 @@ const loadAccount = async () => {
   let shopsList = [];
   if (token) {
     try {
-      const shops = await api.get("/shops/", { token });
-      if (shops == null || (shops && shops.error)) return;
-      
-      console.log("Shops API response:", shops);
-      
-      // Пробуем разные форматы ответа
-      let list = [];
-      if (Array.isArray(shops)) {
-        list = shops;
-      } else if (Array.isArray(shops?.data?.shops)) {
-        list = shops.data.shops;
-      } else if (Array.isArray(shops?.data)) {
-        list = shops.data;
-      } else if (Array.isArray(shops?.shops)) {
-        list = shops.shops;
-      } else if (shops?.data && typeof shops.data === 'object') {
-        // Если data это объект, пробуем извлечь массив
-        list = Object.values(shops.data).filter(Array.isArray).flat() || [];
+      shopsList = [];
+      const myStoresRes = await api.get("/shop/stores", { token });
+      if (myStoresRes && !myStoresRes.error && Array.isArray(myStoresRes?.data?.stores)) {
+        const uid =
+          user?.id != null
+            ? String(user.id)
+            : user?.userId != null
+              ? String(user.userId)
+              : null;
+        shopsList = myStoresRes.data.stores.map((s) => ({
+          ...s,
+          ownerId: uid || s.ownerId
+        }));
+        console.log("My stores (/shop/stores):", shopsList.length);
       }
-      
-      const allShops = Array.isArray(list) ? list : [];
-      
-      // Фильтруем только магазины текущего пользователя по ownerId
-      // ID может быть как строкой, так и числом
-      let userId = null;
-      if (user?.id !== undefined && user?.id !== null) {
-        userId = String(user.id);
-      } else if (user?.userId !== undefined && user?.userId !== null) {
-        userId = String(user.userId);
-      }
-      
-      if (userId) {
-        shopsList = allShops.filter((shop) => {
-          if (!shop?.ownerId) return false;
-          const shopOwnerId = String(shop.ownerId);
-          return shopOwnerId === userId;
-        });
-        console.log("Filtered shops for user ID:", userId, "Found:", shopsList.length, shopsList);
-      } else {
-        // Если нет user.id, показываем все (fallback)
-        shopsList = allShops;
-        console.log("No user ID found. User object:", user);
-        console.log("Showing all shops:", shopsList.length);
-      }
-      
-      const firstShop = shopsList[0] || null;
-      if (firstShop?.id) {
-        localStorage.setItem("shopId", firstShop.id);
-        if (firstShop?.name) {
-          localStorage.setItem("shopName", firstShop.name);
+
+      if (shopsList.length === 0) {
+        const shops = await api.get("/shops/", { token });
+        if (shops == null || (shops && shops.error)) {
+          console.warn("Shops API unavailable for fallback");
+        } else {
+          console.log("Shops API response (fallback):", shops);
+          let list = [];
+          if (Array.isArray(shops)) {
+            list = shops;
+          } else if (Array.isArray(shops?.data?.shops)) {
+            list = shops.data.shops;
+          } else if (Array.isArray(shops?.data)) {
+            list = shops.data;
+          } else if (Array.isArray(shops?.shops)) {
+            list = shops.shops;
+          } else if (shops?.data && typeof shops.data === "object") {
+            list = Object.values(shops.data).filter(Array.isArray).flat() || [];
+          }
+
+          const allShops = Array.isArray(list) ? list : [];
+          let userId = null;
+          if (user?.id !== undefined && user?.id !== null) {
+            userId = String(user.id);
+          } else if (user?.userId !== undefined && user?.userId !== null) {
+            userId = String(user.userId);
+          }
+
+          if (userId) {
+            shopsList = allShops.filter((shop) => {
+              if (!shop?.ownerId) return false;
+              return String(shop.ownerId) === userId;
+            });
+            console.log("Filtered shops for user ID:", userId, "Found:", shopsList.length);
+          } else {
+            shopsList = allShops;
+            console.log("No user ID found; showing all shops from fallback:", shopsList.length);
+          }
         }
       }
     } catch (error) {
@@ -1248,7 +1327,14 @@ const loadAccount = async () => {
     }
   }
 
-  currentShopsList = shopsList.length > 0 ? shopsList : [{ id: cachedShopId, name: cachedShopName }];
+  currentShopsList =
+    shopsList.length > 0
+      ? shopsList
+      : cachedShopId
+        ? [{ id: cachedShopId, name: cachedShopName }]
+        : [];
+  ensureSelectedShopInStorage(currentShopsList);
+  renderShopPicker(currentShopsList, token);
   renderStores(currentShopsList);
 
   if (token) {

@@ -96,10 +96,16 @@
                 <button type="button" class="btn btn-secondary" data-office-edit-store data-i18n="office.editStore">
                   Изменить данные магазина
                 </button>
-                <a class="btn btn-secondary" href="/create-store.html" data-i18n="office.createStore">
-                  Создать магазин
+                <a class="btn btn-secondary" href="/add-store.html" data-i18n="office.addStoreOutlet">
+                  Добавить торговую точку
                 </a>
               </div>
+            </div>
+            <div class="office-stores-context" style="margin-bottom: 1rem;">
+              <label class="office-shop-select-label" style="display: flex; flex-direction: column; gap: 0.35rem; max-width: 420px;">
+                <span data-i18n="office.activeStoreContext">Текущая точка (отчёты POS, профиль, лимиты AI)</span>
+                <select data-office-shop-select class="input-like" aria-label="Store"></select>
+              </label>
             </div>
             <div class="office-logo-section" data-office-logo-section>
               <h3 class="office-logo-section__title" data-i18n="office.logoSectionTitle">Логотип магазина</h3>
