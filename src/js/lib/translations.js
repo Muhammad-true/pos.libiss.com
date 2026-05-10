@@ -230,6 +230,7 @@ export const translations = {
     "office.menuReports": "Отчёты склада",
     "office.menuCashier": "Отчёты по кассирам",
     "office.menuDebtors": "Должники",
+    "office.menuUpdates": "Обновления ПО",
     "office.menuLicenses": "Подписки",
     "office.eyebrow": "Мой аккаунт",
     "office.title": "Добро пожаловать",
@@ -241,6 +242,23 @@ export const translations = {
     "office.localSyncNever":
       "Данные с локального POS ещё не поступали в облако. Запустите локальный сервер при подключении к интернету.",
     "office.posRefresh": "Обновить",
+    "office.updatesRefresh": "Обновить список",
+    "office.updatesIntro":
+      "Актуальные сборки с облака. Скачайте файл на ПК или телефон. В десктопном и мобильном POS проверка и установка также доступны внутри приложения (раздел обновлений).",
+    "office.updatesLoading": "Загрузка версий…",
+    "office.updatesEmpty": "Для этой платформы пока нет опубликованного файла.",
+    "office.updatesError": "Не удалось получить данные об обновлениях.",
+    "office.updatesServer": "Локальный сервер",
+    "office.updatesWindows": "POS Windows",
+    "office.updatesAndroid": "POS Android",
+    "office.updatesShop": "Приложение магазина",
+    "office.updatesVersion": "Версия",
+    "office.updatesSize": "Размер",
+    "office.updatesNotes": "Описание",
+    "office.updatesDownload": "Скачать",
+    "office.updatesSha": "Контрольная сумма",
+    "office.updatesAutoHint":
+      "ZIP сервера: на ПК с локальным POS остановите magazin_api.exe, распакуйте поверх папки server или используйте скрипт auto_update.ps1 из комплекта.",
     "office.posPricingNote":
       "Суммы на складе и в отчётах приходят из локального POS уже в расшифрованном виде (как в вашей локальной базе).",
     "office.posLoading": "Загрузка…",
@@ -715,6 +733,7 @@ export const translations = {
     "office.menuReports": "Warehouse reports",
     "office.menuCashier": "Cashier reports",
     "office.menuDebtors": "Debtors",
+    "office.menuUpdates": "Software updates",
     "office.menuLicenses": "Subscriptions",
     "office.eyebrow": "My account",
     "office.title": "Welcome",
@@ -726,6 +745,23 @@ export const translations = {
     "office.localSyncNever":
       "No data from local POS has reached the cloud yet. Start the local server while online.",
     "office.posRefresh": "Refresh",
+    "office.updatesRefresh": "Refresh list",
+    "office.updatesIntro":
+      "Latest builds from the cloud. Download to your PC or phone. In desktop and mobile POS you can also check updates inside the app.",
+    "office.updatesLoading": "Loading versions…",
+    "office.updatesEmpty": "No published file for this platform yet.",
+    "office.updatesError": "Could not load update information.",
+    "office.updatesServer": "Local server",
+    "office.updatesWindows": "POS Windows",
+    "office.updatesAndroid": "POS Android",
+    "office.updatesShop": "Shop app",
+    "office.updatesVersion": "Version",
+    "office.updatesSize": "Size",
+    "office.updatesNotes": "Notes",
+    "office.updatesDownload": "Download",
+    "office.updatesSha": "SHA256",
+    "office.updatesAutoHint":
+      "Server ZIP: on the PC with local POS stop magazin_api.exe, extract over the server folder or use auto_update.ps1 from the bundle.",
     "office.posPricingNote":
       "Warehouse and report amounts are sent from local POS already decrypted (same as in your local database).",
     "office.posLoading": "Loading…",

@@ -2457,6 +2457,57 @@ textarea {
   justify-content: center;
 }
 
+/* Обновления ПО (облако) */
+.office-updates-intro {
+  font-size: 14px;
+  color: var(--text-secondary, var(--muted));
+  margin: 0 0 1rem;
+  line-height: 1.5;
+}
+.office-updates-loading {
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--muted);
+}
+.office-updates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+.office-update-card {
+  padding: 1.25rem;
+  border-radius: var(--radius-md, 12px);
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+.office-update-card h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1.05rem;
+}
+.office-update-card p {
+  margin: 0.35rem 0;
+  font-size: 14px;
+  line-height: 1.45;
+}
+.office-update-card--error {
+  border-color: rgba(220, 38, 38, 0.35);
+  background: rgba(220, 38, 38, 0.06);
+}
+.office-updates-muted {
+  color: var(--muted);
+  font-size: 13px;
+}
+.office-updates-dl {
+  display: inline-block;
+  margin-top: 1rem;
+}
+.office-updates-foot {
+  margin-top: 1.25rem;
+  font-size: 13px;
+  color: var(--text-secondary, var(--muted));
+  line-height: 1.5;
+}
+
 /* Список подписок — карточки */
 .office-licenses-list {
   margin-top: 16px;

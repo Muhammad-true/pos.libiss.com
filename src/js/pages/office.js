@@ -226,6 +226,81 @@ const formatCurrency = (amount, currency = "USD") => {
 
 const officePosPanels = initOfficePosPanels({ formatCurrency, detectLang, translations });
 
+const escHtml = (s) =>
+  String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+
+const OFFICE_UPDATES_PLATFORMS = [
+  { platform: "server", titleKey: "office.updatesServer" },
+  { platform: "windows", titleKey: "office.updatesWindows" },
+  { platform: "android", titleKey: "office.updatesAndroid" },
+  { platform: "shop", titleKey: "office.updatesShop" }
+];
+
+function fmtBytes(n) {
+  const x = Number(n);
+  if (!Number.isFinite(x) || x < 0) return "—";
+  if (x < 1024) return `${Math.round(x)} B`;
+  if (x < 1024 * 1024) return `${(x / 1024).toFixed(1)} KB`;
+  return `${(x / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+async function fetchLatestCloudUpdate(platform) {
+  const res = await api.get(`/updates/latest?platform=${encodeURIComponent(platform)}`, { token: null });
+  if (!res || res.error) {
+    if (res && res.status === 404) return { missing: true };
+    return { error: true };
+  }
+  if (res.success === false) return { missing: true };
+  const row = res.data;
+  if (!row || typeof row !== "object") return { missing: true };
+  return { row };
+}
+
+async function renderOfficeUpdatesPanel() {
+  const container = document.querySelector("[data-office-updates-body]");
+  if (!container) return;
+  const tr = translations[detectLang()] || {};
+  container.innerHTML = `<div class="office-updates-loading">${escHtml(tr["office.updatesLoading"] || "…")}</div>`;
+  const parts = await Promise.all(
+    OFFICE_UPDATES_PLATFORMS.map(async ({ platform, titleKey }) => {
+      const title = tr[titleKey] || platform;
+      const got = await fetchLatestCloudUpdate(platform);
+      if (got.error) {
+        return `<div class="office-update-card office-update-card--error"><h3>${escHtml(title)}</h3><p>${escHtml(tr["office.updatesError"] || "?")}</p></div>`;
+      }
+      if (got.missing || !got.row || !got.row.fileUrl) {
+        return `<div class="office-update-card"><h3>${escHtml(title)}</h3><p class="office-updates-muted">${escHtml(tr["office.updatesEmpty"] || "—")}</p></div>`;
+      }
+      const r = got.row;
+      const url = api.resolveAssetUrl(r.fileUrl);
+      const notes = (r.releaseNotes || "").slice(0, 500);
+      const shaFull = r.checksumSha256 || "";
+      const shaShort = shaFull ? `${shaFull.slice(0, 16)}…` : "";
+      const notesHtml = notes
+        ? `<p><strong>${escHtml(tr["office.updatesNotes"] || "")}:</strong> ${escHtml(notes)}${r.releaseNotes && r.releaseNotes.length > 500 ? "…" : ""}</p>`
+        : "";
+      const shaHtml = shaShort
+        ? `<p class="office-updates-muted"><strong>${escHtml(tr["office.updatesSha"] || "")}:</strong> ${escHtml(shaShort)}</p>`
+        : "";
+      return `
+        <div class="office-update-card">
+          <h3>${escHtml(title)}</h3>
+          <p><strong>${escHtml(tr["office.updatesVersion"] || "Ver")}:</strong> ${escHtml(r.version)}</p>
+          <p><strong>${escHtml(tr["office.updatesSize"] || "Size")}:</strong> ${escHtml(fmtBytes(r.fileSize))}</p>
+          ${notesHtml}
+          ${shaHtml}
+          <a class="btn btn-primary office-updates-dl" href="${url}" download rel="noopener noreferrer">${escHtml(tr["office.updatesDownload"] || "Download")}</a>
+        </div>`;
+    })
+  );
+  const hint = tr["office.updatesAutoHint"] || "";
+  container.innerHTML = `<div class="office-updates-grid">${parts.join("")}</div>${hint ? `<p class="office-updates-foot">${escHtml(hint)}</p>` : ""}`;
+}
+
 const ensureSelectedShopInStorage = (shopsList) => {
   const list = (Array.isArray(shopsList) ? shopsList : []).filter((s) => s && s.id);
   const ids = list.map((s) => String(s.id));
@@ -1656,6 +1731,7 @@ const PANEL_TITLE_KEYS = {
   reports: "office.menuReports",
   cashier: "office.menuCashier",
   debtors: "office.menuDebtors",
+  updates: "office.menuUpdates",
   licenses: "office.menuLicenses"
 };
 
@@ -1697,6 +1773,9 @@ const setActivePanel = (panelId) => {
   if (["reports", "cashier", "debtors"].includes(panelId)) {
     officePosPanels.onPanelShown(panelId, localStorage.getItem("userToken"));
   }
+  if (panelId === "updates") {
+    renderOfficeUpdatesPanel();
+  }
 };
 
 AppHeader.init({
@@ -1708,7 +1787,7 @@ AppHeader.init({
 const hash = window.location.hash.slice(1);
 if (
   hash &&
-  ["dashboard", "stores", "orders", "products", "reports", "cashier", "debtors", "licenses"].includes(hash)
+  ["dashboard", "stores", "orders", "products", "reports", "cashier", "debtors", "updates", "licenses"].includes(hash)
 ) {
   setActivePanel(hash);
 } else {
@@ -1726,6 +1805,10 @@ if (addProductButton) {
 }
 
 document.body.style.opacity = "1";
+
+document.querySelector("[data-office-updates-refresh]")?.addEventListener("click", () => {
+  renderOfficeUpdatesPanel();
+});
 
 loadAccount();
 

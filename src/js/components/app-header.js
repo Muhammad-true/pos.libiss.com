@@ -82,6 +82,7 @@ function render() {
     { id: "reports", key: "office.menuReports" },
     { id: "cashier", key: "office.menuCashier" },
     { id: "debtors", key: "office.menuDebtors" },
+    { id: "updates", key: "office.menuUpdates" },
     { id: "licenses", key: "office.menuLicenses" }
   ];
   const navHtml = navItems
