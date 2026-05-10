@@ -49,6 +49,7 @@ langButtons.forEach((btn) => {
       if (tutorialSteps.length > 0) {
         updateTutorialUI();
       }
+      fetchUpdates();
     }
   });
 });
@@ -198,7 +199,11 @@ const loadLatestUpdate = async (platform) => {
   };
 
   try {
-    const result = await api.get(`/updates/latest?platform=${encodeURIComponent(platform)}`, { token: null });
+    const bust = `_cb=${Date.now()}`;
+    const result = await api.get(`/updates/latest?platform=${encodeURIComponent(platform)}&${bust}`, {
+      token: null,
+      suppress401: true
+    });
 
     if (!result || result.error || !result?.success || !result?.data) {
       link.classList.remove("is-loading");
@@ -248,3 +253,6 @@ if (tutorialSteps.length > 0) {
 }
 fetchUpdates();
 
+document.querySelector("[data-docs-refresh-updates]")?.addEventListener("click", () => {
+  fetchUpdates();
+});

@@ -27,12 +27,12 @@
     <link rel="shortcut icon" href="/logo.png" />
     <title>Libiss POS — Создать магазин</title>
     <style>body { opacity: 0; transition: opacity 0.3s; }</style>
-    <script type="module" crossorigin src="/assets/create-store-7o9wg3qd.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/styles-CbfXDMIG.js">
+    <script type="module" crossorigin src="/assets/create-store-BNq6cA51.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/styles-BqEWLcHv.js">
     <link rel="modulepreload" crossorigin href="/assets/index-DNQiN_gI.js">
-    <link rel="modulepreload" crossorigin href="/assets/translations-gtF6RjSa.js">
-    <link rel="modulepreload" crossorigin href="/assets/api-DoKsueW2.js">
-    <link rel="stylesheet" crossorigin href="/assets/styles-CIG4EEur.css">
+    <link rel="modulepreload" crossorigin href="/assets/translations-Bhym0zi3.js">
+    <link rel="modulepreload" crossorigin href="/assets/api-D5zH2I3w.js">
+    <link rel="stylesheet" crossorigin href="/assets/styles-DUUQeZDS.css">
   </head>
   <body>
     <div class="page">
@@ -93,6 +93,36 @@
                         placeholder="123456789"
                       />
                       <span class="field-error" data-error-for="inn"></span>
+                    </div>
+                    <div class="field">
+                      <label for="certificate" data-i18n="form.certificate">Сертификат</label>
+                      <input
+                        id="certificate"
+                        name="certificate"
+                        type="text"
+                        required
+                        data-i18n-attr="placeholder"
+                        data-i18n-key="form.certificatePlaceholder"
+                        placeholder="Номер или название сертификата"
+                      />
+                      <span class="field-error" data-error-for="certificate"></span>
+                    </div>
+                    <div class="field">
+                      <label for="certificatePhoto" data-i18n="form.certificatePhoto">Фото сертификата</label>
+                      <input
+                        id="certificatePhoto"
+                        name="certificatePhoto"
+                        type="file"
+                        accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                        required
+                        data-certificate-photo-input
+                      />
+                      <span class="hint" data-i18n="form.certificatePhotoHint">Обязательно. Загрузите фото — в форме будет передан полученный URL.</span>
+                      <div class="certificate-photo-preview" data-certificate-photo-preview hidden>
+                        <img data-certificate-photo-preview-img src="" alt="Preview" />
+                        <button type="button" class="logo-remove" data-certificate-photo-remove data-i18n="form.logoRemove">Удалить</button>
+                      </div>
+                      <span class="field-error" data-error-for="certificatePhoto"></span>
                     </div>
                     <div class="field">
                       <label for="description" data-i18n="form.description"
@@ -276,6 +306,12 @@
                       />
                       <span class="field-error" data-error-for="passwordConfirm"></span>
                     </div>
+                    <div class="field field--checkbox" data-agree-block>
+                      <label class="label-checkbox">
+                        <input type="checkbox" name="agreeTerms" id="agreeTerms" data-agree-terms />
+                        <span data-i18n-html="form.agreeTermsHtml">Я соглашаюсь с <a href="/legal-view.html#terms_shop" target="_blank" rel="noopener">условиями</a> и <a href="/legal-view.html#privacy_shop" target="_blank" rel="noopener">политикой конфиденциальности</a></span>
+                      </label>
+                    </div>
                   </div>
                   <div class="form-actions">
                     <button class="btn btn-secondary" type="button" data-prev data-i18n="form.prev">
@@ -298,6 +334,21 @@
           </div>
         </section>
       </main>
+
+      <!-- Модальное окно процесса создания магазина -->
+      <div class="create-store-progress-modal" data-create-store-progress-modal hidden role="dialog" aria-labelledby="progress-modal-title" aria-live="polite">
+        <div class="create-store-progress-backdrop"></div>
+        <div class="create-store-progress-content">
+          <h2 id="progress-modal-title" class="create-store-progress-title" data-i18n="form.progressModalTitle">Создание магазина</h2>
+          <div class="create-store-progress-body">
+            <p class="create-store-progress-text" data-create-store-progress-text></p>
+            <div class="create-store-progress-spinner" data-create-store-progress-spinner aria-hidden="true"></div>
+          </div>
+          <div class="create-store-progress-actions" data-create-store-progress-actions hidden>
+            <button type="button" class="btn btn-primary" data-create-store-progress-close data-i18n="form.close">Закрыть</button>
+          </div>
+        </div>
+      </div>
     </div>
 
   </body>

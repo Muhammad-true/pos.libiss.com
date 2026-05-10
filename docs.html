@@ -55,15 +55,92 @@
                 Пошагово настроим рабочее место и подключим магазин.
               </p>
               <div class="docs-welcome" data-docs-welcome></div>
+              <p class="docs-hero-manual">
+                <a class="btn btn-secondary" href="/documentation.html" data-i18n="docs.openManualPage"
+                  >Полные руководства: установка и работа</a
+                >
+              </p>
             </div>
           </div>
         </section>
 
         <section class="docs-steps">
           <div class="container">
-            <h2 class="section-title" data-i18n="docs.installTitle">Варианты установки</h2>
-            <p class="section-subtitle" data-i18n="docs.installSubtitle">
-              Выберите подходящий вариант для вашей кассы.
+            <h2 class="section-title" data-i18n="docs.freshDownloadsTitle">Актуальные версии с облака</h2>
+            <p class="section-subtitle" data-i18n="docs.freshDownloadsLead">
+              Здесь всегда последние файлы, которые вы загрузили в админку. Вход не нужен. Если только что выложили обновление — нажмите «Обновить ссылки».
+            </p>
+            <div class="docs-updates-toolbar">
+              <button type="button" class="btn btn-secondary" data-docs-refresh-updates data-i18n="docs.updatesRefresh">
+                Обновить ссылки
+              </button>
+              <a class="btn btn-secondary" href="/office.html#updates" data-i18n="docs.sameInOffice">То же в кабинете</a>
+            </div>
+            <div class="docs-updates">
+              <div class="docs-updates-cards">
+                <div class="docs-update-card" data-updates-platform="server">
+                  <h4 class="docs-update-card__title" data-i18n="docs.updateServerTitle">Сервер</h4>
+                  <p class="docs-update-card__desc" data-i18n="docs.updateServerDesc">Node.js (архив .zip)</p>
+                  <div class="docs-update-card__meta">
+                    <span class="docs-update-card__version" data-updates-version data-platform="server">—</span>
+                    <span class="docs-update-card__size" data-updates-size data-platform="server">—</span>
+                    <span class="docs-update-card__date" data-updates-date data-platform="server">—</span>
+                  </div>
+                  <a data-updates-download data-platform="server" class="btn btn-primary docs-update-card__btn" href="#"><span data-updates-btn-text>Загрузка...</span></a>
+                </div>
+                <div class="docs-update-card" data-updates-platform="windows">
+                  <h4 class="docs-update-card__title" data-i18n="docs.updateWindowsTitle">Windows</h4>
+                  <p class="docs-update-card__desc" data-i18n="docs.updateWindowsDesc">Приложение Flutter для Windows (.exe)</p>
+                  <div class="docs-update-card__meta">
+                    <span class="docs-update-card__version" data-updates-version data-platform="windows">—</span>
+                    <span class="docs-update-card__size" data-updates-size data-platform="windows">—</span>
+                    <span class="docs-update-card__date" data-updates-date data-platform="windows">—</span>
+                  </div>
+                  <a data-updates-download data-platform="windows" class="btn btn-primary docs-update-card__btn" href="#"><span data-updates-btn-text>Загрузка...</span></a>
+                </div>
+                <div class="docs-update-card" data-updates-platform="android">
+                  <h4 class="docs-update-card__title" data-i18n="docs.updateAndroidTitle">Android</h4>
+                  <p class="docs-update-card__desc" data-i18n="docs.updateAndroidDesc">Основное Android-приложение (.apk)</p>
+                  <div class="docs-update-card__meta">
+                    <span class="docs-update-card__version" data-updates-version data-platform="android">—</span>
+                    <span class="docs-update-card__size" data-updates-size data-platform="android">—</span>
+                    <span class="docs-update-card__date" data-updates-date data-platform="android">—</span>
+                  </div>
+                  <a data-updates-download data-platform="android" class="btn btn-primary docs-update-card__btn" href="#"><span data-updates-btn-text>Загрузка...</span></a>
+                </div>
+                <div class="docs-update-card" data-updates-platform="shop">
+                  <h4 class="docs-update-card__title" data-i18n="docs.updateShopTitle">Интернет-магазин Libiss</h4>
+                  <p class="docs-update-card__desc" data-i18n="docs.updateShopDesc">Приложение интернет-магазина (libiss.apk), отдельно от Android</p>
+                  <div class="docs-update-card__meta">
+                    <span class="docs-update-card__version" data-updates-version data-platform="shop">—</span>
+                    <span class="docs-update-card__size" data-updates-size data-platform="shop">—</span>
+                    <span class="docs-update-card__date" data-updates-date data-platform="shop">—</span>
+                  </div>
+                  <a data-updates-download data-platform="shop" class="btn btn-primary docs-update-card__btn" href="#"><span data-updates-btn-text>Загрузка...</span></a>
+                </div>
+              </div>
+            </div>
+
+            <div class="docs-first-run">
+              <h2 class="section-title" data-i18n="docs.firstRunTitle">Первый раз: по шагам</h2>
+              <ol class="docs-first-run-list">
+                <li data-i18n="docs.firstRunStep1">Шаг 1</li>
+                <li data-i18n="docs.firstRunStep2">Шаг 2</li>
+                <li data-i18n="docs.firstRunStep3">Шаг 3</li>
+                <li data-i18n="docs.firstRunStep4">Шаг 4</li>
+                <li data-i18n="docs.firstRunStep5">Шаг 5</li>
+                <li data-i18n="docs.firstRunStep6">Шаг 6</li>
+              </ol>
+            </div>
+
+            <div class="docs-network-hint">
+              <h3 class="section-title" data-i18n="docs.networkHotspotTitle">Нет Wi‑Fi роутера?</h3>
+              <p data-i18n="docs.networkHotspotBody">Текст про мобильный хот-спот.</p>
+            </div>
+
+            <h2 class="section-title" data-i18n="docs.installArchiveTitle">Запасные ссылки (Google Drive)</h2>
+            <p class="section-subtitle" data-i18n="docs.installArchiveSubtitle">
+              Версии на Drive могут отставать от облака. Для свежих сборок используйте блок выше.
             </p>
             <div class="grid two">
               <div class="card">
@@ -122,57 +199,15 @@
                   <a class="btn btn-secondary" href="https://dev.mysql.com/downloads/mysql/" target="_blank" rel="noopener noreferrer" data-i18n="docs.mysqlDownload">
                     Скачать MySQL
                   </a>
-                  <a class="btn btn-secondary" href="/docs.html" data-i18n="docs.mysqlDocs">
+                  <a
+                    class="btn btn-secondary"
+                    href="https://dev.mysql.com/doc/refman/8.0/en/installing.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-i18n="docs.mysqlDocs"
+                  >
                     Документация по установке
                   </a>
-                </div>
-              </div>
-            </div>
-            <div class="docs-updates">
-              <h3 class="section-title" data-i18n="docs.updatesTitle">Скачивание программ</h3>
-              <p class="section-subtitle" data-i18n="docs.updatesSubtitle">
-                Скачайте последнюю версию для вашей платформы. Доступно без входа в кабинет.
-              </p>
-              <div class="docs-updates-cards">
-                <div class="docs-update-card" data-updates-platform="server">
-                  <h4 class="docs-update-card__title" data-i18n="docs.updateServerTitle">Сервер</h4>
-                  <p class="docs-update-card__desc" data-i18n="docs.updateServerDesc">Node.js (архив .zip)</p>
-                  <div class="docs-update-card__meta">
-                    <span class="docs-update-card__version" data-updates-version data-platform="server">—</span>
-                    <span class="docs-update-card__size" data-updates-size data-platform="server">—</span>
-                    <span class="docs-update-card__date" data-updates-date data-platform="server">—</span>
-                  </div>
-                  <a data-updates-download data-platform="server" class="btn btn-primary docs-update-card__btn" href="#"><span data-updates-btn-text>Загрузка...</span></a>
-                </div>
-                <div class="docs-update-card" data-updates-platform="windows">
-                  <h4 class="docs-update-card__title" data-i18n="docs.updateWindowsTitle">Windows</h4>
-                  <p class="docs-update-card__desc" data-i18n="docs.updateWindowsDesc">Приложение Flutter для Windows (.exe)</p>
-                  <div class="docs-update-card__meta">
-                    <span class="docs-update-card__version" data-updates-version data-platform="windows">—</span>
-                    <span class="docs-update-card__size" data-updates-size data-platform="windows">—</span>
-                    <span class="docs-update-card__date" data-updates-date data-platform="windows">—</span>
-                  </div>
-                  <a data-updates-download data-platform="windows" class="btn btn-primary docs-update-card__btn" href="#"><span data-updates-btn-text>Загрузка...</span></a>
-                </div>
-                <div class="docs-update-card" data-updates-platform="android">
-                  <h4 class="docs-update-card__title" data-i18n="docs.updateAndroidTitle">Android</h4>
-                  <p class="docs-update-card__desc" data-i18n="docs.updateAndroidDesc">Основное Android-приложение (.apk)</p>
-                  <div class="docs-update-card__meta">
-                    <span class="docs-update-card__version" data-updates-version data-platform="android">—</span>
-                    <span class="docs-update-card__size" data-updates-size data-platform="android">—</span>
-                    <span class="docs-update-card__date" data-updates-date data-platform="android">—</span>
-                  </div>
-                  <a data-updates-download data-platform="android" class="btn btn-primary docs-update-card__btn" href="#"><span data-updates-btn-text>Загрузка...</span></a>
-                </div>
-                <div class="docs-update-card" data-updates-platform="shop">
-                  <h4 class="docs-update-card__title" data-i18n="docs.updateShopTitle">Интернет-магазин Libiss</h4>
-                  <p class="docs-update-card__desc" data-i18n="docs.updateShopDesc">Приложение интернет-магазина (libiss.apk), отдельно от Android</p>
-                  <div class="docs-update-card__meta">
-                    <span class="docs-update-card__version" data-updates-version data-platform="shop">—</span>
-                    <span class="docs-update-card__size" data-updates-size data-platform="shop">—</span>
-                    <span class="docs-update-card__date" data-updates-date data-platform="shop">—</span>
-                  </div>
-                  <a data-updates-download data-platform="shop" class="btn btn-primary docs-update-card__btn" href="#"><span data-updates-btn-text>Загрузка...</span></a>
                 </div>
               </div>
             </div>

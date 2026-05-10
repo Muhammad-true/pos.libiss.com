@@ -9,7 +9,8 @@
   "scripts": {
     "dev": "vite",
     "dev:4444": "vite --port 4444",
-    "build": "vite build",
+    "sync-user-docs": "node scripts/sync-user-docs.mjs",
+    "build": "node scripts/sync-user-docs.mjs && vite build",
     "preview": "vite preview"
   },
   "devDependencies": {

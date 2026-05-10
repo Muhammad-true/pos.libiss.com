@@ -24,13 +24,13 @@
     <link rel="shortcut icon" href="/logo.png" />
     <title>Libiss POS — Мой аккаунт</title>
     <style>body { opacity: 0; transition: opacity 0.3s; }</style>
-    <script type="module" crossorigin src="/assets/office-CzWOfiCQ.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/styles-CbfXDMIG.js">
-    <link rel="modulepreload" crossorigin href="/assets/translations-gtF6RjSa.js">
-    <link rel="modulepreload" crossorigin href="/assets/app-header-mww9e35e.js">
-    <link rel="modulepreload" crossorigin href="/assets/api-DoKsueW2.js">
+    <script type="module" crossorigin src="/assets/office-DLIvkzmj.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/styles-BqEWLcHv.js">
+    <link rel="modulepreload" crossorigin href="/assets/translations-Bhym0zi3.js">
+    <link rel="modulepreload" crossorigin href="/assets/app-header-jAWWT6fV.js">
+    <link rel="modulepreload" crossorigin href="/assets/api-D5zH2I3w.js">
     <link rel="modulepreload" crossorigin href="/assets/index-DNQiN_gI.js">
-    <link rel="stylesheet" crossorigin href="/assets/styles-CIG4EEur.css">
+    <link rel="stylesheet" crossorigin href="/assets/styles-DUUQeZDS.css">
   </head>
   <body>
     <div class="page">
@@ -47,6 +47,8 @@
                     Короткие шаги для быстрого запуска POS.
                   </p>
                   <div class="office-welcome" data-office-welcome></div>
+                  <div class="office-verification-banner" data-office-verification-banner hidden aria-live="polite"></div>
+                  <p class="office-local-sync office-local-sync--muted" data-office-local-sync hidden></p>
                 </div>
               </div>
             </section>
@@ -97,13 +99,25 @@
               <h2 class="section-title" data-i18n="office.storesTitle">
                 Ваши магазины
               </h2>
-              <a class="btn btn-secondary" href="/create-store.html" data-i18n="office.createStore">
-                Создать магазин
-              </a>
+              <div class="office-stores-header-actions">
+                <button type="button" class="btn btn-secondary" data-office-edit-store data-i18n="office.editStore">
+                  Изменить данные магазина
+                </button>
+                <a class="btn btn-secondary" href="/add-store.html" data-i18n="office.addStoreOutlet">
+                  Добавить торговую точку
+                </a>
+              </div>
+            </div>
+            <div class="office-stores-context" style="margin-bottom: 1rem;">
+              <label class="office-shop-select-label" style="display: flex; flex-direction: column; gap: 0.35rem; max-width: 420px;">
+                <span data-i18n="office.activeStoreContext">Текущая точка (отчёты POS, профиль, лимиты AI)</span>
+                <select data-office-shop-select class="input-like" aria-label="Store"></select>
+              </label>
             </div>
             <div class="office-logo-section" data-office-logo-section>
+              <h3 class="office-logo-section__title" data-i18n="office.logoSectionTitle">Логотип магазина</h3>
               <div class="office-logo-container">
-                <div class="office-logo-preview">
+                <div class="office-logo-preview" aria-hidden="true">
                   <img data-office-logo-img src="" alt="Logo" hidden />
                   <div class="office-logo-placeholder" data-office-logo-placeholder>
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -173,6 +187,82 @@
             </div>
           </section>
 
+          <section class="office-panel" data-office-panel="reports" hidden>
+            <div class="container office-panel-inner office-pos-panel">
+              <div class="office-pos-panel__head">
+                <h2 class="section-title" data-i18n="office.menuReports">Отчёты склада</h2>
+                <button type="button" class="btn btn-secondary" data-office-pos-refresh data-i18n="office.posRefresh">Обновить</button>
+              </div>
+              <p class="office-pos-sync-status" data-office-pos-sync-status></p>
+              <p class="office-pos-pricing-note" data-i18n="office.posPricingNote">
+                Суммы на складе приходят из локального POS уже в расшифрованном виде (как в вашей локальной базе).
+              </p>
+              <div class="office-pos-body" data-office-pos-reports-body></div>
+            </div>
+          </section>
+
+          <section class="office-panel" data-office-panel="cashier" hidden>
+            <div class="container office-panel-inner office-pos-panel">
+              <div class="office-pos-panel__head">
+                <h2 class="section-title" data-i18n="office.menuCashier">Отчёты по кассирам</h2>
+                <button type="button" class="btn btn-secondary" data-office-pos-refresh data-i18n="office.posRefresh">Обновить</button>
+              </div>
+              <p class="office-pos-sync-status" data-office-pos-sync-status></p>
+              <div class="office-pos-cashier-toolbar">
+                <label class="office-pos-cashier-toolbar__label" for="office-cashier-period" data-i18n="office.posCashierFilterLabel">Период</label>
+                <select id="office-cashier-period" class="office-pos-cashier-select" data-office-cashier-period aria-describedby="office-cashier-period-hint">
+                  <option value="today" selected data-i18n="office.posPeriodToday">Сегодня</option>
+                  <option value="last7" data-i18n="office.posPeriod7">7 дней</option>
+                  <option value="last30" data-i18n="office.posPeriod30">30 дней</option>
+                  <option value="customRange" data-i18n="office.posPeriodCustom">Свои даты</option>
+                </select>
+              </div>
+              <p id="office-cashier-period-hint" class="office-pos-period-hint" data-i18n="office.posCashierFilterHint">
+                Периоды посчитаны на локальном сервере при последней отправке в облако. Свои даты — после следующей синхронизации с нужным периодом (настройка на сервере).
+              </p>
+              <div class="office-pos-custom-range">
+                <span class="office-pos-custom-range__title" data-i18n="office.posCustomRangeTitle">Свой период (например один день)</span>
+                <div class="office-pos-custom-range__row">
+                  <label class="sr-only" for="office-cashier-from" data-i18n="office.posDateFrom">С даты</label>
+                  <input type="date" id="office-cashier-from" class="office-pos-cashier-select" data-office-cashier-from />
+                  <span class="office-pos-custom-range__dash">—</span>
+                  <label class="sr-only" for="office-cashier-to" data-i18n="office.posDateTo">По дату</label>
+                  <input type="date" id="office-cashier-to" class="office-pos-cashier-select" data-office-cashier-to />
+                  <button type="button" class="btn btn-secondary" data-office-cashier-range-save data-i18n="office.posSaveRange">Сохранить</button>
+                </div>
+              </div>
+              <p class="office-pos-period-hint office-pos-custom-hint" data-i18n="office.posCustomRangeHint">
+                На локальном сервере: с 00:00 первой даты по 23:59 последней (часовой пояс компьютера с POS). После сохранения перезапустите локальный API с интернетом.
+              </p>
+              <p class="office-pos-range-msg" data-office-pos-range-msg hidden aria-live="polite"></p>
+              <div class="office-pos-body" data-office-pos-cashier-body></div>
+            </div>
+          </section>
+
+          <section class="office-panel" data-office-panel="debtors" hidden>
+            <div class="container office-panel-inner office-pos-panel">
+              <div class="office-pos-panel__head">
+                <h2 class="section-title" data-i18n="office.menuDebtors">Должники</h2>
+                <button type="button" class="btn btn-secondary" data-office-pos-refresh data-i18n="office.posRefresh">Обновить</button>
+              </div>
+              <p class="office-pos-sync-status" data-office-pos-sync-status></p>
+              <div class="office-pos-body" data-office-pos-debtors-body></div>
+            </div>
+          </section>
+
+          <section class="office-panel" data-office-panel="updates" hidden>
+            <div class="container office-panel-inner">
+              <div class="office-pos-panel__head" style="margin-bottom: 1rem;">
+                <h2 class="section-title" data-i18n="office.menuUpdates">Обновления ПО</h2>
+                <button type="button" class="btn btn-secondary" data-office-updates-refresh data-i18n="office.updatesRefresh">Обновить список</button>
+              </div>
+              <p class="office-updates-intro" data-i18n="office.updatesIntro">
+                Актуальные сборки с облака. Скачайте файл на компьютер или телефон. В приложении POS (Windows/Android) установка может выполняться из раздела «Обновления» внутри приложения.
+              </p>
+              <div class="office-updates-body" data-office-updates-body></div>
+            </div>
+          </section>
+
           <section class="office-panel" data-office-panel="licenses" hidden>
         <section class="office-licenses">
           <div class="container">
@@ -197,6 +287,26 @@
       </main>
     </div>
 
+    <div class="order-modal" data-order-modal hidden>
+      <div class="order-modal-backdrop" data-close-order-modal></div>
+      <div class="order-modal-content">
+        <button type="button" class="order-modal-close" data-close-order-modal>×</button>
+        <div class="order-modal-body" data-order-details>
+          <!-- Order details and actions injected here -->
+        </div>
+      </div>
+    </div>
+
+    <div class="order-modal" data-receipt-modal hidden aria-label="Чек заказа">
+      <div class="order-modal-backdrop" data-close-receipt-modal></div>
+      <div class="order-modal-content">
+        <button type="button" class="order-modal-close" data-close-receipt-modal aria-label="Закрыть">×</button>
+        <div class="order-modal-body" data-receipt-body>
+          <!-- Receipt content injected here -->
+        </div>
+      </div>
+    </div>
+
     <div class="product-modal" data-product-modal hidden>
       <div class="product-modal-backdrop" data-close-modal></div>
       <div class="product-modal-content">
@@ -204,6 +314,63 @@
         <div class="product-modal-body" data-product-details>
           <!-- Details injected here -->
         </div>
+      </div>
+    </div>
+
+    <div class="store-edit-modal" data-store-edit-modal hidden role="dialog" aria-labelledby="store-edit-modal-title">
+      <div class="store-edit-modal-backdrop" data-close-store-edit-modal></div>
+      <div class="store-edit-modal-content">
+        <button type="button" class="store-edit-modal-close" data-close-store-edit-modal aria-label="Закрыть">×</button>
+        <h2 id="store-edit-modal-title" class="store-edit-modal-title" data-i18n="office.editStoreTitle">Данные магазина</h2>
+        <form class="store-edit-form" data-store-edit-form>
+          <div class="field">
+            <label for="store-edit-name" data-i18n="office.editStoreName">Название</label>
+            <input id="store-edit-name" name="name" type="text" data-store-edit-field="name" />
+          </div>
+          <div class="field">
+            <label for="store-edit-description" data-i18n="office.editStoreDescription">Описание</label>
+            <textarea id="store-edit-description" name="description" rows="2" data-store-edit-field="description"></textarea>
+          </div>
+          <div class="field">
+            <label for="store-edit-address" data-i18n="office.editStoreAddress">Адрес</label>
+            <input id="store-edit-address" name="address" type="text" data-store-edit-field="address" />
+          </div>
+          <div class="field">
+            <label for="store-edit-phone" data-i18n="office.editStorePhone">Телефон</label>
+            <input id="store-edit-phone" name="phone" type="tel" data-store-edit-field="phone" />
+          </div>
+          <div class="field">
+            <label for="store-edit-email" data-i18n="office.editStoreEmail">Email магазина</label>
+            <input id="store-edit-email" name="email" type="email" data-store-edit-field="email" />
+          </div>
+          <div class="field">
+            <label for="store-edit-telegram" data-i18n="office.editStoreTelegram">Telegram</label>
+            <input id="store-edit-telegram" name="telegram" type="text" placeholder="@username или ссылка" data-store-edit-field="telegram" />
+          </div>
+          <div class="field">
+            <label for="store-edit-instagram" data-i18n="office.editStoreInstagram">Instagram</label>
+            <input id="store-edit-instagram" name="instagram" type="text" placeholder="@username или ссылка" data-store-edit-field="instagram" />
+          </div>
+          <div class="field">
+            <label for="store-edit-primaryColor" data-i18n="office.editStorePrimaryColor">Основной цвет (hex)</label>
+            <input id="store-edit-primaryColor" name="primaryColor" type="text" placeholder="#12a57c" data-store-edit-field="primaryColor" />
+          </div>
+          <div class="field">
+            <label for="store-edit-background" data-i18n="office.editStoreBackground">Фон (URL или цвет)</label>
+            <input id="store-edit-background" name="background" type="text" data-store-edit-field="background" />
+          </div>
+          <div class="field">
+            <label for="store-edit-cityId" data-i18n="office.editStoreCity">Город</label>
+            <select id="store-edit-cityId" name="cityId" data-store-edit-field="cityId">
+              <option value="">—</option>
+            </select>
+          </div>
+          <div class="store-edit-modal-actions">
+            <button type="button" class="btn btn-secondary" data-close-store-edit-modal data-i18n="office.editStoreCancel">Отмена</button>
+            <button type="submit" class="btn btn-primary" data-i18n="office.saveStore">Сохранить</button>
+          </div>
+          <div class="status" data-store-edit-status aria-live="polite"></div>
+        </form>
       </div>
     </div>
 

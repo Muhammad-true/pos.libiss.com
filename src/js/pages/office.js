@@ -249,7 +249,10 @@ function fmtBytes(n) {
 }
 
 async function fetchLatestCloudUpdate(platform) {
-  const res = await api.get(`/updates/latest?platform=${encodeURIComponent(platform)}`, { token: null });
+  const res = await api.get(
+    `/updates/latest?platform=${encodeURIComponent(platform)}&_cb=${Date.now()}`,
+    { token: null }
+  );
   if (!res || res.error) {
     if (res && res.status === 404) return { missing: true };
     return { error: true };

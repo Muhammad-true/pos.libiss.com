@@ -46,6 +46,7 @@ export const translations = {
     "footer.api": "API (сейчас не можем сотрудничать)",
     "footer.shop": "Онлайн-магазин",
     "footer.docs": "Документация",
+    "footer.manual": "Руководства (текст)",
     "create.eyebrow": "Регистрация",
     "create.title": "Создайте магазин",
     "create.subtitle": "Несколько шагов — и ваш POS готов к работе.",
@@ -161,7 +162,7 @@ export const translations = {
     "docs.tutorialTitle": "Обучение работе с POS",
     "docs.tutorialSubtitle": "Пройдите пошаговое обучение, чтобы освоить основные функции.",
     "docs.tutorial1Title": "Первый запуск и подключение",
-    "docs.tutorial1Text": "При первом запуске укажите IP-адрес сервера. Для Кассы 1 используйте http://localhost:8080/api. Для других касс узнайте IP-адрес сервера в настройках Кассы 1. Все устройства должны быть в одной Wi-Fi сети.",
+    "docs.tutorial1Text": "При первом запуске укажите адрес API сервера. На кассе 1 на том же ПК, что и сервер: http://localhost:8080/api. На других кассах — IP компьютера кассы 1 в вашей сети (Wi‑Fi роутер или мобильный хот-спот с кассы 1 — см. блок выше). Все кассы должны быть в одной локальной сети.",
     "docs.tutorial2Title": "Вход в систему и настройка магазина",
     "docs.tutorial2Text": "Войдите используя логин и пароль администратора. В админ-панели откройте \"Настройки\" и укажите название вашего магазина. Сохраните изменения.",
     "docs.tutorial3Title": "Добавление товаров",
@@ -198,7 +199,32 @@ export const translations = {
     "docs.mysqlWarningTitle": "Важно: MySQL обязателен",
     "docs.mysqlWarningText": "Перед установкой сервера и программы обязательно установите MySQL. Без MySQL сервер не будет работать.",
     "docs.mysqlDownload": "Скачать MySQL",
-    "docs.mysqlDocs": "Документация по установке",
+    "docs.mysqlDocs": "Документация MySQL (установка)",
+    "docs.freshDownloadsTitle": "Актуальные версии с облака",
+    "docs.freshDownloadsLead":
+      "Файлы подтягиваются с сервера обновлений в момент открытия страницы. Регистрация не нужна. После публикации новой версии в админке нажмите «Обновить ссылки», чтобы увидеть её здесь же.",
+    "docs.updatesRefresh": "Обновить ссылки",
+    "docs.sameInOffice": "То же в личном кабинете",
+    "docs.firstRunTitle": "Первый раз: коротко по шагам",
+    "docs.firstRunStep1":
+      "Скачайте нужные файлы из блока «Актуальные версии» выше (сервер, Windows-касса, Android). Для кассы 1 на новом ПК чаще всего нужен полный установщик или связка сервер + касса — как вам сказал поддержка.",
+    "docs.firstRunStep2":
+      "Если MySQL ещё не стоит — установите его (ссылка в жёлтом блоке ниже). Без MySQL локальный сервер не запустится.",
+    "docs.firstRunStep3":
+      "Запустите установщик на компьютере кассы 1, следуйте подсказкам на экране. Дождитесь, пока сервер и программа запустятся.",
+    "docs.firstRunStep4":
+      "Зайдите в личный кабинет на этом сайте (кнопка «В кабинет» / «Войти») и найдите ID магазина и ключ подписки — их нужно ввести в POS при первом запуске.",
+    "docs.firstRunStep5":
+      "На второй и следующих кассах установите только приложение POS. В настройках подключения укажите адрес сервера: IP компьютера кассы 1 в вашей сети и порт (как в инструкции к серверу, чаще всего …/api). Касса 1 на том же ПК: обычно http://localhost:8080/api",
+    "docs.firstRunStep6":
+      "Дальше откройте раздел обучения ниже или в приложении — добавьте товар и пробную продажу.",
+    "docs.networkHotspotTitle": "Нет отдельного Wi‑Fi роутера — можно с кассы 1?",
+    "docs.networkHotspotBody":
+      "Да, часто делают так: на компьютере кассы 1 (где крутится сервер) включают встроенную точку доступа Windows — «Мобильный хот-спот» (Параметры → Сеть и Интернет). Касса 2, телефоны и планшеты подключаются к этой Wi‑Fi сети. В POS на них в поле адреса сервера укажите IP этого ПК в сети хот-спота (часто 192.168.137.1; точное значение смотрите в «Сведения» сети адаптера или через ipconfig). Все устройства должны видеть друг друга в одной локальной сети. Альтернатива — обычный роутер или кабель Ethernet.",
+    "docs.installArchiveTitle": "Запасные ссылки (Google Drive)",
+    "docs.installArchiveSubtitle":
+      "Сборки на Drive обновляются реже. Для последних версий ориентируйтесь на блок «Актуальные версии с облака» вверху страницы.",
+    "docs.openManualPage": "Полные руководства: установка и работа",
     "docs.updatesTitle": "Скачивание программ",
     "docs.updatesSubtitle": "Скачайте последнюю версию для вашей платформы. Доступно без входа в кабинет.",
     "docs.updateServerTitle": "Сервер",
@@ -223,6 +249,14 @@ export const translations = {
     "docs.updatesError": "Не удалось загрузить список обновлений.",
     "docs.updatesEmpty": "Нет доступных обновлений",
     "docs.updatesAuthRequired": "Войдите в кабинет, чтобы видеть список скачиваний.",
+    "documentation.title": "Руководства Libiss POS",
+    "documentation.subtitle":
+      "Подробный текст в формате Markdown: установка и повседневная работа. Переключатель RU/EN подгружает соответствующий файл.",
+    "documentation.tabInstall": "Установка",
+    "documentation.tabUsage": "Использование",
+    "documentation.loading": "Загрузка текста…",
+    "documentation.error": "Не удалось загрузить файл руководства. Обновите страницу или откройте репозиторий docs/.",
+    "documentation.backDocs": "← Краткая документация и скачивание",
     "office.menuDashboard": "Главная",
     "office.menuStores": "Мои магазины",
     "office.menuOrders": "Заказы",
@@ -549,6 +583,7 @@ export const translations = {
     "footer.api": "API (currently not available for partnership)",
     "footer.shop": "Online Store",
     "footer.docs": "Docs",
+    "footer.manual": "Manuals (full text)",
     "create.eyebrow": "Registration",
     "create.title": "Create your store",
     "create.subtitle": "A few steps and your POS is ready to go.",
@@ -664,7 +699,7 @@ export const translations = {
     "docs.tutorialTitle": "POS Tutorial",
     "docs.tutorialSubtitle": "Complete step-by-step tutorial to master the main features.",
     "docs.tutorial1Title": "First Launch and Connection",
-    "docs.tutorial1Text": "On first launch, enter the server IP address. For Terminal 1, use http://localhost:8080/api. For other terminals, find the server IP in Terminal 1 settings. All devices must be on the same Wi-Fi network.",
+    "docs.tutorial1Text": "On first launch, enter the API base URL of the local server. On terminal 1 on the same PC as the server: http://localhost:8080/api. On other terminals: the IP address of the terminal-1 PC on your LAN (Wi‑Fi router or Windows Mobile Hotspot from terminal 1 — see the section above). All POS devices must be on the same local network.",
     "docs.tutorial2Title": "Login and Store Setup",
     "docs.tutorial2Text": "Log in using admin username and password. In the admin panel, open \"Settings\" and enter your store name. Save changes.",
     "docs.tutorial3Title": "Adding Products",
@@ -701,7 +736,32 @@ export const translations = {
     "docs.mysqlWarningTitle": "Important: MySQL Required",
     "docs.mysqlWarningText": "Before installing the server and application, you must install MySQL. The server will not work without MySQL.",
     "docs.mysqlDownload": "Download MySQL",
-    "docs.mysqlDocs": "Installation Documentation",
+    "docs.mysqlDocs": "MySQL installation docs",
+    "docs.freshDownloadsTitle": "Latest builds (cloud)",
+    "docs.freshDownloadsLead":
+      "Files are loaded from the update server when you open this page. No sign-in required. After publishing a new build in the admin panel, click “Refresh links” to see it here.",
+    "docs.updatesRefresh": "Refresh links",
+    "docs.sameInOffice": "Same files in your account",
+    "docs.firstRunTitle": "First time: quick checklist",
+    "docs.firstRunStep1":
+      "Download what you need from “Latest builds” above (server, Windows POS, Android). For a new terminal-1 PC you usually need the full installer or server + app — follow what support told you.",
+    "docs.firstRunStep2":
+      "If MySQL is not installed yet, install it (link in the yellow box below). The local server will not run without MySQL.",
+    "docs.firstRunStep3":
+      "Run the installer on the terminal-1 PC and follow the on-screen steps. Wait until the server and app are running.",
+    "docs.firstRunStep4":
+      "Sign in to your account on this site and find your store ID and subscription key — enter them in POS on first launch.",
+    "docs.firstRunStep5":
+      "On terminal 2 and above install only the POS app. In connection settings set the server address: the terminal-1 PC IP on your network and the API path (often …/api). Same machine as server: usually http://localhost:8080/api",
+    "docs.firstRunStep6":
+      "Then use the tutorial below (or in the app): add a product and try a sale.",
+    "docs.networkHotspotTitle": "No Wi‑Fi router — can terminal 1 share Wi‑Fi?",
+    "docs.networkHotspotBody":
+      "Yes, a common setup is Windows Mobile Hotspot on the terminal-1 PC (where the server runs): Settings → Network & Internet → Mobile hotspot. Other terminals and phones join that Wi‑Fi. In POS, set the server URL to this PC’s address on the hotspot network (often 192.168.137.1; check adapter details or ipconfig). All devices must reach each other on the same LAN. Alternatives: a normal router or Ethernet.",
+    "docs.installArchiveTitle": "Fallback links (Google Drive)",
+    "docs.installArchiveSubtitle":
+      "Drive builds may lag behind the cloud. Prefer “Latest builds” at the top of this page.",
+    "docs.openManualPage": "Full manuals: installation & daily use",
     "docs.updatesTitle": "Download software",
     "docs.updatesSubtitle": "Download the latest version for your platform. No sign-in required.",
     "docs.updateServerTitle": "Server",
@@ -726,6 +786,14 @@ export const translations = {
     "docs.updatesError": "Failed to load updates list.",
     "docs.updatesEmpty": "No updates available",
     "docs.updatesAuthRequired": "Sign in to your account to see the downloads list.",
+    "documentation.title": "Libiss POS manuals",
+    "documentation.subtitle":
+      "Full Markdown text: installation and day-to-day use. The RU/EN toggle loads the matching file.",
+    "documentation.tabInstall": "Installation",
+    "documentation.tabUsage": "Usage",
+    "documentation.loading": "Loading…",
+    "documentation.error": "Could not load the manual file. Refresh the page or open docs/ in the repository.",
+    "documentation.backDocs": "← Short docs & downloads",
     "office.menuDashboard": "Dashboard",
     "office.menuStores": "My stores",
     "office.menuOrders": "Orders",
