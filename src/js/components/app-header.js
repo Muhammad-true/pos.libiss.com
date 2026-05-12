@@ -84,6 +84,7 @@ function render() {
     { id: "debtors", key: "office.menuDebtors" },
     { id: "movements", key: "office.menuMovements" },
     { id: "network-stock", key: "office.menuNetworkStock" },
+    { id: "network-transfers", key: "office.menuNetworkTransfers" },
     { id: "updates", key: "office.menuUpdates" },
     { id: "licenses", key: "office.menuLicenses" }
   ];

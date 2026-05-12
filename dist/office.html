@@ -24,13 +24,13 @@
     <link rel="shortcut icon" href="/logo.png" />
     <title>Libiss POS — Мой аккаунт</title>
     <style>body { opacity: 0; transition: opacity 0.3s; }</style>
-    <script type="module" crossorigin src="/assets/office-DYIao6jX.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/styles-D3k7hmec.js">
-    <link rel="modulepreload" crossorigin href="/assets/translations-CmxTkZQN.js">
-    <link rel="modulepreload" crossorigin href="/assets/app-header-BMUK2T-T.js">
+    <script type="module" crossorigin src="/assets/office-CZ9Kn_0f.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/styles-DFLsS0p2.js">
+    <link rel="modulepreload" crossorigin href="/assets/translations-0ZI7kZY5.js">
+    <link rel="modulepreload" crossorigin href="/assets/app-header-BJeeSDin.js">
     <link rel="modulepreload" crossorigin href="/assets/api-D5zH2I3w.js">
     <link rel="modulepreload" crossorigin href="/assets/index-DNQiN_gI.js">
-    <link rel="stylesheet" crossorigin href="/assets/styles-CviJxogG.css">
+    <link rel="stylesheet" crossorigin href="/assets/styles-DVZkw6iq.css">
   </head>
   <body>
     <div class="page">
@@ -284,6 +284,32 @@
             </div>
           </section>
 
+          <section class="office-panel" data-office-panel="network-transfers" hidden>
+            <div class="container office-panel-inner office-network-transfers-panel">
+              <div class="office-pos-panel__head office-network-transfers-panel__head">
+                <h2 class="section-title" data-i18n="office.menuNetworkTransfers">Заявки между точками</h2>
+                <div class="office-network-transfers-panel__actions">
+                  <button type="button" class="btn btn-secondary" data-office-network-transfers-refresh data-i18n="office.ntRefresh">Обновить</button>
+                </div>
+              </div>
+              <p class="office-pos-pricing-note" data-i18n="office.ntIntro">
+                Заявки из облака по активной подписке выбранной торговой точки. Подтверждение и приём выполняются здесь; проводка локального склада — на точке-приёмнике в POS после синхронизации.
+              </p>
+              <div class="office-network-transfers-toolbar">
+                <label class="office-network-transfers-filter">
+                  <span data-i18n="office.ntDirection">Направление</span>
+                  <select class="input-like" data-office-network-transfers-direction aria-label="Direction">
+                    <option value="all" data-i18n="office.ntDirAll">Все</option>
+                    <option value="incoming" data-i18n="office.ntDirIncoming">Входящие</option>
+                    <option value="outgoing" data-i18n="office.ntDirOutgoing">Исходящие</option>
+                  </select>
+                </label>
+              </div>
+              <p class="office-network-stock-status" data-office-network-transfers-status aria-live="polite"></p>
+              <div class="office-network-transfers-list" data-office-network-transfers-body></div>
+            </div>
+          </section>
+
           <section class="office-panel" data-office-panel="updates" hidden>
             <div class="container office-panel-inner">
               <div class="office-pos-panel__head" style="margin-bottom: 1rem;">
@@ -319,6 +345,14 @@
           </section>
         </div>
       </main>
+    </div>
+
+    <div class="order-modal" data-network-transfer-modal hidden aria-labelledby="network-transfer-modal-title">
+      <div class="order-modal-backdrop" data-close-network-transfer-modal></div>
+      <div class="order-modal-content office-network-transfer-modal__content">
+        <button type="button" class="order-modal-close" data-close-network-transfer-modal aria-label="Закрыть">×</button>
+        <div class="order-modal-body" data-network-transfer-modal-body></div>
+      </div>
     </div>
 
     <div class="order-modal" data-order-modal hidden>

@@ -277,6 +277,32 @@
             </div>
           </section>
 
+          <section class="office-panel" data-office-panel="network-transfers" hidden>
+            <div class="container office-panel-inner office-network-transfers-panel">
+              <div class="office-pos-panel__head office-network-transfers-panel__head">
+                <h2 class="section-title" data-i18n="office.menuNetworkTransfers">Заявки между точками</h2>
+                <div class="office-network-transfers-panel__actions">
+                  <button type="button" class="btn btn-secondary" data-office-network-transfers-refresh data-i18n="office.ntRefresh">Обновить</button>
+                </div>
+              </div>
+              <p class="office-pos-pricing-note" data-i18n="office.ntIntro">
+                Заявки из облака по активной подписке выбранной торговой точки. Подтверждение и приём выполняются здесь; проводка локального склада — на точке-приёмнике в POS после синхронизации.
+              </p>
+              <div class="office-network-transfers-toolbar">
+                <label class="office-network-transfers-filter">
+                  <span data-i18n="office.ntDirection">Направление</span>
+                  <select class="input-like" data-office-network-transfers-direction aria-label="Direction">
+                    <option value="all" data-i18n="office.ntDirAll">Все</option>
+                    <option value="incoming" data-i18n="office.ntDirIncoming">Входящие</option>
+                    <option value="outgoing" data-i18n="office.ntDirOutgoing">Исходящие</option>
+                  </select>
+                </label>
+              </div>
+              <p class="office-network-stock-status" data-office-network-transfers-status aria-live="polite"></p>
+              <div class="office-network-transfers-list" data-office-network-transfers-body></div>
+            </div>
+          </section>
+
           <section class="office-panel" data-office-panel="updates" hidden>
             <div class="container office-panel-inner">
               <div class="office-pos-panel__head" style="margin-bottom: 1rem;">
@@ -312,6 +338,14 @@
           </section>
         </div>
       </main>
+    </div>
+
+    <div class="order-modal" data-network-transfer-modal hidden aria-labelledby="network-transfer-modal-title">
+      <div class="order-modal-backdrop" data-close-network-transfer-modal></div>
+      <div class="order-modal-content office-network-transfer-modal__content">
+        <button type="button" class="order-modal-close" data-close-network-transfer-modal aria-label="Закрыть">×</button>
+        <div class="order-modal-body" data-network-transfer-modal-body></div>
+      </div>
     </div>
 
     <div class="order-modal" data-order-modal hidden>

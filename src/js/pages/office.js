@@ -267,6 +267,9 @@ const csvEscape = (v) => {
 let networkStockAllRows = [];
 let networkStockMeta = { count: 0, limit: 0 };
 let networkStockFilterTimer = null;
+let officeLicensesListCache = [];
+let networkTransfersListCache = [];
+let networkTransfersShopLabels = {};
 
 const getNetworkStockField = (row, a, b) => row[a] ?? row[b];
 
@@ -403,6 +406,325 @@ function downloadNetworkStockCsv() {
   URL.revokeObjectURL(a.href);
 }
 
+// --- Облачные межмагазинские заявки (лицензия → /licenses/network-transfers*) ---
+const ntTr = () => translations[detectLang()] || {};
+
+const ntShortId = (id) => {
+  const s = String(id ?? "").trim();
+  if (!s) return "—";
+  if (s.length <= 8) return s.toUpperCase();
+  return `${s.slice(0, 8).toUpperCase()}…`;
+};
+
+const ntSameUuid = (a, b) =>
+  String(a ?? "")
+    .toLowerCase()
+    .trim() ===
+  String(b ?? "")
+    .toLowerCase()
+    .trim();
+
+const ntStatusLabel = (status) => {
+  const tr = ntTr();
+  const s = String(status || "").toLowerCase();
+  const key =
+    s === "requested"
+      ? "office.ntStatusRequested"
+      : s === "approved"
+        ? "office.ntStatusApproved"
+        : s === "in_transit"
+          ? "office.ntStatusInTransit"
+          : s === "received"
+            ? "office.ntStatusReceived"
+            : s === "rejected"
+              ? "office.ntStatusRejected"
+              : s === "cancelled"
+                ? "office.ntStatusCancelled"
+                : null;
+  return key ? tr[key] || status : status || "—";
+};
+
+const getNetworkTransferCredentials = () => {
+  const tr = ntTr();
+  const sid = String(localStorage.getItem(SELECTED_SHOP_KEY) || localStorage.getItem("shopId") || "").trim();
+  if (!sid) return { error: tr["office.ntNoShop"] || "—" };
+  const list = officeLicensesListCache;
+  if (!Array.isArray(list) || !list.length) {
+    return { error: tr["office.ntNoLicenses"] || "—" };
+  }
+  const lic = list.find((l) => String(l.shopId ?? l.shop?.id ?? "") === sid);
+  if (!lic) return { error: tr["office.ntNoLicenseForShop"] || "—" };
+  const licenseKey = String(lic.licenseKey ?? lic.license_key ?? lic.key ?? "").trim();
+  if (!licenseKey) return { error: tr["office.ntNoLicenseKey"] || "—" };
+  const st = String(lic.subscriptionStatus ?? lic.subscription_status ?? "").toLowerCase();
+  const ok = st === "active" && lic.isValid !== false;
+  if (!ok) return { error: tr["office.ntLicenseInactive"] || "—" };
+  return { licenseKey, shopId: sid };
+};
+
+const ntLicenseQuery = (cred) =>
+  `licenseKey=${encodeURIComponent(cred.licenseKey)}&shopId=${encodeURIComponent(cred.shopId)}`;
+
+const parseNtLineSnapshot = (raw) => {
+  if (raw == null || raw === "") return null;
+  if (typeof raw === "object" && raw !== null && !Array.isArray(raw)) return raw;
+  if (typeof raw === "string") {
+    try {
+      const o = JSON.parse(raw);
+      return typeof o === "object" && o !== null && !Array.isArray(o) ? o : null;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+};
+
+const ntShopLabel = (shopId) => {
+  const k = String(shopId ?? "").toLowerCase().trim();
+  if (!k) return "—";
+  if (networkTransfersShopLabels[k]) return networkTransfersShopLabels[k];
+  return ntShortId(shopId);
+};
+
+const setNetworkTransfersStatusLine = (text) => {
+  const el = document.querySelector("[data-office-network-transfers-status]");
+  if (!el) return;
+  el.textContent = text || "";
+};
+
+const closeNetworkTransferModal = () => {
+  const modal = document.querySelector("[data-network-transfer-modal]");
+  if (modal) modal.hidden = true;
+};
+
+const renderNetworkTransfersList = () => {
+  const body = document.querySelector("[data-office-network-transfers-body]");
+  if (!body) return;
+  const tr = ntTr();
+  const cred = getNetworkTransferCredentials();
+  if (cred.error) {
+    body.innerHTML = `<div class="office-pos-empty">${escHtml(cred.error)}</div>`;
+    return;
+  }
+  if (!networkTransfersListCache.length) {
+    body.innerHTML = `<div class="office-pos-empty">${escHtml(tr["office.ntEmpty"] || "—")}</div>`;
+    return;
+  }
+  body.innerHTML = networkTransfersListCache
+    .map((row) => {
+      const id = row.id ?? row.ID;
+      const from = row.fromShopId ?? row.fromshopid;
+      const to = row.toShopId ?? row.toshopid;
+      const st = row.status;
+      const items = Array.isArray(row.items) ? row.items : [];
+      const cnt = items.length;
+      const reqRaw = row.requestedAt ?? row.requested_at;
+      const reqAt = formatDateTime(reqRaw) || "—";
+      const idStr = escHtml(String(id ?? ""));
+      return `<button type="button" class="office-network-transfer-card" data-office-network-transfer-id="${idStr}">
+        <p class="office-network-transfer-card__title">${escHtml(ntShortId(id))} · ${escHtml(ntStatusLabel(st))}</p>
+        <p class="office-network-transfer-card__meta">${escHtml(ntShopLabel(from))} → ${escHtml(ntShopLabel(to))}<br />
+        ${escHtml(tr["office.ntItems"] || "Items")}: ${cnt} · ${escHtml(reqAt)}</p>
+      </button>`;
+    })
+    .join("");
+};
+
+async function refreshNetworkTransfersPanel(token) {
+  const tr = ntTr();
+  const body = document.querySelector("[data-office-network-transfers-body]");
+  if (!body) return;
+  if (!token) {
+    networkTransfersListCache = [];
+    body.innerHTML = `<div class="office-pos-empty">${escHtml(tr["office.ntNeedLogin"] || "—")}</div>`;
+    setNetworkTransfersStatusLine("");
+    return;
+  }
+  const cred = getNetworkTransferCredentials();
+  if (cred.error) {
+    networkTransfersListCache = [];
+    body.innerHTML = `<div class="office-pos-empty">${escHtml(cred.error)}</div>`;
+    setNetworkTransfersStatusLine("");
+    return;
+  }
+  const dirEl = document.querySelector("[data-office-network-transfers-direction]");
+  const direction = (dirEl?.value || "all").trim() || "all";
+  setNetworkTransfersStatusLine(tr["office.ntLoading"] || "…");
+  networkTransfersShopLabels = {};
+  const sibRes = await api.get(`/licenses/network-shops?${ntLicenseQuery(cred)}`, { token, shopContext: false });
+  if (sibRes && !sibRes.error) {
+    const shopsPayload = sibRes?.data?.shops ?? sibRes?.shops;
+    if (Array.isArray(shopsPayload)) {
+      for (const s of shopsPayload) {
+        const sid = String(s.id ?? s.ID ?? "").toLowerCase().trim();
+        if (sid) networkTransfersShopLabels[sid] = String(s.name || sid);
+      }
+    }
+  }
+  const curSid = String(cred.shopId).toLowerCase().trim();
+  const pickedStore = (currentShopsList || []).find((s) => String(s.id) === String(cred.shopId));
+  if (pickedStore?.name) {
+    networkTransfersShopLabels[curSid] = pickedStore.name;
+  } else if (localStorage.getItem("shopName")) {
+    networkTransfersShopLabels[curSid] = localStorage.getItem("shopName");
+  }
+  const res = await api.get(
+    `/licenses/network-transfers?${ntLicenseQuery(cred)}&direction=${encodeURIComponent(direction)}`,
+    { token, shopContext: false }
+  );
+  if (!res || res.error) {
+    networkTransfersListCache = [];
+    renderNetworkTransfersList();
+    setNetworkTransfersStatusLine(res?.message || tr["office.ntError"] || "?");
+    return;
+  }
+  const data = res?.data ?? res;
+  const list = data?.transfers;
+  networkTransfersListCache = Array.isArray(list) ? list : [];
+  renderNetworkTransfersList();
+  setNetworkTransfersStatusLine(`${tr["office.ntItems"] || "Items"}: ${networkTransfersListCache.length}`);
+}
+
+function buildNetworkTransferDetailHtml(transferRow) {
+  const trl = ntTr();
+  const cred = getNetworkTransferCredentials();
+  if (cred.error) return `<p>${escHtml(cred.error)}</p>`;
+  const currentShop = cred.shopId;
+  const from = transferRow.fromShopId ?? transferRow.fromshopid;
+  const to = transferRow.toShopId ?? transferRow.toshopid;
+  const tid = String(transferRow.id ?? transferRow.ID ?? "");
+  const st = transferRow.status;
+  const comment = transferRow.comment;
+  const reqRaw = transferRow.requestedAt ?? transferRow.requested_at;
+  const reqAt = formatDateTime(reqRaw) || "—";
+
+  let canApprove = false;
+  let canReject = false;
+  let canShip = false;
+  let canReceive = false;
+  if (ntSameUuid(to, currentShop) && st === "requested") canApprove = true;
+  if ((ntSameUuid(from, currentShop) || ntSameUuid(to, currentShop)) && st === "requested") canReject = true;
+  if (ntSameUuid(from, currentShop) && st === "approved") canShip = true;
+  if (ntSameUuid(to, currentShop) && (st === "in_transit" || st === "approved")) canReceive = true;
+
+  const items = Array.isArray(transferRow.items) ? transferRow.items : [];
+  const linesHtml = items
+    .map((it) => {
+      const snap = parseNtLineSnapshot(it.lineSnapshot ?? it.line_snapshot);
+      const qty = it.qty;
+      const gvid = it.globalVariationId ?? it.globalvariationid;
+      const name =
+        (snap && snap.productName) ||
+        `${trl["office.networkStockColVar"] || "Var."} ${ntShortId(gvid)}`;
+      const metaBits = [
+        snap?.categoryName,
+        snap?.sizeName,
+        snap?.colorName,
+        snap?.seasonName,
+        snap?.productGender
+      ].filter((x) => x != null && String(x).trim() !== "");
+      const meta = metaBits.map((x) => escHtml(String(x))).join(" · ");
+      const pathRaw = snap?.primaryImagePath ?? snap?.primary_image_path;
+      let imgBlock;
+      if (pathRaw && typeof pathRaw === "string") {
+        const url = api.resolveAssetUrl(pathRaw);
+        imgBlock = `<img class="office-network-transfer-line__img" src="${escHtml(url)}" alt="" loading="lazy" />`;
+      } else {
+        imgBlock = `<div class="office-network-transfer-line__img office-network-transfer-line__img--placeholder" aria-hidden="true"></div>`;
+      }
+      const sub = meta ? `<p class="office-network-transfer-line__meta">${meta}</p>` : "";
+      const gvLine = gvid
+        ? `<p class="office-network-transfer-line__meta">globalVariationId: ${escHtml(String(gvid))}</p>`
+        : "";
+      return `<div class="office-network-transfer-line">
+        ${imgBlock}
+        <div class="office-network-transfer-line__body">
+          <p class="office-network-transfer-line__title">${escHtml(String(name))}</p>
+          ${sub}
+          ${gvLine}
+        </div>
+        <span class="office-network-transfer-line__qty">× ${escHtml(String(qty ?? "—"))}</span>
+      </div>`;
+    })
+    .join("");
+
+  const actions = [];
+  if (canApprove) {
+    actions.push(
+      `<button type="button" class="btn btn-primary" data-nt-action="approve" data-nt-id="${escHtml(tid)}">${escHtml(trl["office.ntApprove"])}</button>`
+    );
+  }
+  if (canReject) {
+    actions.push(
+      `<button type="button" class="btn btn-secondary" data-nt-action="reject" data-nt-id="${escHtml(tid)}">${escHtml(trl["office.ntReject"])}</button>`
+    );
+  }
+  if (canShip) {
+    actions.push(
+      `<button type="button" class="btn btn-secondary" data-nt-action="ship" data-nt-id="${escHtml(tid)}">${escHtml(trl["office.ntShip"])}</button>`
+    );
+  }
+  if (canReceive) {
+    actions.push(
+      `<button type="button" class="btn btn-primary" data-nt-action="receive" data-nt-id="${escHtml(tid)}">${escHtml(trl["office.ntReceive"])}</button>`
+    );
+  }
+  const actionsHtml = actions.length
+    ? `<div class="office-network-transfer-actions">${actions.join("")}</div>`
+    : "";
+
+  const commentBlock =
+    comment && String(comment).trim()
+      ? `<p><strong>${escHtml(trl["office.ntComment"])}:</strong> ${escHtml(String(comment))}</p>`
+      : "";
+
+  return `<h2 id="network-transfer-modal-title" style="margin-top:0;font-size:1.15rem">${escHtml(trl["office.ntModalTitle"] || "")} · ${escHtml(ntShortId(tid))}</h2>
+    <div class="office-network-transfer-detail__card">
+      <p class="office-network-transfer-detail__route">${escHtml(ntShopLabel(from))} → ${escHtml(ntShopLabel(to))}</p>
+      <p style="margin:0.25rem 0"><strong>${escHtml(trl["office.ntStatus"])}:</strong> ${escHtml(ntStatusLabel(st))}</p>
+      <p style="margin:0.25rem 0"><strong>${escHtml(trl["office.ntCreated"])}:</strong> ${escHtml(reqAt)}</p>
+      ${commentBlock}
+    </div>
+    <h3 style="font-size:1rem;margin-bottom:0.5rem">${escHtml(trl["office.ntPositions"])}</h3>
+    <div>${linesHtml || `<p class="office-pos-muted">${escHtml(trl["office.ntEmpty"])}</p>`}</div>
+    ${actionsHtml}`;
+}
+
+function openNetworkTransferModal(transferId) {
+  const modal = document.querySelector("[data-network-transfer-modal]");
+  const inner = document.querySelector("[data-network-transfer-modal-body]");
+  if (!modal || !inner) return;
+  const row = networkTransfersListCache.find((x) => ntSameUuid(x.id ?? x.ID, transferId));
+  if (!row) return;
+  inner.innerHTML = buildNetworkTransferDetailHtml(row);
+  modal.hidden = false;
+}
+
+async function networkTransferPatchAction(tid, action) {
+  const token = localStorage.getItem("userToken");
+  const cred = getNetworkTransferCredentials();
+  const tr = ntTr();
+  if (!token || cred.error) return;
+  const body = {
+    licenseKey: cred.licenseKey,
+    shopId: cred.shopId,
+    action
+  };
+  if (action === "reject") {
+    body.reason = window.prompt(tr["office.ntRejectPrompt"] || "", "") ?? "";
+  }
+  const res = await api.patch(`/licenses/network-transfers/${encodeURIComponent(tid)}/status`, body, {
+    token,
+    shopContext: false
+  });
+  if (!res || res.error || res.success === false) {
+    window.alert((res && (res.message || res.error)) || tr["office.ntActionError"]);
+    return;
+  }
+  closeNetworkTransferModal();
+  await refreshNetworkTransfersPanel(token);
+}
+
 const OFFICE_UPDATES_PLATFORMS = [
   { platform: "server", titleKey: "office.updatesServer" },
   { platform: "windows", titleKey: "office.updatesWindows" },
@@ -519,6 +841,8 @@ const renderShopPicker = (shopsList, token) => {
     if (picked?.name) localStorage.setItem("shopName", picked.name);
     renderLogoForSelectedShop();
     officePosPanels.invalidate();
+    networkTransfersListCache = [];
+    networkTransfersShopLabels = {};
     await refreshScopedShopData(token);
   };
 };
@@ -1398,6 +1722,7 @@ const fetchLicenses = async (token, shops) => {
     const shop = shops?.find?.((item) => item?.id === license?.shopId);
     return shop ? { ...license, shop } : license;
   });
+  officeLicensesListCache = mapped;
   renderLicenses(mapped);
   const selectedShopId = String(localStorage.getItem(SELECTED_SHOP_KEY) || localStorage.getItem("shopId") || "");
   const hasActiveForSelected = selectedShopId
@@ -1906,6 +2231,7 @@ const PANEL_TITLE_KEYS = {
   debtors: "office.menuDebtors",
   movements: "office.menuMovements",
   "network-stock": "office.menuNetworkStock",
+  "network-transfers": "office.menuNetworkTransfers",
   updates: "office.menuUpdates",
   licenses: "office.menuLicenses"
 };
@@ -1954,6 +2280,9 @@ const setActivePanel = (panelId) => {
   if (panelId === "network-stock") {
     void refreshNetworkStockSummary(localStorage.getItem("userToken"));
   }
+  if (panelId === "network-transfers") {
+    void refreshNetworkTransfersPanel(localStorage.getItem("userToken"));
+  }
 };
 
 AppHeader.init({
@@ -1975,6 +2304,7 @@ if (
     "debtors",
     "movements",
     "network-stock",
+    "network-transfers",
     "updates",
     "licenses"
   ].includes(hash)
@@ -2012,6 +2342,35 @@ document.querySelector("[data-office-network-stock-filter]")?.addEventListener("
     const q = document.querySelector("[data-office-network-stock-filter]")?.value || "";
     renderNetworkStockBody(filterNetworkStockRows(q));
   }, 200);
+});
+
+document.querySelector("[data-office-network-transfers-refresh]")?.addEventListener("click", () => {
+  void refreshNetworkTransfersPanel(localStorage.getItem("userToken"));
+});
+document.querySelector("[data-office-network-transfers-direction]")?.addEventListener("change", () => {
+  void refreshNetworkTransfersPanel(localStorage.getItem("userToken"));
+});
+
+document.addEventListener("click", (e) => {
+  const t = e.target;
+  if (!(t instanceof Element)) return;
+  if (t.closest("[data-close-network-transfer-modal]")) {
+    closeNetworkTransferModal();
+    return;
+  }
+  const card = t.closest("[data-office-network-transfer-id]");
+  if (card && t.closest("[data-office-network-transfers-body]")) {
+    const id = card.getAttribute("data-office-network-transfer-id");
+    if (id) openNetworkTransferModal(id);
+    return;
+  }
+  const act = t.closest("[data-nt-action]");
+  if (act && t.closest("[data-network-transfer-modal-body]")) {
+    e.preventDefault();
+    const action = act.getAttribute("data-nt-action");
+    const tid = act.getAttribute("data-nt-id");
+    if (action && tid) void networkTransferPatchAction(tid, action);
+  }
 });
 
 loadAccount();
