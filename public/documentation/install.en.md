@@ -59,6 +59,21 @@ Update the **local server** with a new `server_x.y.z.zip` using your release or 
 | Server won’t start | MySQL running, correct DB credentials in config |
 | Remote till offline | Same LAN, ping server IP, firewall |
 | Invalid store/key | Copy/paste store ID and key from account |
+| POS shows “No connection to local server” right after install | See **6.1** below |
+
+---
+
+## 6.1. No local API right after `LibbisPOS_Setup.exe`
+
+**Note:** **`magazin_api.exe` is not a Windows Service** in `services.msc`. It runs as a normal process (hidden after setup / from Run key **`LibbisLocalAPI`** if you kept “Start API on Windows logon”), or start it manually. The Start-menu folder includes **“Local API (console — debug)”** to see errors in a window.
+
+In **Services**, check **MySQL** (e.g. **`MySQL80`**). The installer now runs **`sc start`** when MySQL was **already** installed too (previously that step could be skipped).
+
+1. **Task Manager** — is **`magazin_api.exe`** running?
+2. On the **same PC**, open **`http://127.0.0.1:8080/health`** — expect `"status":"ok"`.
+3. **API URL on terminal 1:** prefer **`http://127.0.0.1:8080/api`** or **`http://localhost:8080/api`**. Use a LAN IP like `192.168.1.100` only if that IP is **this machine** (`ipconfig`).
+4. Logs: **`Documents\LibbisPOS\logs`**, **`setup_db.log`** next to the server binaries.
+5. Older installers could **skip** `setupDatabase.exe` when `config.json` / `secrets.enc` were already bundled — credentials then did not match your MySQL. Fixed in the repo via a **`.db_initialized`** marker. **Workaround:** run **`setup_db_hidden.vbs`** in the server folder as Administrator, or reinstall with a freshly built setup.
 
 ---
 

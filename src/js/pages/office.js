@@ -192,6 +192,20 @@ const renderStores = (shops) => {
     const statusClass = storeStatusBadgeClass(shop?.isSubscribed);
     const card = document.createElement("div");
     card.className = "office-store-card";
+    const posAt = formatDateTime(shop?.localApiDataReceivedAt ?? shop?.local_api_data_received_at);
+    const netAt = formatDateTime(shop?.lastNetworkStockAt ?? shop?.last_network_stock_at);
+    const syncLines = [];
+    if (posAt) {
+      syncLines.push(
+        `<div class="office-store-card__sync"><strong>${escHtml(t["office.storeLastPosCloud"] || "")}:</strong> ${escHtml(posAt)}</div>`
+      );
+    }
+    if (netAt) {
+      syncLines.push(
+        `<div class="office-store-card__sync"><strong>${escHtml(t["office.storeLastNetworkStock"] || "")}:</strong> ${escHtml(netAt)}</div>`
+      );
+    }
+    const syncHtml = syncLines.join("");
     card.innerHTML = `
       <div class="office-store-card__header">
         <span class="office-store-card__name">${(shop?.name || "—").replace(/</g, "&lt;")}</span>
@@ -200,6 +214,7 @@ const renderStores = (shops) => {
       <div class="office-store-card__info">
         <div><strong>${t["office.storeId"] || "ID"}:</strong> <span class="office-store-card__id">${(shop?.id || "—").replace(/</g, "&lt;")}</span></div>
         <div><strong>${t["office.storePlan"] || "Подписка"}:</strong> ${(plan || "—").replace(/</g, "&lt;")}</div>
+        ${syncHtml}
       </div>
     `;
     storesBody.appendChild(card);
@@ -212,6 +227,16 @@ const formatDate = (value) => {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
   return date.toLocaleDateString();
+};
+
+const formatDateTime = (value) => {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toLocaleString(detectLang() === "ru" ? "ru-RU" : "en-US", {
+    dateStyle: "medium",
+    timeStyle: "short"
+  });
 };
 
 const formatCurrency = (amount, currency = "USD") => {
@@ -232,6 +257,151 @@ const escHtml = (s) =>
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+
+const csvEscape = (v) => {
+  const s = String(v ?? "");
+  if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+  return s;
+};
+
+let networkStockAllRows = [];
+let networkStockMeta = { count: 0, limit: 0 };
+let networkStockFilterTimer = null;
+
+const getNetworkStockField = (row, a, b) => row[a] ?? row[b];
+
+const buildNetworkStockTableHtml = (rows) => {
+  const tr = translations[detectLang()] || {};
+  const th = (k, fb) => escHtml(tr[k] || fb);
+  if (!rows.length) {
+    return `<p class="office-network-stock-status">${escHtml(tr["office.networkStockEmpty"] || "—")}</p>`;
+  }
+  const head = `<thead><tr>
+    <th>${th("office.networkStockColShop", "Store")}</th>
+    <th>${th("office.networkStockColShopId", "Store ID")}</th>
+    <th>${th("office.networkStockColVar", "globalVariationId")}</th>
+    <th>${th("office.networkStockColProd", "globalProductId")}</th>
+    <th>${th("office.networkStockColQty", "Qty")}</th>
+    <th>${th("office.networkStockColReceived", "Received")}</th>
+  </tr></thead>`;
+  const body = rows
+    .map((r) => {
+      const shopName = escHtml(getNetworkStockField(r, "shopName", "shopname") ?? "");
+      const shopId = escHtml(String(getNetworkStockField(r, "shopId", "shopid") ?? ""));
+      const gv = escHtml(String(getNetworkStockField(r, "globalVariationId", "globalvariationid") ?? ""));
+      const gpRaw = getNetworkStockField(r, "globalProductId", "globalproductid");
+      const gp = gpRaw == null || gpRaw === "" ? "—" : escHtml(String(gpRaw));
+      const qty = escHtml(String(getNetworkStockField(r, "qty", "qty") ?? ""));
+      const recRaw = getNetworkStockField(r, "receivedAt", "received_at");
+      const recLabel = formatDateTime(recRaw) || "—";
+      return `<tr>
+      <td>${shopName}</td>
+      <td class="office-network-stock-table__mono">${shopId}</td>
+      <td class="office-network-stock-table__mono">${gv}</td>
+      <td class="office-network-stock-table__mono">${gp}</td>
+      <td>${qty}</td>
+      <td>${escHtml(recLabel)}</td>
+    </tr>`;
+    })
+    .join("");
+  return `<table class="office-network-stock-table">${head}<tbody>${body}</tbody></table>`;
+};
+
+const filterNetworkStockRows = (q) => {
+  const needle = (q || "").trim().toLowerCase();
+  if (!needle) return networkStockAllRows;
+  return networkStockAllRows.filter((r) => {
+    const hay = [
+      String(getNetworkStockField(r, "shopName", "shopname") ?? ""),
+      String(getNetworkStockField(r, "shopId", "shopid") ?? ""),
+      String(getNetworkStockField(r, "globalVariationId", "globalvariationid") ?? ""),
+      String(getNetworkStockField(r, "globalProductId", "globalproductid") ?? "")
+    ]
+      .join(" ")
+      .toLowerCase();
+    return hay.includes(needle);
+  });
+};
+
+const renderNetworkStockBody = (filtered) => {
+  const el = document.querySelector("[data-office-network-stock-body]");
+  if (!el) return;
+  el.innerHTML = buildNetworkStockTableHtml(filtered);
+};
+
+const setNetworkStockStatusLine = (text) => {
+  const el = document.querySelector("[data-office-network-stock-status]");
+  if (!el) return;
+  el.textContent = text || "";
+};
+
+async function refreshNetworkStockSummary(token) {
+  const tr = translations[detectLang()] || {};
+  if (!token) {
+    networkStockAllRows = [];
+    networkStockMeta = { count: 0, limit: 0 };
+    renderNetworkStockBody([]);
+    setNetworkStockStatusLine(tr["office.posNeedLogin"] || "");
+    return;
+  }
+  setNetworkStockStatusLine(tr["office.networkStockLoading"] || "…");
+  const res = await api.get("/shop/network-stock-summary", { token, shopContext: false });
+  if (!res || res.error) {
+    networkStockAllRows = [];
+    networkStockMeta = { count: 0, limit: 0 };
+    renderNetworkStockBody([]);
+    setNetworkStockStatusLine(res?.message || tr["office.networkStockError"] || "?");
+    return;
+  }
+  const data = res?.data ?? res;
+  const rows = Array.isArray(data?.rows) ? data.rows : [];
+  networkStockAllRows = rows;
+  networkStockMeta = { count: data?.count ?? rows.length, limit: data?.limit ?? rows.length };
+  const filterInput = document.querySelector("[data-office-network-stock-filter]");
+  const filtered = filterNetworkStockRows(filterInput?.value || "");
+  renderNetworkStockBody(filtered);
+  const tpl = tr["office.networkStockCount"] || "";
+  setNetworkStockStatusLine(
+    tpl.replace("{count}", String(networkStockMeta.count)).replace("{limit}", String(networkStockMeta.limit))
+  );
+}
+
+function downloadNetworkStockCsv() {
+  const tr = translations[detectLang()] || {};
+  const filterInput = document.querySelector("[data-office-network-stock-filter]");
+  const filtered = filterNetworkStockRows(filterInput?.value || "");
+  const headers = [
+    tr["office.networkStockColShop"] || "shopName",
+    tr["office.networkStockColShopId"] || "shopId",
+    tr["office.networkStockColVar"] || "globalVariationId",
+    tr["office.networkStockColProd"] || "globalProductId",
+    tr["office.networkStockColQty"] || "qty",
+    tr["office.networkStockColReceived"] || "receivedAt"
+  ];
+  const lines = [headers.map(csvEscape).join(",")];
+  for (const r of filtered) {
+    const rec = getNetworkStockField(r, "receivedAt", "received_at");
+    const recIso = rec ? new Date(rec).toISOString() : "";
+    lines.push(
+      [
+        getNetworkStockField(r, "shopName", "shopname"),
+        getNetworkStockField(r, "shopId", "shopid"),
+        getNetworkStockField(r, "globalVariationId", "globalvariationid"),
+        getNetworkStockField(r, "globalProductId", "globalproductid"),
+        getNetworkStockField(r, "qty", "qty"),
+        recIso
+      ]
+        .map(csvEscape)
+        .join(",")
+    );
+  }
+  const blob = new Blob(["\ufeff", lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `network-stock-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
 
 const OFFICE_UPDATES_PLATFORMS = [
   { platform: "server", titleKey: "office.updatesServer" },
@@ -1734,6 +1904,8 @@ const PANEL_TITLE_KEYS = {
   reports: "office.menuReports",
   cashier: "office.menuCashier",
   debtors: "office.menuDebtors",
+  movements: "office.menuMovements",
+  "network-stock": "office.menuNetworkStock",
   updates: "office.menuUpdates",
   licenses: "office.menuLicenses"
 };
@@ -1773,11 +1945,14 @@ const setActivePanel = (panelId) => {
     window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}#${panelId}`);
   }
   updateOfficeTitle(panelId);
-  if (["reports", "cashier", "debtors"].includes(panelId)) {
+  if (["reports", "cashier", "debtors", "movements"].includes(panelId)) {
     officePosPanels.onPanelShown(panelId, localStorage.getItem("userToken"));
   }
   if (panelId === "updates") {
     renderOfficeUpdatesPanel();
+  }
+  if (panelId === "network-stock") {
+    void refreshNetworkStockSummary(localStorage.getItem("userToken"));
   }
 };
 
@@ -1790,7 +1965,19 @@ AppHeader.init({
 const hash = window.location.hash.slice(1);
 if (
   hash &&
-  ["dashboard", "stores", "orders", "products", "reports", "cashier", "debtors", "updates", "licenses"].includes(hash)
+  [
+    "dashboard",
+    "stores",
+    "orders",
+    "products",
+    "reports",
+    "cashier",
+    "debtors",
+    "movements",
+    "network-stock",
+    "updates",
+    "licenses"
+  ].includes(hash)
 ) {
   setActivePanel(hash);
 } else {
@@ -1811,6 +1998,20 @@ document.body.style.opacity = "1";
 
 document.querySelector("[data-office-updates-refresh]")?.addEventListener("click", () => {
   renderOfficeUpdatesPanel();
+});
+
+document.querySelector("[data-office-network-stock-refresh]")?.addEventListener("click", () => {
+  void refreshNetworkStockSummary(localStorage.getItem("userToken"));
+});
+document.querySelector("[data-office-network-stock-csv]")?.addEventListener("click", () => {
+  downloadNetworkStockCsv();
+});
+document.querySelector("[data-office-network-stock-filter]")?.addEventListener("input", () => {
+  window.clearTimeout(networkStockFilterTimer);
+  networkStockFilterTimer = window.setTimeout(() => {
+    const q = document.querySelector("[data-office-network-stock-filter]")?.value || "";
+    renderNetworkStockBody(filterNetworkStockRows(q));
+  }, 200);
 });
 
 loadAccount();

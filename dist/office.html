@@ -24,13 +24,13 @@
     <link rel="shortcut icon" href="/logo.png" />
     <title>Libiss POS — Мой аккаунт</title>
     <style>body { opacity: 0; transition: opacity 0.3s; }</style>
-    <script type="module" crossorigin src="/assets/office-DLIvkzmj.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/styles-BqEWLcHv.js">
-    <link rel="modulepreload" crossorigin href="/assets/translations-Bhym0zi3.js">
-    <link rel="modulepreload" crossorigin href="/assets/app-header-jAWWT6fV.js">
+    <script type="module" crossorigin src="/assets/office-DYIao6jX.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/styles-D3k7hmec.js">
+    <link rel="modulepreload" crossorigin href="/assets/translations-CmxTkZQN.js">
+    <link rel="modulepreload" crossorigin href="/assets/app-header-BMUK2T-T.js">
     <link rel="modulepreload" crossorigin href="/assets/api-D5zH2I3w.js">
     <link rel="modulepreload" crossorigin href="/assets/index-DNQiN_gI.js">
-    <link rel="stylesheet" crossorigin href="/assets/styles-DUUQeZDS.css">
+    <link rel="stylesheet" crossorigin href="/assets/styles-CviJxogG.css">
   </head>
   <body>
     <div class="page">
@@ -247,6 +247,40 @@
               </div>
               <p class="office-pos-sync-status" data-office-pos-sync-status></p>
               <div class="office-pos-body" data-office-pos-debtors-body></div>
+            </div>
+          </section>
+
+          <section class="office-panel" data-office-panel="movements" hidden>
+            <div class="container office-panel-inner office-pos-panel">
+              <div class="office-pos-panel__head">
+                <h2 class="section-title" data-i18n="office.menuMovements">Движения и перемещения</h2>
+                <button type="button" class="btn btn-secondary" data-office-pos-refresh data-i18n="office.posRefresh">Обновить</button>
+              </div>
+              <p class="office-pos-sync-status" data-office-pos-sync-status></p>
+              <p class="office-pos-pricing-note" data-i18n="office.posMovementsIntro">
+                История движений склада и межмагазинные перемещения (LibbisPOS) приходят с последней синхронизации локального сервера.
+              </p>
+              <div class="office-pos-body" data-office-pos-movements-body></div>
+            </div>
+          </section>
+
+          <section class="office-panel" data-office-panel="network-stock" hidden>
+            <div class="container office-panel-inner office-network-stock-panel">
+              <div class="office-pos-panel__head office-network-stock-panel__head">
+                <h2 class="section-title" data-i18n="office.menuNetworkStock">Остатки сети (облако)</h2>
+                <div class="office-network-stock-panel__actions">
+                  <button type="button" class="btn btn-secondary" data-office-network-stock-refresh data-i18n="office.networkStockRefresh">Обновить</button>
+                  <button type="button" class="btn btn-secondary" data-office-network-stock-csv data-i18n="office.networkStockCsv">CSV</button>
+                </div>
+              </div>
+              <h3 class="office-network-stock-panel__subtitle" data-i18n="office.networkStockTitle">Остатки по глобальным вариациям</h3>
+              <p class="office-pos-pricing-note" data-i18n="office.networkStockIntro"></p>
+              <p class="office-network-stock-status" data-office-network-stock-status aria-live="polite"></p>
+              <label class="office-network-stock-filter">
+                <span data-i18n="office.networkStockFilter">Фильтр</span>
+                <input type="search" class="input-like office-network-stock-filter__input" data-office-network-stock-filter autocomplete="off" />
+              </label>
+              <div class="office-network-stock-table-wrap" data-office-network-stock-body></div>
             </div>
           </section>
 

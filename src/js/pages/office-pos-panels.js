@@ -25,6 +25,7 @@ export function initOfficePosPanels(deps) {
   const reportsEl = () => document.querySelector("[data-office-pos-reports-body]");
   const cashierEl = () => document.querySelector("[data-office-pos-cashier-body]");
   const debtorsEl = () => document.querySelector("[data-office-pos-debtors-body]");
+  const movementsEl = () => document.querySelector("[data-office-pos-movements-body]");
   const statusEls = () => document.querySelectorAll("[data-office-pos-sync-status]");
 
   let snapshotsCache = null;
@@ -84,19 +85,104 @@ export function initOfficePosPanels(deps) {
       el.innerHTML = `<div class="office-pos-empty">${esc(tr["office.posLoading"] || "Загрузка…")}</div>`;
       return;
     }
-    const w = snap?.warehouse;
-    if (snap?.warehouseError) {
-      el.innerHTML = `<div class="office-pos-empty office-pos-error">${esc(snap.warehouseError)}</div>`;
-      return;
+
+    const v2 = snap.inventoryV2;
+    const v2Ok = v2 && v2.active && Array.isArray(v2.byLocation) && v2.byLocation.length > 0;
+    const legacy = snap.warehouse;
+    const parts = [];
+
+    if (snap.inventoryV2Error) {
+      parts.push(
+        `<div class="office-pos-empty office-pos-error">${esc(tr["office.posInventoryV2ErrorPrefix"] || "Multi-store склад:")} ${esc(snap.inventoryV2Error)}</div>`
+      );
     }
-    if (!w) {
-      el.innerHTML = `<div class="office-pos-empty">${esc(tr["office.posNoWarehouse"] || "Нет данных склада. Запустите локальный сервер с интернетом для синхронизации.")}</div>`;
-      return;
+
+    if (v2Ok) {
+      const gt = v2.globalTotals || {};
+      const gRow = `
+      <div class="office-pos-kpi-grid office-pos-kpi-grid--compact">
+        <div class="office-pos-kpi"><span>${esc(tr["office.posV2Locations"] || "Локаций в снимке")}</span><strong>${gt.locationsInSnapshot ?? 0}</strong></div>
+        <div class="office-pos-kpi"><span>${esc(tr["office.posKpiStock"] || "Остаток, шт.")}</span><strong>${fmtNum(gt.totalQty)}</strong></div>
+        <div class="office-pos-kpi"><span>${esc(tr["office.posKpiCost"] || "Закуп, оценка")}</span><strong>${formatCurrency(gt.totalCostValue ?? 0, cur)}</strong></div>
+        <div class="office-pos-kpi"><span>${esc(tr["office.posKpiRetail"] || "Розница, оценка")}</span><strong>${formatCurrency(gt.totalRetailValue ?? 0, cur)}</strong></div>
+      </div>`;
+
+      const locBlocks = v2.byLocation
+        .map((loc) => {
+          const tit =
+            loc.storeName ||
+            loc.locationName ||
+            `${tr["office.posV2Location"] || "Локация"} #${loc.locationId}`;
+          const sub =
+            loc.storeId != null
+              ? `${esc(tr["office.posV2StoreId"] || "Магазин")}: ${loc.storeId} · ${esc(loc.locationType || "")}`
+              : esc(loc.locationType || "");
+          const lt = loc.totals || {};
+          const cats = Array.isArray(loc.categories) ? loc.categories : [];
+          const catRows = cats
+            .map(
+              (c) => `
+          <tr>
+            <td>${esc(c.categoryName)}</td>
+            <td class="office-pos-num">${c.productsCount ?? 0}</td>
+            <td class="office-pos-num">${c.variationsCount ?? 0}</td>
+            <td class="office-pos-num">${fmtNum(c.totalStock)}</td>
+            <td class="office-pos-num">${formatCurrency(c.totalCostValue ?? 0, cur)}</td>
+            <td class="office-pos-num">${formatCurrency(c.totalRetailValue ?? 0, cur)}</td>
+          </tr>`
+            )
+            .join("");
+          return `
+        <div class="office-pos-location-block">
+          <h4 class="office-pos-location-title">${esc(tit)}</h4>
+          <p class="office-pos-muted">${sub}</p>
+          <div class="office-pos-kpi-grid office-pos-kpi-grid--compact">
+            <div class="office-pos-kpi"><span>${esc(tr["office.posV2Variations"] || "Позиций")}</span><strong>${lt.variationsWithStock ?? 0}</strong></div>
+            <div class="office-pos-kpi"><span>${esc(tr["office.posV2Products"] || "Товаров")}</span><strong>${lt.productsWithStock ?? 0}</strong></div>
+            <div class="office-pos-kpi"><span>${esc(tr["office.posKpiStock"] || "Остаток")}</span><strong>${fmtNum(lt.totalQty)}</strong></div>
+            <div class="office-pos-kpi"><span>${esc(tr["office.posKpiCost"] || "Закуп")}</span><strong>${formatCurrency(lt.totalCostValue ?? 0, cur)}</strong></div>
+            <div class="office-pos-kpi"><span>${esc(tr["office.posKpiRetail"] || "Розница")}</span><strong>${formatCurrency(lt.totalRetailValue ?? 0, cur)}</strong></div>
+          </div>
+          <div class="office-pos-table-wrap">
+            <table class="office-pos-table">
+              <thead>
+                <tr>
+                  <th>${esc(tr["office.posColCategory"] || "Категория")}</th>
+                  <th class="office-pos-num">${esc(tr["office.posColProducts"] || "Тов.")}</th>
+                  <th class="office-pos-num">${esc(tr["office.posColVariations"] || "Вар.")}</th>
+                  <th class="office-pos-num">${esc(tr["office.posColStock"] || "Остаток")}</th>
+                  <th class="office-pos-num">${esc(tr["office.posColCost"] || "Закуп")}</th>
+                  <th class="office-pos-num">${esc(tr["office.posColRetail"] || "Розница")}</th>
+                </tr>
+              </thead>
+              <tbody>${catRows || `<tr><td colspan="6" class="office-pos-muted">${esc(tr["office.posNoCategories"] || "Нет категорий")}</td></tr>`}</tbody>
+            </table>
+          </div>
+          ${loc.categoriesTruncated ? `<p class="office-pos-note">${esc(tr["office.posTruncated"] || "Показаны не все категории.")}</p>` : ""}
+        </div>`;
+        })
+        .join("");
+
+      const truncNote = v2.rowsTruncated
+        ? `<p class="office-pos-note">${esc(tr["office.posV2RowsTruncated"] || "Список остатков усечён по лимиту строк — увеличьте SYNC_V2_BALANCE_ROWS_MAX на сервере при необходимости.")}</p>`
+        : "";
+
+      parts.push(`
+      <h3 class="office-pos-subheading">${esc(tr["office.posV2Heading"] || "Multi-store склад (v2)")}</h3>
+      <p class="office-pos-muted">${esc(tr["office.posV2Intro"] || "Остатки по inventory_balances по каждой локации (точке).")}</p>
+      ${gRow}
+      ${locBlocks}
+      ${truncNote}
+    `);
     }
-    const cats = Array.isArray(w.categories) ? w.categories : [];
-    const rows = cats
-      .map(
-        (c) => `
+
+    if (snap.warehouseError) {
+      parts.push(`<div class="office-pos-empty office-pos-error">${esc(snap.warehouseError)}</div>`);
+    } else if (legacy) {
+      const cats = Array.isArray(legacy.categories) ? legacy.categories : [];
+      const rows = cats
+        .map(
+          (c) => `
       <tr>
         <td>${esc(c.categoryName)}</td>
         <td class="office-pos-num">${c.productsCount ?? 0}</td>
@@ -105,15 +191,17 @@ export function initOfficePosPanels(deps) {
         <td class="office-pos-num">${formatCurrency(c.totalCostValue ?? 0, cur)}</td>
         <td class="office-pos-num">${formatCurrency(c.totalRetailValue ?? 0, cur)}</td>
       </tr>`
-      )
-      .join("");
-    el.innerHTML = `
+        )
+        .join("");
+      parts.push(`
+      <h3 class="office-pos-subheading">${esc(tr["office.posLegacyWarehouseTitle"] || "Каталог товаров (legacy)")}</h3>
+      <p class="office-pos-muted">${esc(tr["office.posLegacyIntro"] || "Сводка по полям stock у товаров/вариаций. При multi-store ориентируйтесь на блок v2 выше.")}</p>
       <div class="office-pos-kpi-grid">
-        <div class="office-pos-kpi"><span>${esc(tr["office.posKpiProducts"] || "Товары")}</span><strong>${w.totalProducts ?? 0}</strong></div>
-        <div class="office-pos-kpi"><span>${esc(tr["office.posKpiVariations"] || "Вариации")}</span><strong>${w.totalVariations ?? 0}</strong></div>
-        <div class="office-pos-kpi"><span>${esc(tr["office.posKpiStock"] || "Остаток, шт.")}</span><strong>${fmtNum(w.totalStock)}</strong></div>
-        <div class="office-pos-kpi"><span>${esc(tr["office.posKpiCost"] || "Закуп, оценка")}</span><strong>${formatCurrency(w.totalCostValue ?? 0, cur)}</strong></div>
-        <div class="office-pos-kpi"><span>${esc(tr["office.posKpiRetail"] || "Розница, оценка")}</span><strong>${formatCurrency(w.totalRetailValue ?? 0, cur)}</strong></div>
+        <div class="office-pos-kpi"><span>${esc(tr["office.posKpiProducts"] || "Товары")}</span><strong>${legacy.totalProducts ?? 0}</strong></div>
+        <div class="office-pos-kpi"><span>${esc(tr["office.posKpiVariations"] || "Вариации")}</span><strong>${legacy.totalVariations ?? 0}</strong></div>
+        <div class="office-pos-kpi"><span>${esc(tr["office.posKpiStock"] || "Остаток, шт.")}</span><strong>${fmtNum(legacy.totalStock)}</strong></div>
+        <div class="office-pos-kpi"><span>${esc(tr["office.posKpiCost"] || "Закуп, оценка")}</span><strong>${formatCurrency(legacy.totalCostValue ?? 0, cur)}</strong></div>
+        <div class="office-pos-kpi"><span>${esc(tr["office.posKpiRetail"] || "Розница, оценка")}</span><strong>${formatCurrency(legacy.totalRetailValue ?? 0, cur)}</strong></div>
       </div>
       <div class="office-pos-table-wrap">
         <table class="office-pos-table">
@@ -130,8 +218,16 @@ export function initOfficePosPanels(deps) {
           <tbody>${rows || `<tr><td colspan="6" class="office-pos-muted">${esc(tr["office.posNoCategories"] || "Нет категорий")}</td></tr>`}</tbody>
         </table>
       </div>
-      ${w.categoriesTruncated ? `<p class="office-pos-note">${esc(tr["office.posTruncated"] || "Показаны не все категории (лимит синхронизации).")}</p>` : ""}
-    `;
+      ${legacy.categoriesTruncated ? `<p class="office-pos-note">${esc(tr["office.posTruncated"] || "Показаны не все категории (лимит синхронизации).")}</p>` : ""}
+    `);
+    }
+
+    if (parts.length === 0) {
+      el.innerHTML = `<div class="office-pos-empty">${esc(tr["office.posNoWarehouse"] || "Нет данных склада. Запустите локальный сервер с интернетом для синхронизации.")}</div>`;
+      return;
+    }
+
+    el.innerHTML = parts.join("");
   }
 
   function getCashierSlice(snap) {
@@ -266,6 +362,138 @@ export function initOfficePosPanels(deps) {
     `;
   }
 
+  function fmtWhen(iso) {
+    if (!iso) return "—";
+    try {
+      return esc(new Date(iso).toLocaleString(detectLang() === "ru" ? "ru-RU" : "en-US"));
+    } catch (_) {
+      return esc(String(iso));
+    }
+  }
+
+  function movementsPeriodHint(block, tr) {
+    if (!block) return tr["office.posStockMovementsHint"] || "";
+    if (block.source === "site_pending_range" && block.startDate && block.endDate) {
+      const tpl =
+        tr["office.posMovementsPeriodFromSite"] ||
+        "Saved dates: {start} — {end}. Rows: {count}, limit {limit}. Restart local API and upload.";
+      return tpl
+        .replace("{start}", String(block.startDate))
+        .replace("{end}", String(block.endDate))
+        .replace("{count}", String(block.count ?? 0))
+        .replace("{limit}", String(block.limit ?? "—"));
+    }
+    if (block.source === "rolling_days" && block.days != null) {
+      const tpl =
+        tr["office.posStockMovementsHintRolling"] ||
+        "Last {days} days. Rows: {count}, limit {limit}.";
+      return tpl
+        .replace("{days}", String(block.days))
+        .replace("{count}", String(block.count ?? 0))
+        .replace("{limit}", String(block.limit ?? "—"));
+    }
+    return tr["office.posStockMovementsHint"] || "";
+  }
+
+  function renderMovements(snap) {
+    const el = movementsEl();
+    if (!el) return;
+    const tr = t();
+    if (!snap) {
+      el.innerHTML = `<div class="office-pos-empty">${esc(tr["office.posLoading"] || "Загрузка…")}</div>`;
+      return;
+    }
+    const parts = [];
+
+    if (snap.stockMovementsError) {
+      parts.push(
+        `<h3 class="office-pos-subheading">${esc(tr["office.posStockMovementsTitle"] || "Движения склада")}</h3><div class="office-pos-empty office-pos-error">${esc(snap.stockMovementsError)}</div>`
+      );
+    } else if (snap.stockMovementsRecent && Array.isArray(snap.stockMovementsRecent.rows)) {
+      const sm = snap.stockMovementsRecent;
+      const rows = sm.rows
+        .map(
+          (r) => `
+        <tr>
+          <td>${fmtWhen(r.createdAt)}</td>
+          <td>${esc(r.movementType || "—")}</td>
+          <td class="office-pos-num">${fmtNum(r.quantity)}</td>
+          <td>${esc(r.productName || "—")}</td>
+          <td class="office-pos-num">${r.variationId ?? "—"}</td>
+          <td class="office-pos-num">${r.receiptId ?? "—"}</td>
+        </tr>`
+        )
+        .join("");
+      parts.push(`
+        <h3 class="office-pos-subheading">${esc(tr["office.posStockMovementsTitle"] || "Движения склада")}</h3>
+        <p class="office-pos-muted">${esc(movementsPeriodHint(sm, tr))}</p>
+        <div class="office-pos-table-wrap">
+          <table class="office-pos-table">
+            <thead>
+              <tr>
+                <th>${esc(tr["office.posMovWhen"] || "Когда")}</th>
+                <th>${esc(tr["office.posMovType"] || "Тип")}</th>
+                <th class="office-pos-num">${esc(tr["office.posMovQty"] || "Кол-во")}</th>
+                <th>${esc(tr["office.posMovProduct"] || "Товар")}</th>
+                <th class="office-pos-num">${esc(tr["office.posMovVar"] || "Вар.")}</th>
+                <th class="office-pos-num">${esc(tr["office.posMovReceipt"] || "Чек")}</th>
+              </tr>
+            </thead>
+            <tbody>${rows || `<tr><td colspan="6" class="office-pos-muted">${esc(tr["office.posNoStockMovements"] || "Нет записей за период")}</td></tr>`}</tbody>
+          </table>
+        </div>
+      `);
+    } else {
+      parts.push(
+        `<h3 class="office-pos-subheading">${esc(tr["office.posStockMovementsTitle"] || "Движения склада")}</h3><div class="office-pos-empty">${esc(tr["office.posNoStockMovementsData"] || "Данных движений нет в этом снимке (обновите POS-сервер).")}</div>`
+      );
+    }
+
+    if (snap.inventoryTransfersError) {
+      parts.push(
+        `<h3 class="office-pos-subheading">${esc(tr["office.posTransfersTitle"] || "Перемещения между точками")}</h3><div class="office-pos-empty office-pos-error">${esc(snap.inventoryTransfersError)}</div>`
+      );
+    } else if (snap.inventoryTransfersRecent && Array.isArray(snap.inventoryTransfersRecent.transfers)) {
+      const ir = snap.inventoryTransfersRecent;
+      const trows = ir.transfers
+        .map(
+          (r) => `
+        <tr>
+          <td class="office-pos-num">${r.transferId ?? "—"}</td>
+          <td>${esc(r.status || "—")}</td>
+          <td>${esc(`${r.fromStoreName || r.fromStoreId || "—"} → ${r.toStoreName || r.toStoreId || "—"}`)}</td>
+          <td class="office-pos-num">${r.itemsCount ?? "—"}</td>
+          <td>${fmtWhen(r.requestedAt)}</td>
+        </tr>`
+        )
+        .join("");
+      parts.push(`
+        <h3 class="office-pos-subheading">${esc(tr["office.posTransfersTitle"] || "Перемещения между точками")}</h3>
+        <p class="office-pos-muted">${esc(movementsPeriodHint(ir, tr))}</p>
+        <div class="office-pos-table-wrap">
+          <table class="office-pos-table">
+            <thead>
+              <tr>
+                <th class="office-pos-num">${esc(tr["office.posTransferId"] || "№")}</th>
+                <th>${esc(tr["office.posTransferStatus"] || "Статус")}</th>
+                <th>${esc(tr["office.posTransferRoute"] || "Откуда → куда")}</th>
+                <th class="office-pos-num">${esc(tr["office.posTransferItems"] || "Поз.")}</th>
+                <th>${esc(tr["office.posTransferWhen"] || "Запрошено")}</th>
+              </tr>
+            </thead>
+            <tbody>${trows || `<tr><td colspan="5" class="office-pos-muted">${esc(tr["office.posNoTransfers"] || "Нет перемещений")}</td></tr>`}</tbody>
+          </table>
+        </div>
+      `);
+    } else {
+      parts.push(
+        `<h3 class="office-pos-subheading">${esc(tr["office.posTransfersTitle"] || "Перемещения между точками")}</h3><div class="office-pos-empty">${esc(tr["office.posNoTransfersData"] || "Блок перемещений недоступен (нет multi-store или старая версия снимка).")}</div>`
+      );
+    }
+
+    el.innerHTML = parts.join("");
+  }
+
   function renderDebtors(snap) {
     const el = debtorsEl();
     if (!el) return;
@@ -324,13 +552,14 @@ export function initOfficePosPanels(deps) {
     renderWarehouse(snap);
     renderCashier(snap);
     renderDebtors(snap);
+    renderMovements(snap);
   }
 
   async function load(token, force) {
     if (!token) {
       const msg = t()["office.posNeedLogin"] || "Войдите в аккаунт.";
       setStatus("");
-      [reportsEl(), cashierEl(), debtorsEl()].forEach((el) => {
+      [reportsEl(), cashierEl(), debtorsEl(), movementsEl()].forEach((el) => {
         if (el) el.innerHTML = `<div class="office-pos-empty">${esc(msg)}</div>`;
       });
       return;
@@ -349,7 +578,7 @@ export function initOfficePosPanels(deps) {
         receivedAtCache = null;
         pendingCashierRangeCache = null;
         const err = pack.error;
-        [reportsEl(), cashierEl(), debtorsEl()].forEach((el) => {
+        [reportsEl(), cashierEl(), debtorsEl(), movementsEl()].forEach((el) => {
           if (el) el.innerHTML = `<div class="office-pos-empty office-pos-error">${esc(err)}</div>`;
         });
         setStatus("");
@@ -363,7 +592,7 @@ export function initOfficePosPanels(deps) {
         const hint =
           t()["office.posEmptySnapshots"] ||
           "Снимки отчётов ещё не поступили. Убедитесь, что локальный сервер POS запущен с интернетом (данные с расшифровкой цен отправляются при старте).";
-        [reportsEl(), cashierEl(), debtorsEl()].forEach((el) => {
+        [reportsEl(), cashierEl(), debtorsEl(), movementsEl()].forEach((el) => {
           if (el) el.innerHTML = `<div class="office-pos-empty">${esc(hint)}</div>`;
         });
       } else {
@@ -447,7 +676,7 @@ export function initOfficePosPanels(deps) {
   return {
     /** @param {string|null} token */
     async onPanelShown(panelId, token) {
-      if (panelId === "reports" || panelId === "cashier" || panelId === "debtors") {
+      if (panelId === "reports" || panelId === "cashier" || panelId === "debtors" || panelId === "movements") {
         await load(token, false);
       }
     },

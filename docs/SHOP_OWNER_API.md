@@ -2,7 +2,7 @@
 
 Один справочник по эндпоинтам приложения владельца магазина (роль `shop_owner`). Базовый префикс: `/api/v1`. Все запросы с заголовком `Authorization: Bearer <token>`. Доступ к `/shop/*` и `/pos/*` имеют только пользователи с ролью `admin` или `shop_owner`.
 
-**Несколько магазинов на одного владельца:** у одного аккаунта `shop_owner` может быть несколько записей в таблице магазинов. Список: `GET /shop/stores`. Добавить точку (после входа): `POST /shop/stores` (тело как при регистрации магазина: `shopName`, `inn`, `certificate`, `certificatePhotoUrl`, опционально `description`, `address`, `cityId`, `logo`, `phone`, `email`). Для запросов к «текущей» точке передайте заголовок **`X-Shop-Id: <uuid>`** (или query `?shopId=`). Если заголовок не указан, используется первая точка по `sort_order`, `created_at`. Без контекста магазина: список заказов и каталог в кабинете агрегируются по **всем** точкам владельца; снимки POS, `GET /shop/me`, лимиты Cloudinary — по выбранной точке.
+**Несколько магазинов на одного владельца:** у одного аккаунта `shop_owner` может быть несколько записей в таблице магазинов. Список: `GET /shop/stores` (в каждой записи при необходимости: `localApiDataReceivedAt`, `lastNetworkStockAt` — последний пинг локального API в облако и последняя выгрузка пакета остатков сети). Добавить точку (после входа): `POST /shop/stores` (тело как при регистрации магазина: `shopName`, `inn`, `certificate`, `certificatePhotoUrl`, опционально `description`, `address`, `cityId`, `logo`, `phone`, `email`). Для запросов к «текущей» точке передайте заголовок **`X-Shop-Id: <uuid>`** (или query `?shopId=`). Если заголовок не указан, используется первая точка по `sort_order`, `created_at`. Без контекста магазина: список заказов и каталог в кабинете агрегируются по **всем** точкам владельца; снимки POS, `GET /shop/me`, лимиты Cloudinary — по выбранной точке.
 
 ---
 
@@ -162,6 +162,18 @@
 | PUT | `/shop/pos/products/:variationId/stock` или `/pos/products/:variationId/stock` | `{ "stockQuantity": number }` (≥ 0) | `{ variationId, oldQuantity, newQuantity }` |
 | POST | `/shop/pos/products/bulk-upload` или `/pos/products/bulk-upload` | массив товаров с вариациями (name, categoryId, gender, variations с price, stockQuantity, sizes, colors и т.д.) | результат массовой загрузки |
 | POST | `/shop/pos/sales/sync` или `/pos/sales/sync` | `{ "sales": [ { "variationId", "quantity", "size", "color", "price", "saleDate" } ] }` | списание со склада по продажам, ответ с обработанными/ошибками |
+
+---
+
+## Сеть магазинов (остатки по глобальным вариациям в облаке)
+
+Свод по строкам `shop_global_stock_lines`, принятым с локальных POS (лицензия + `shop-stock-lines-receipt`). Данные **по всем точкам** владельца; для UI кабинета запрос без привязки к одной точке (заголовок `X-Shop-Id` на ответ не влияет).
+
+| Метод | Путь | Query | Ответ |
+|-------|------|--------|--------|
+| GET | `/shop/network-stock-summary` | опционально `limit` (1…10000, по умолчанию 2000) | `{ success, data: { rows: [ { shopId, shopName, globalVariationId, globalProductId?, qty, receivedAt } ], count, limit } }` |
+
+Для ролей `admin` / `super_admin` требуется query **`ownerUserId`** (UUID пользователя-владельца).
 
 ---
 

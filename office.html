@@ -243,6 +243,40 @@
             </div>
           </section>
 
+          <section class="office-panel" data-office-panel="movements" hidden>
+            <div class="container office-panel-inner office-pos-panel">
+              <div class="office-pos-panel__head">
+                <h2 class="section-title" data-i18n="office.menuMovements">Движения и перемещения</h2>
+                <button type="button" class="btn btn-secondary" data-office-pos-refresh data-i18n="office.posRefresh">Обновить</button>
+              </div>
+              <p class="office-pos-sync-status" data-office-pos-sync-status></p>
+              <p class="office-pos-pricing-note" data-i18n="office.posMovementsIntro">
+                История движений склада и межмагазинные перемещения (LibbisPOS) приходят с последней синхронизации локального сервера.
+              </p>
+              <div class="office-pos-body" data-office-pos-movements-body></div>
+            </div>
+          </section>
+
+          <section class="office-panel" data-office-panel="network-stock" hidden>
+            <div class="container office-panel-inner office-network-stock-panel">
+              <div class="office-pos-panel__head office-network-stock-panel__head">
+                <h2 class="section-title" data-i18n="office.menuNetworkStock">Остатки сети (облако)</h2>
+                <div class="office-network-stock-panel__actions">
+                  <button type="button" class="btn btn-secondary" data-office-network-stock-refresh data-i18n="office.networkStockRefresh">Обновить</button>
+                  <button type="button" class="btn btn-secondary" data-office-network-stock-csv data-i18n="office.networkStockCsv">CSV</button>
+                </div>
+              </div>
+              <h3 class="office-network-stock-panel__subtitle" data-i18n="office.networkStockTitle">Остатки по глобальным вариациям</h3>
+              <p class="office-pos-pricing-note" data-i18n="office.networkStockIntro"></p>
+              <p class="office-network-stock-status" data-office-network-stock-status aria-live="polite"></p>
+              <label class="office-network-stock-filter">
+                <span data-i18n="office.networkStockFilter">Фильтр</span>
+                <input type="search" class="input-like office-network-stock-filter__input" data-office-network-stock-filter autocomplete="off" />
+              </label>
+              <div class="office-network-stock-table-wrap" data-office-network-stock-body></div>
+            </div>
+          </section>
+
           <section class="office-panel" data-office-panel="updates" hidden>
             <div class="container office-panel-inner">
               <div class="office-pos-panel__head" style="margin-bottom: 1rem;">
