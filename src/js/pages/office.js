@@ -338,6 +338,86 @@ const setNetworkStockStatusLine = (text) => {
   el.textContent = text || "";
 };
 
+/** Главный склад сети: владелец в кабинете pos.libiss.com указывает точку; подтверждение — лицензионным ключом выбранного магазина. */
+async function refreshNetworkCentralWarehouse(token) {
+  const statusEl = document.querySelector("[data-office-network-central-status]");
+  const formEl = document.querySelector("[data-office-network-central-form]");
+  if (!formEl) return;
+  const tr = translations[detectLang()] || {};
+  if (!token) {
+    formEl.innerHTML = "";
+    if (statusEl) statusEl.textContent = tr["office.posNeedLogin"] || "";
+    return;
+  }
+  if (statusEl) statusEl.textContent = tr["office.networkCentralLoading"] || "…";
+  const res = await api.get("/shop/network-central-warehouse", { token, shopContext: false });
+  if (!res || res.error) {
+    formEl.innerHTML = "";
+    if (statusEl) statusEl.textContent = res?.message || tr["office.networkCentralError"] || "?";
+    return;
+  }
+  const data = res.data != null ? res.data : res;
+  const stores = Array.isArray(data?.stores) ? data.stores : [];
+  const can = !!data?.canConfigureCentralWarehouse;
+  const currentRaw = data?.centralWarehouseShopId;
+  const currentId =
+    currentRaw != null && String(currentRaw).trim() !== "" ? String(currentRaw).trim().toLowerCase() : "";
+
+  const lines = [];
+  const noLic = stores.filter((s) => s.hasActiveLicense !== true);
+  if (noLic.length) {
+    lines.push((tr["office.networkCentralSomeNoLicense"] || "").replace("{n}", String(noLic.length)));
+  }
+  if (currentId) {
+    const hub = stores.find((s) => String(s.id ?? s.ID ?? "").toLowerCase() === currentId);
+    const nm = hub?.name ? String(hub.name) : currentId;
+    lines.push(
+      (tr["office.networkCentralCurrent"] || "")
+        .replace("{name}", nm)
+        .replace("{id}", currentId)
+    );
+  } else if (can && stores.length) {
+    lines.push(tr["office.networkCentralNone"] || "");
+  }
+  if (statusEl) statusEl.textContent = lines.filter(Boolean).join("\n\n");
+
+  if (!can) {
+    formEl.innerHTML = "";
+    return;
+  }
+
+  const opts = stores
+    .map((s) => {
+      const id = String(s.id ?? s.ID ?? "");
+      const name = String(s.name ?? "");
+      const ok = s.hasActiveLicense === true;
+      const tag = ok
+        ? ""
+        : ` [${tr["office.networkCentralNoLicenseTag"] || "нет активной лицензии"}]`;
+      return `<option value="${escHtml(id)}">${escHtml(name)} — ${escHtml(id)}${escHtml(tag)}</option>`;
+    })
+    .join("");
+  formEl.innerHTML = `
+    <div class="field" style="margin-top:0.75rem;">
+      <label for="nw-central-select">${escHtml(tr["office.networkCentralSelectLabel"] || "")}</label>
+      <select id="nw-central-select" class="input-like" data-nw-central-select>${opts}</select>
+    </div>
+    <div class="field">
+      <label for="nw-central-license">${escHtml(tr["office.networkCentralLicenseLabel"] || "")}</label>
+      <input id="nw-central-license" type="text" class="input-like" autocomplete="off" data-nw-central-license placeholder="XXXX-XXXX-XXXX-XXXX" />
+    </div>
+    <div class="office-network-central-actions" style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.75rem;">
+      <button type="button" class="btn btn-primary" data-nw-central-save>${escHtml(tr["office.networkCentralSave"] || "Save")}</button>
+      <button type="button" class="btn btn-secondary" data-nw-central-clear>${escHtml(tr["office.networkCentralClear"] || "Clear")}</button>
+    </div>
+  `;
+  const sel = formEl.querySelector("[data-nw-central-select]");
+  if (sel && currentId) {
+    const match = Array.from(sel.options).find((o) => o.value.toLowerCase() === currentId);
+    if (match) sel.value = match.value;
+  }
+}
+
 async function refreshNetworkStockSummary(token) {
   const tr = translations[detectLang()] || {};
   if (!token) {
@@ -2279,6 +2359,7 @@ const setActivePanel = (panelId) => {
   }
   if (panelId === "network-stock") {
     void refreshNetworkStockSummary(localStorage.getItem("userToken"));
+    void refreshNetworkCentralWarehouse(localStorage.getItem("userToken"));
   }
   if (panelId === "network-transfers") {
     void refreshNetworkTransfersPanel(localStorage.getItem("userToken"));
@@ -2331,7 +2412,9 @@ document.querySelector("[data-office-updates-refresh]")?.addEventListener("click
 });
 
 document.querySelector("[data-office-network-stock-refresh]")?.addEventListener("click", () => {
-  void refreshNetworkStockSummary(localStorage.getItem("userToken"));
+  const tok = localStorage.getItem("userToken");
+  void refreshNetworkStockSummary(tok);
+  void refreshNetworkCentralWarehouse(tok);
 });
 document.querySelector("[data-office-network-stock-csv]")?.addEventListener("click", () => {
   downloadNetworkStockCsv();
@@ -2349,6 +2432,56 @@ document.querySelector("[data-office-network-transfers-refresh]")?.addEventListe
 });
 document.querySelector("[data-office-network-transfers-direction]")?.addEventListener("change", () => {
   void refreshNetworkTransfersPanel(localStorage.getItem("userToken"));
+});
+
+document.querySelector("[data-office-network-central-wrap]")?.addEventListener("click", async (ev) => {
+  const t = ev.target;
+  if (!(t instanceof Element)) return;
+  const btn = t.closest("[data-nw-central-save], [data-nw-central-clear]");
+  if (!btn) return;
+  const token = localStorage.getItem("userToken");
+  const tr = translations[detectLang()] || {};
+  const statusEl = document.querySelector("[data-office-network-central-status]");
+
+  if (btn.hasAttribute("data-nw-central-clear")) {
+    const putRes = await api.put("/shop/network-central-warehouse", { centralWarehouseShopId: null }, { token, shopContext: false });
+    if (putRes?.error) {
+      if (statusEl) statusEl.textContent = putRes.message || "?";
+      return;
+    }
+    await refreshNetworkCentralWarehouse(token);
+    if (statusEl) statusEl.textContent += `\n${tr["office.networkCentralCleared"] || ""}`.trim();
+    return;
+  }
+
+  if (btn.hasAttribute("data-nw-central-save")) {
+    const formEl = document.querySelector("[data-office-network-central-form]");
+    const hubId = formEl?.querySelector("[data-nw-central-select]")?.value?.trim();
+    const key = formEl?.querySelector("[data-nw-central-license]")?.value?.trim();
+    if (!hubId) {
+      if (statusEl) statusEl.textContent = tr["office.networkCentralSelectLabel"] || "?";
+      return;
+    }
+    if (!key) {
+      if (statusEl) statusEl.textContent = tr["office.networkCentralLicenseLabel"] || "?";
+      return;
+    }
+    const putRes = await api.put(
+      "/shop/network-central-warehouse",
+      { centralWarehouseShopId: hubId, confirmLicenseKey: key },
+      { token, shopContext: false }
+    );
+    if (putRes?.error) {
+      if (statusEl) statusEl.textContent = putRes.message || "?";
+      return;
+    }
+    if (putRes?.success === false) {
+      if (statusEl) statusEl.textContent = String(putRes.error || "?");
+      return;
+    }
+    await refreshNetworkCentralWarehouse(token);
+    if (statusEl) statusEl.textContent += `\n${tr["office.networkCentralSaved"] || ""}`.trim();
+  }
 });
 
 document.addEventListener("click", (e) => {
