@@ -93,7 +93,15 @@ async function request(url, options = {}) {
     let message = res.statusText;
     try {
       const data = await res.json();
-      message = data.message || data.error || message;
+      if (typeof data?.error === "string" && data?.details) {
+        message = `${data.error}: ${data.details}`;
+      } else if (data?.error && typeof data.error === "object" && data.error.message) {
+        message = data.error.details
+          ? `${data.error.message}: ${data.error.details}`
+          : data.error.message;
+      } else {
+        message = data.message || (typeof data.error === "string" ? data.error : data.error?.message) || data.details || message;
+      }
     } catch (_) {}
     return { error: true, status: res.status, message };
   }

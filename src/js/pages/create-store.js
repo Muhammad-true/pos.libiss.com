@@ -62,6 +62,7 @@ const applyLang = (lang) => {
     btn.classList.toggle("is-active", btn.dataset.lang === lang);
   });
   localStorage.setItem(STORAGE_KEY, lang);
+  updateWizardChrome();
 };
 
 langButtons.forEach((btn) => {
@@ -147,6 +148,189 @@ const getFieldMessage = (field) => {
   return copy["form.errorInvalid"];
 };
 
+const stepLineEl = document.querySelector("[data-step-line]");
+const stepDotsEl = document.querySelector("[data-step-dots]");
+const wizardStepTitleKeys = ["form.wizardStep1", "form.wizardStep2", "form.wizardStep3"];
+
+const renderWizardDots = () => {
+  if (!stepDotsEl) return;
+  stepDotsEl.innerHTML = "";
+  steps.forEach((_, i) => {
+    const span = document.createElement("span");
+    span.className = "form-step-dot";
+    if (i < currentStep) span.classList.add("is-done");
+    if (i === currentStep) span.classList.add("is-current");
+    stepDotsEl.appendChild(span);
+  });
+  stepDotsEl.setAttribute("aria-valuenow", String(currentStep + 1));
+  stepDotsEl.setAttribute("aria-valuemax", String(steps.length));
+};
+
+const updateWizardChrome = () => {
+  const lang = detectLang();
+  const copy = translations[lang] || translations[DEFAULT_LANG];
+  const total = steps.length;
+  const stepNum = currentStep + 1;
+  const titleKey = wizardStepTitleKeys[currentStep] || wizardStepTitleKeys[0];
+  const title = copy[titleKey] || "";
+  const lineTpl =
+    copy["create.wizardProgress"] || "Шаг {{step}} из {{total}}: {{title}}";
+  if (stepLineEl) {
+    stepLineEl.textContent = lineTpl
+      .replace(/\{\{step\}\}/g, String(stepNum))
+      .replace(/\{\{total\}\}/g, String(total))
+      .replace(/\{\{title\}\}/g, title);
+  }
+  const ariaTpl =
+    copy["create.wizardAria"] || "Регистрация, шаг {{step}} из {{total}}";
+  if (stepDotsEl) {
+    stepDotsEl.setAttribute(
+      "aria-label",
+      ariaTpl
+        .replace(/\{\{step\}\}/g, String(stepNum))
+        .replace(/\{\{total\}\}/g, String(total))
+    );
+  }
+  renderWizardDots();
+};
+
+const clearErrorsInStep = (stepIndex) => {
+  const step = steps[stepIndex];
+  if (!step) return;
+  step.querySelectorAll("input, select, textarea").forEach((el) => {
+    if (el.name) clearFieldError(el);
+  });
+};
+
+const validateStep0Business = () => {
+  const copy = translations[detectLang()] || translations[DEFAULT_LANG];
+  const shopName = form?.querySelector("#shopName");
+  const inn = form?.querySelector("#inn");
+  const certificate = form?.querySelector("#certificate");
+  const description = form?.querySelector("#description");
+  const address = form?.querySelector("#address");
+  let ok = true;
+  if (!shopName || shopName.value.trim().length < 2) {
+    if (shopName) setFieldError(shopName, copy["form.shopNameShort"]);
+    ok = false;
+  }
+  const innRaw = (inn?.value || "").trim().replace(/\s/g, "");
+  if (innRaw.length < 5 || innRaw.length > 14 || !/^[\dA-Za-zА-Яа-яёЁ-]+$/.test(innRaw)) {
+    if (inn) setFieldError(inn, copy["form.innInvalid"]);
+    ok = false;
+  }
+  if (!certificate || certificate.value.trim().length < 2) {
+    if (certificate) setFieldError(certificate, copy["form.certificateShort"]);
+    ok = false;
+  }
+  if (!certificatePhotoInput?.files?.[0]) {
+    if (certificatePhotoInput) {
+      setFieldError(
+        certificatePhotoInput,
+        copy["form.errorCertificatePhotoRequired"]
+      );
+    }
+    ok = false;
+  }
+  if (!description || description.value.trim().length < 3) {
+    if (description) setFieldError(description, copy["form.descriptionShort"]);
+    ok = false;
+  }
+  if (!address || address.value.trim().length < 3) {
+    if (address) setFieldError(address, copy["form.addressShort"]);
+    ok = false;
+  }
+  return ok;
+};
+
+const validateStep1Business = () => {
+  const copy = translations[detectLang()] || translations[DEFAULT_LANG];
+  const name = form?.querySelector("#name");
+  const email = form?.querySelector("#email");
+  const phone = form?.querySelector("#phone");
+  let ok = true;
+  if (!name || name.value.trim().length < 2) {
+    if (name) setFieldError(name, copy["form.nameShort"]);
+    ok = false;
+  }
+  if (email) {
+    if (!email.value.trim()) {
+      setFieldError(email, copy["form.errorRequired"]);
+      ok = false;
+    } else if (!email.checkValidity()) {
+      setFieldError(email, copy["form.errorEmailFormat"]);
+      ok = false;
+    }
+  }
+  const nationalDigits = (phone?.value || "").replace(/\D/g, "");
+  if (!phone || nationalDigits.length < 9) {
+    if (phone) setFieldError(phone, copy["form.phoneDigitsShort"]);
+    ok = false;
+  }
+  return ok;
+};
+
+const validateStep2Business = () => {
+  const copy = translations[detectLang()] || translations[DEFAULT_LANG];
+  const pEl = form?.querySelector("#password");
+  const p2El = form?.querySelector("#passwordConfirm");
+  const agree = form?.querySelector("[data-agree-terms]");
+  const p1 = pEl?.value || "";
+  const p2 = p2El?.value || "";
+  let ok = true;
+  if (!pEl || p1.length < 6) {
+    if (pEl) setFieldError(pEl, copy["form.errorPasswordShort"]);
+    ok = false;
+  }
+  if (p1 !== p2) {
+    if (p2El) setFieldError(p2El, copy["form.errorPasswordMatch"]);
+    ok = false;
+  }
+  if (agree && !agree.checked) {
+    setStatus(copy["form.errorAgreeTerms"], "error");
+    ok = false;
+  }
+  return ok;
+};
+
+const buildFullPhoneFromForm = () => {
+  if (!form) return "";
+  const fd = new FormData(form);
+  const countryCode = fd.get("countryCode")?.toString().trim() || "+992";
+  let phoneNumber = fd.get("phone")?.toString().trim() || "";
+  phoneNumber = phoneNumber.replace(/^\+/, "");
+  return phoneNumber ? `${countryCode}${phoneNumber}` : "";
+};
+
+const checkAvailabilityWithServer = async () => {
+  const copy = translations[detectLang()] || translations[DEFAULT_LANG];
+  if (!form) return false;
+  const fd = new FormData(form);
+  const email = fd.get("email")?.toString().trim();
+  const phone = buildFullPhoneFromForm();
+  const result = await api.post(
+    "/shop-registration/check-availability",
+    { email, phone },
+    { token: null }
+  );
+  if (result?.error) {
+    setStatus(result.message || copy["form.checkNetwork"], "error");
+    return false;
+  }
+  const d = result?.data;
+  const emailOk = d?.emailAvailable !== false;
+  const phoneOk = d?.phoneAvailable !== false;
+  if (!emailOk || !phoneOk) {
+    const emailField = form.querySelector("#email");
+    const phoneField = form.querySelector("#phone");
+    if (!emailOk && emailField) setFieldError(emailField, copy["form.errorEmail"]);
+    if (!phoneOk && phoneField) setFieldError(phoneField, copy["form.errorPhone"]);
+    setStatus(copy["form.checkBlocked"], "error");
+    return false;
+  }
+  return true;
+};
+
 let currentStep = 0;
 
 const updateStepUI = () => {
@@ -195,6 +379,7 @@ const updateStepUI = () => {
       submitButton.disabled = false;
     }
   }
+  updateWizardChrome();
 };
 
 const isStepValid = () => {
@@ -399,56 +584,65 @@ const handleSubmit = async (event) => {
   if (submitButton && submitButton.disabled) return;
   
   setStatus("", "");
-  
+  const copy = translations[detectLang()] || translations[DEFAULT_LANG];
+
   // Восстанавливаем required для всех полей перед валидацией
   steps.forEach((step) => {
-    const fields = step.querySelectorAll("input[data-was-required='true'], textarea[data-was-required='true'], select[data-was-required='true']");
+    const fields = step.querySelectorAll(
+      "input[data-was-required='true'], textarea[data-was-required='true'], select[data-was-required='true']"
+    );
     fields.forEach((field) => {
       field.setAttribute("required", "");
     });
   });
-  
-  // Валидируем все шаги
+
+  if (!validateStep0Business()) {
+    currentStep = 0;
+    updateStepUI();
+    setStatus(copy["form.errorStep"], "error");
+    return;
+  }
+  if (!validateStep1Business()) {
+    currentStep = 1;
+    updateStepUI();
+    setStatus(copy["form.errorStep"], "error");
+    return;
+  }
+  if (!validateStep2Business()) {
+    currentStep = 2;
+    updateStepUI();
+    setStatus(copy["form.errorStep"], "error");
+    return;
+  }
+
   for (let i = 0; i < steps.length; i++) {
     const step = steps[i];
     const fields = Array.from(step.querySelectorAll("input, textarea, select"));
     for (const field of fields) {
       if (field.hasAttribute("required") && !field.checkValidity()) {
-        setStatus(translations[detectLang()]["form.errorStep"], "error");
-        // Переключаемся на шаг с ошибкой
+        setStatus(copy["form.errorStep"], "error");
         currentStep = i;
         updateStepUI();
+        setFieldError(field, getFieldMessage(field));
         field.focus();
         return;
       }
     }
   }
-  
-  if (!validateStep()) return;
-  const agreeCheckbox = form.querySelector("[data-agree-terms]");
-  if (agreeCheckbox && !agreeCheckbox.checked) {
-    setStatus(translations[detectLang()]["form.errorAgreeTerms"] || "Подтвердите согласие с условиями и политикой конфиденциальности.", "error");
+
+  if (submitButton) submitButton.disabled = true;
+  const availabilityOk = await checkAvailabilityWithServer();
+  if (!availabilityOk) {
+    currentStep = 1;
+    updateStepUI();
+    if (submitButton) submitButton.disabled = false;
     return;
   }
+
   const formData = new FormData(form);
   const password = formData.get("password")?.toString() || "";
-  const passwordConfirm = formData.get("passwordConfirm")?.toString() || "";
-  if (password !== passwordConfirm) {
-    setStatus(translations[detectLang()]["form.errorPasswordMatch"], "error");
-    const passwordConfirmField = form.querySelector("#passwordConfirm");
-    if (passwordConfirmField) {
-      setFieldError(
-        passwordConfirmField,
-        translations[detectLang()]["form.errorPasswordMatch"]
-      );
-    }
-    return;
-  }
-  // Получаем код страны и номер телефона
-  const countryCode = formData.get("countryCode")?.toString().trim() || "+992";
-  const phoneNumber = formData.get("phone")?.toString().trim();
-  const fullPhone = phoneNumber ? `${countryCode}${phoneNumber}` : "";
-  
+  const fullPhone = buildFullPhoneFromForm();
+
   const payload = {
     name: formData.get("name")?.toString().trim(),
     email: formData.get("email")?.toString().trim(),
@@ -466,13 +660,19 @@ const handleSubmit = async (event) => {
   // Фото сертификата — обязательно
   const certificatePhotoFile = certificatePhotoInput?.files[0];
   if (!certificatePhotoFile) {
-    setStatus(translations[detectLang()]["form.errorCertificatePhotoRequired"] || "Загрузите фото сертификата.", "error");
+    setStatus(copy["form.errorCertificatePhotoRequired"] || "Загрузите фото сертификата.", "error");
     const certField = form.querySelector("#certificatePhoto");
-    if (certField) setFieldError(certField, translations[detectLang()]["form.errorCertificatePhotoRequired"] || "Обязательное поле.");
+    if (certField)
+      setFieldError(
+        certField,
+        copy["form.errorCertificatePhotoRequired"] || "Обязательное поле."
+      );
+    currentStep = 0;
+    updateStepUI();
+    if (submitButton) submitButton.disabled = false;
     return;
   }
 
-  if (submitButton) submitButton.disabled = true;
   const t = translations[detectLang()];
   showProgressModal(t["form.progressPreparing"] || "Подготовка...");
 
@@ -506,7 +706,13 @@ const handleSubmit = async (event) => {
     setProgressText(t["form.progressRegister"] || "Регистрация магазина...");
     const result = await api.post("/shop-registration/register", payload, { token: null });
     if (result && result.error) {
-      const errMsg = result.status === 409 ? (t["form.errorEmail"] || "Email уже используется.") : (t["form.errorGeneric"] || "Не удалось отправить.");
+      const raw = (result.message || "").toLowerCase();
+      let errMsg =
+        result.status === 409
+          ? raw.includes("phone")
+            ? t["form.errorPhone"] || "Этот телефон уже привязан к аккаунту. Войдите и добавьте магазин в кабинете."
+            : t["form.errorEmail"] || "Email уже используется."
+          : result.message || t["form.errorGeneric"] || "Не удалось отправить.";
       showProgressDone(errMsg, true);
       if (submitButton) submitButton.disabled = false;
       return;
@@ -549,18 +755,39 @@ if (form) {
 }
 
 if (nextButton) {
-  nextButton.addEventListener("click", () => {
-    // Защита от двойного клика
+  nextButton.addEventListener("click", async () => {
     if (nextButton.disabled) return;
     setStatus("", "");
-    if (!validateStep()) return;
-    nextButton.disabled = true;
+    const copy = translations[detectLang()] || translations[DEFAULT_LANG];
+
+    if (currentStep === 0) {
+      clearErrorsInStep(0);
+      if (!validateStep0Business()) {
+        setStatus(copy["form.errorStep"], "error");
+        const step = steps[0];
+        const bad = step?.querySelector(".is-invalid");
+        (bad || step?.querySelector("input,textarea"))?.focus?.();
+        return;
+      }
+      if (!validateStep()) return;
+    } else if (currentStep === 1) {
+      clearErrorsInStep(1);
+      if (!validateStep1Business()) {
+        setStatus(copy["form.errorStep"], "error");
+        const step = steps[1];
+        const bad = step?.querySelector(".is-invalid");
+        (bad || step?.querySelector("input"))?.focus?.();
+        return;
+      }
+      if (!validateStep()) return;
+      nextButton.disabled = true;
+      const ok = await checkAvailabilityWithServer();
+      nextButton.disabled = false;
+      if (!ok) return;
+    }
+
     currentStep = Math.min(currentStep + 1, steps.length - 1);
     updateStepUI();
-    // Включаем кнопку обратно после небольшой задержки
-    setTimeout(() => {
-      nextButton.disabled = false;
-    }, 300);
   });
 }
 

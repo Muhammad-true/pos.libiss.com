@@ -59,6 +59,17 @@
               >
               <div class="form-card">
                 <form class="form" data-form>
+                  <div class="form-wizard-meta">
+                    <p class="form-step-line" data-step-line aria-live="polite"></p>
+                    <div
+                      class="form-step-dots"
+                      data-step-dots
+                      role="progressbar"
+                      aria-valuemin="1"
+                      aria-valuemax="3"
+                      aria-valuenow="1"
+                    ></div>
+                  </div>
                   <div class="form-step" data-step="0">
                     <div class="field">
                       <label for="shopName" data-i18n="form.shopName"
@@ -307,11 +318,11 @@
                       </label>
                     </div>
                   </div>
-                  <div class="form-actions">
+                  <div class="form-actions form-actions--wizard">
                     <button class="btn btn-secondary" type="button" data-prev data-i18n="form.prev">
                       Назад
                     </button>
-                    <button class="btn btn-secondary" type="button" data-next data-i18n="form.next">
+                    <button class="btn btn-primary" type="button" data-next data-i18n="form.next">
                       Далее
                     </button>
                     <button class="btn btn-primary" type="submit" data-i18n="form.submit" hidden>

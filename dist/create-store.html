@@ -27,12 +27,12 @@
     <link rel="shortcut icon" href="/logo.png" />
     <title>Libiss POS — Создать магазин</title>
     <style>body { opacity: 0; transition: opacity 0.3s; }</style>
-    <script type="module" crossorigin src="/assets/create-store-GcJjuPZw.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/styles-DFLsS0p2.js">
+    <script type="module" crossorigin src="/assets/create-store-Cay8kHJ-.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/styles-_shn3Gzb.js">
     <link rel="modulepreload" crossorigin href="/assets/index-DNQiN_gI.js">
-    <link rel="modulepreload" crossorigin href="/assets/translations-0ZI7kZY5.js">
-    <link rel="modulepreload" crossorigin href="/assets/api-D5zH2I3w.js">
-    <link rel="stylesheet" crossorigin href="/assets/styles-DVZkw6iq.css">
+    <link rel="modulepreload" crossorigin href="/assets/translations-DeVvD-wA.js">
+    <link rel="modulepreload" crossorigin href="/assets/api-Biv5xRmm.js">
+    <link rel="stylesheet" crossorigin href="/assets/styles-PE_XmqNH.css">
   </head>
   <body>
     <div class="page">
@@ -65,6 +65,17 @@
               >
               <div class="form-card">
                 <form class="form" data-form>
+                  <div class="form-wizard-meta">
+                    <p class="form-step-line" data-step-line aria-live="polite"></p>
+                    <div
+                      class="form-step-dots"
+                      data-step-dots
+                      role="progressbar"
+                      aria-valuemin="1"
+                      aria-valuemax="3"
+                      aria-valuenow="1"
+                    ></div>
+                  </div>
                   <div class="form-step" data-step="0">
                     <div class="field">
                       <label for="shopName" data-i18n="form.shopName"
@@ -313,11 +324,11 @@
                       </label>
                     </div>
                   </div>
-                  <div class="form-actions">
+                  <div class="form-actions form-actions--wizard">
                     <button class="btn btn-secondary" type="button" data-prev data-i18n="form.prev">
                       Назад
                     </button>
-                    <button class="btn btn-secondary" type="button" data-next data-i18n="form.next">
+                    <button class="btn btn-primary" type="button" data-next data-i18n="form.next">
                       Далее
                     </button>
                     <button class="btn btn-primary" type="submit" data-i18n="form.submit" hidden>

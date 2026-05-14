@@ -1444,6 +1444,70 @@ textarea {
   margin-top: 8px;
 }
 
+.form-actions--wizard {
+  flex-wrap: nowrap;
+  align-items: stretch;
+  justify-content: space-between;
+}
+
+.form-actions--wizard .btn[data-prev] {
+  flex: 0 1 auto;
+}
+
+.form-actions--wizard .btn[data-next],
+.form-actions--wizard button[type="submit"] {
+  flex: 1 1 160px;
+  max-width: 280px;
+  margin-left: auto;
+}
+
+@media (max-width: 520px) {
+  .form-actions--wizard {
+    flex-wrap: wrap;
+  }
+  .form-actions--wizard .btn[data-next],
+  .form-actions--wizard button[type="submit"] {
+    margin-left: 0;
+    flex: 1 1 100%;
+    max-width: none;
+  }
+}
+
+.form-wizard-meta {
+  margin-bottom: 1rem;
+}
+
+.form-step-line {
+  margin: 0 0 10px;
+  font-size: 0.9rem;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.form-step-dots {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.form-step-dot {
+  flex: 1;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--border);
+  transition: background 0.2s ease;
+}
+
+.form-step-dot.is-done {
+  background: var(--accent);
+  opacity: 0.35;
+}
+
+.form-step-dot.is-current {
+  background: var(--accent);
+  opacity: 1;
+}
+
 .form-actions .btn {
   flex: 1 1 200px;
 }
